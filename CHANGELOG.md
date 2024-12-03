@@ -1,3 +1,34 @@
+# Version 3
+
+## 3.0
+
+- Use @solana/web3.js version 2
+
+### General web3.js version 2 changes
+
+- `Keypair.generate();` is now `generateKeyPair()`.
+- `Keypair` is now `CryptoKeyPair`. For consistentency, functions that refer to 'keypairs' now refer to 'cryptoKeyPairs'
+- The old `keypair` is spelt `keyPair` everywhere like normal JS/TS camelCase.s
+- Many places that use `PublicKey` are just `address` now
+- `secretkey` is now `privateKey`
+- Values are in `lamports` which can be made from the native JS `BigInt`, so `1n` instead of `1`.
+- Commitment levels are defined explicitly
+- We get the transaction signature from signed transactions rather than having signatures as a return value
+
+### Changes
+
+- Since web3.js uses Promises in more places, nearly every helper function returns a `Promise<>` now, so you'll use `await` more often.
+- `getExplorerLink()` now defaults to localnet rather than mainnet-beta
+- localhost links on `getExplorerLink()` no longer add an unnecessary customUrl parameter
+- We no longer support base58 encoded private keys - instead we use the Array of numbers format exclusively. If you have base58 encoded private keys you can convert them with the previous version of this library.
+- Replace @solana/spl-token and @solana/spl-token-metadata with their new replacements '@solana-program/token'
+
+### Additions
+
+- A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()` (to confirm transactions using your RPC) and `getExplorerLink()` (to get Explorer links using your RPC).
+- Better support for third party RPCs
+- A new value `SOL` is exported, to match the previous convenience value `LAMPORTS_PER_SOL`. For example, use `10n * SOL` for 10 SOL.
+
 ## 2.5
 
 - Add `makeTokenMint()`
