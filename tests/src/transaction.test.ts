@@ -22,7 +22,10 @@ const MEMO_PROGRAM_ID = new CryptoKey(
 describe("confirmTransaction", () => {
   test("confirmTransaction works for a successful transaction", async () => {
     const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-    const [sender, recipient] = [generateKeyPair(), generateKeyPair()];
+    const [sender, recipient] = [
+      generateKeyPairSigner(),
+      generateKeyPairSigner(),
+    ];
     const lamportsToAirdrop = 2 * SOL;
     await airdropIfRequired(rpc, sender.publicKey, lamportsToAirdrop, 1 * SOL);
 
@@ -45,9 +48,9 @@ describe("confirmTransaction", () => {
 describe("getSimulationComputeUnits", () => {
   test("getSimulationComputeUnits returns 300 CUs for a SOL transfer, and 3888 for a SOL transfer with a memo", async () => {
     const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-    const sender = generateKeyPair();
+    const sender = generateKeyPairSigner();
     await airdropIfRequired(rpc, sender.publicKey, 1 * SOL, 1 * SOL);
-    const recipient = generateKeyPair().publicKey;
+    const recipient = generateKeyPairSigner().publicKey;
 
     const sendSol = SystemProgram.transfer({
       fromPubkey: sender.publicKey,

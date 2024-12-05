@@ -115,7 +115,7 @@
 //   updateAuthority: CryptoKey = mintAuthority.publicKey,
 //   freezeAuthority: CryptoKey | null = null,
 // ) => {
-//   const mint = generateKeyPair();
+//   const mint = generateKeyPairSigner();
 
 //   if (!Array.isArray(additionalMetadata)) {
 //     additionalMetadata = Object.entries(additionalMetadata);

@@ -14,7 +14,7 @@ const LOCALHOST = "http://127.0.0.1:8899";
 
 describe("makeTokenMint", () => {
   test("makeTokenMint makes a new mint with the specified metadata", async () => {
-    const mintAuthority = generateKeyPair();
+    const mintAuthority = generateKeyPairSigner();
     const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
     await airdropIfRequired(
       rpc,
@@ -75,7 +75,7 @@ describe("makeTokenMint", () => {
 
 describe("createAccountsMintsAndTokenAccounts", () => {
   test("createAccountsMintsAndTokenAccounts works", async () => {
-    const payer = await generateKeyPair();
+    const payer = await generateKeyPairSigner();
     const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
     await airdropIfRequired(rpc, payer.publicKey, 100 * SOL, 1 * SOL);
 

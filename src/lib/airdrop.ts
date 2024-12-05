@@ -17,6 +17,7 @@ import {
   getCryptoKeyPairFromFile,
 } from "./keypair";
 import { SOL } from "./constants";
+import { Connection } from "./connect";
 
 const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
@@ -26,7 +27,7 @@ const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 // we can probably give this a better name,
 // just not sure what yet
 export const initializeCryptoKeyPair = async (
-  rpc: Rpc<any>,
+  connection: Connection,
   options?: InitializeCryptoKeyPairOptions,
 ): Promise<CryptoKeyPair> => {
   const {
@@ -53,7 +54,7 @@ export const initializeCryptoKeyPair = async (
   const address = await getAddressFromPublicKey(keyPair.publicKey);
 
   if (airdropAmount) {
-    await airdropIfRequired(rpc, address, airdropAmount, minimumBalance);
+    await airdropIfRequired(connection, address, airdropAmount, minimumBalance);
   }
 
   return keyPair;
@@ -63,7 +64,7 @@ export const initializeCryptoKeyPair = async (
 // request airdrops when they don't need them, ie - don't bother
 // the faucet unless you really need to!
 const requestAndConfirmAirdrop = async (
-  rpc: Rpc<SolanaRpcApi>,
+  connection: Connection,
   address: Address,
   amount: Lamports,
 ): Promise<Lamports> => {
@@ -71,14 +72,20 @@ const requestAndConfirmAirdrop = async (
   // "finalized" is slow but we must be absolutely sure
   // the airdrop has gone through
   console.log("Requesting airdrop for address", address);
-  const airdropTransactionSignature = await rpc
-    .requestAirdrop(address, amount, { commitment: "finalized" })
-    .send();
+
+  // Note rpc.requestAirdrop is broken, the finalized paramater doesn't do anything.
+  // https://github.com/solana-labs/solana-web3.js/issues/3683
+  const airdropTransactionSignature = await connection.airdrop({
+    commitment: "finalized",
+    recipientAddress: address,
+    lamports: amount,
+  });
+
   console.log("Airdrop transaction signature", airdropTransactionSignature);
 
   console.log("Getting balance for address", address);
 
-  const getBalanceResponse = await rpc
+  const getBalanceResponse = await connection.rpc
     .getBalance(address, { commitment: "finalized" })
     .send();
 
@@ -88,19 +95,19 @@ const requestAndConfirmAirdrop = async (
 };
 
 export const airdropIfRequired = async (
-  rpc: Rpc<SolanaRpcApi>,
+  connection: Connection,
   address: Address,
   airdropAmount: Lamports,
   minimumBalance: Lamports,
 ): Promise<Lamports> => {
-  const balanceResponse = await rpc
+  const balanceResponse = await connection.rpc
     .getBalance(address, {
       commitment: "finalized",
     })
     .send();
   if (balanceResponse.value < minimumBalance) {
     console.log("Will request airdrop for address", address);
-    return requestAndConfirmAirdrop(rpc, address, airdropAmount);
+    return requestAndConfirmAirdrop(connection, address, airdropAmount);
   }
   return balanceResponse.value;
 };

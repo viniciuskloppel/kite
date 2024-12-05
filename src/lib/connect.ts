@@ -1,9 +1,15 @@
 import {
   airdropFactory,
+  Commitment,
+  CompilableTransactionMessage,
   createDefaultRpcTransport,
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
+  getSignatureFromTransaction,
   sendAndConfirmTransactionFactory,
+  Signature,
+  signTransactionMessageWithSigners,
+  TransactionMessageWithBlockhashLifetime,
 } from "@solana/web3.js";
 import { checkIsValidURL, encodeURL } from "./url";
 
@@ -84,6 +90,30 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   return getExplorerLink;
 };
 
+// TODO: work out whetehr we want this
+// Inspire by Quicknode's https://github.com/quiknode-labs/qn-guide-examples/blob/main/solana/web3.js-2.0/helpers/index.ts
+export const createSignAndSendTransactionFactory = (
+  sendAndConfirmTransaction: ReturnType<
+    typeof sendAndConfirmTransactionFactory
+  >,
+) => {
+  const createSignAndSendTransaction = async (
+    transactionMessage: CompilableTransactionMessage &
+      TransactionMessageWithBlockhashLifetime,
+    commitment: Commitment = "processed",
+    skipPreflight: boolean = true,
+  ): Promise<Signature> => {
+    const signedTransaction =
+      await signTransactionMessageWithSigners(transactionMessage);
+    await sendAndConfirmTransaction(signedTransaction, {
+      commitment,
+      skipPreflight,
+    });
+    return getSignatureFromTransaction(signedTransaction);
+  };
+  return createSignAndSendTransaction;
+};
+
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
@@ -125,12 +155,16 @@ export const connect = (
     rpc,
     rpcSubscriptions,
     sendAndConfirmTransaction,
+    // See comment above createSignAndSendTransactionFactory
+    // createSignAndSendTransaction: createSignAndSendTransactionFactory(
+    //   sendAndConfirmTransaction,
+    // ),
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
     airdrop: airdropFactory({ rpc, rpcSubscriptions }),
   };
 };
 
-interface Connection {
+export interface Connection {
   rpc: ReturnType<typeof createSolanaRpcFromTransport>;
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
   sendAndConfirmTransaction: ReturnType<

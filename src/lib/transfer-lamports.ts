@@ -33,7 +33,7 @@ interface Connection {
 
 export const transferLamports = async (
   connection: Connection,
-  source: KeyPairSigner<string>,
+  source: KeyPairSigner,
   destination: Address,
   amount: Lamports,
 ) => {

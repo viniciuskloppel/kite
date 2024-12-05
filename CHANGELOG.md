@@ -6,11 +6,10 @@
 
 ### General web3.js version 2 changes
 
-- `Keypair.generate();` is now `generateKeyPair()`.
-- `Keypair` is now `CryptoKeyPair`. For consistentency, functions that refer to 'keypairs' now refer to 'cryptoKeyPairs'
-- The old `keypair` is spelt `keyPair` everywhere like normal JS/TS camelCase.s
-- Many places that use `PublicKey` are just `address` now
-- `secretkey` is now `privateKey`
+- `Keypair` is now `KeyPairSigner`. `Keypair.generate();` is now `generateKeyPairSigner()`.
+- The old `keypair` is spelt `keyPair` everywhere like normal JS/TS camelCase.
+- Many places that use `PublicKey` are just `keypairSigner.address` now
+- `secretkey` is now `privateKey`, but you generally pass around `KeyPairSigner` which access their own priovte keys, ie you
 - Values are in `lamports` which can be made from the native JS `BigInt`, so `1n` instead of `1`.
 - Commitment levels are defined explicitly
 - We get the transaction signature from signed transactions rather than having signatures as a return value

@@ -476,11 +476,20 @@ The tests use the [node native test runner](https://blog.logrocket.com/exploring
 If you'd like to run a single test, use:
 
 ```bash
-esrun tests/src/keypair.test.ts
+esrun --node-no-warnings tests/src/keypair.test.ts
 ```
 
+We use `--node-no-warnings` to avoid ...
+
+```
+(node:27923) ExperimentalWarning: The Ed25519 Web Crypto API algorithm is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+```
+
+...which is pretty boring once you've read it for the 50th time.
+
 ```bash
-esrun --node-test-name-pattern="getCustomErrorMessage" tests/src/keypair.test.ts
+esrun --node-no-warnings --node-test-name-pattern="getCustomErrorMessage" tests/src/keypair.test.ts
 ```
 
 To just run tests matching the name `getCustomErrorMessage`.

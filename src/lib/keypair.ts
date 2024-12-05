@@ -197,5 +197,7 @@ export const addCryptoKeyPairToEnvFile = async (
 export const makeCryptoKeyPairs = (
   amount: number,
 ): Promise<Array<CryptoKeyPair>> => {
-  return Promise.all(Array.from({ length: amount }, () => generateKeyPair()));
+  return Promise.all(
+    Array.from({ length: amount }, () => generateKeyPairSigner()),
+  );
 };
