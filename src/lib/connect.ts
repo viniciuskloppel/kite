@@ -1,4 +1,5 @@
 import {
+  airdropFactory,
   createDefaultRpcTransport,
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
@@ -86,7 +87,7 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
-) => {
+): Connection => {
   let httpURL: string | null = null;
   let webSocketURL: string | null = null;
   if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
@@ -125,5 +126,16 @@ export const connect = (
     rpcSubscriptions,
     sendAndConfirmTransaction,
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
+    airdrop: airdropFactory({ rpc, rpcSubscriptions }),
   };
 };
+
+interface Connection {
+  rpc: ReturnType<typeof createSolanaRpcFromTransport>;
+  rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
+  sendAndConfirmTransaction: ReturnType<
+    typeof sendAndConfirmTransactionFactory
+  >;
+  getExplorerLink: ReturnType<typeof getExplorerLinkFactory>;
+  airdrop: ReturnType<typeof airdropFactory>;
+}

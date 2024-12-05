@@ -70,13 +70,19 @@ const requestAndConfirmAirdrop = async (
   // Wait for airdrop confirmation
   // "finalized" is slow but we must be absolutely sure
   // the airdrop has gone through
+  console.log("Requesting airdrop for address", address);
   const airdropTransactionSignature = await rpc
     .requestAirdrop(address, amount, { commitment: "finalized" })
     .send();
+  console.log("Airdrop transaction signature", airdropTransactionSignature);
+
+  console.log("Getting balance for address", address);
 
   const getBalanceResponse = await rpc
     .getBalance(address, { commitment: "finalized" })
     .send();
+
+  console.log("Updated balance for address", address, getBalanceResponse.value);
 
   return getBalanceResponse.value;
 };
@@ -93,6 +99,7 @@ export const airdropIfRequired = async (
     })
     .send();
   if (balanceResponse.value < minimumBalance) {
+    console.log("Will request airdrop for address", address);
     return requestAndConfirmAirdrop(rpc, address, airdropAmount);
   }
   return balanceResponse.value;
