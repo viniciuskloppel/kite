@@ -5,6 +5,7 @@ import {
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
   generateKeyPair,
+  generateKeyPairSigner,
   getAddressFromPublicKey,
   lamports,
 } from "@solana/web3.js";
@@ -17,22 +18,24 @@ const rpc = createSolanaRpc("http://localhost:8899");
 const rpcSubscriptions = createSolanaRpcSubscriptions("ws://localhost:8900");
 const airdrop = airdropFactory({ rpc, rpcSubscriptions });
 
-const address = await getAddressFromPublicKey(user.publicKey);
-
 const amount = lamports(1n * SOL);
 
 const airdropTransactionSignature = await airdrop({
   commitment: "finalized",
-  recipientAddress: address,
+  recipientAddress: user.address,
   lamports: amount,
 });
 
 console.log("Airdrop transaction signature", airdropTransactionSignature);
 
-console.log("Getting balance for address", address);
+console.log("Getting balance for address", user.address);
 
 const getBalanceResponse = await rpc
-  .getBalance(address, { commitment: "finalized" })
+  .getBalance(user.address, { commitment: "finalized" })
   .send();
 
-console.log("Updated balance for address", address, getBalanceResponse.value);
+console.log(
+  "Updated balance for address",
+  user.address,
+  getBalanceResponse.value,
+);

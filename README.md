@@ -195,7 +195,7 @@ And `errorMessage` will now be:
 Usage:
 
 ```typescript
-airdropIfRequired(rpc, publicKey, lamports, maximumBalance);
+airdropIfRequired(connection, publicKey, lamports, maximumBalance);
 ```
 
 Request and confirm an airdrop in one step. As soon as the `await` returns, the airdropped tokens will be ready to use, and the new balance of tokens will be returned. The `maximumBalance` is used to avoid errors caused by unnecessarily asking for SOL when there's already enough in the account, and makes `airdropIfRequired()` very handy in scripts that run repeatedly.
@@ -203,12 +203,7 @@ Request and confirm an airdrop in one step. As soon as the `await` returns, the 
 To ask for 0.5 SOL, if the balance is below 1 SOL, use:
 
 ```typescript
-const newBalance = await airdropIfRequired(
-  rpc,
-  keypair.publicKey,
-  0.5 * SOL,
-  1 * SOL,
-);
+const newBalance = await airdropIfRequired(rpc, keypair.publicKey, 0.5 * SOL, 1 * SOL);
 ```
 
 ### Get a Solana Explorer link for a transaction, address, or block
@@ -222,21 +217,13 @@ getExplorerLink(type, identifier, clusterName);
 Get an explorer link for an `address`, `block` or `transaction` (`tx` works too).
 
 ```typescript
-getExplorerLink(
-  "address",
-  "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8",
-  "mainnet-beta",
-);
+getExplorerLink("address", "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8", "mainnet-beta");
 ```
 
 Will return `"https://explorer.solana.com/address/dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8"`. The cluster name isn't included since mainnet-beta is the default.
 
 ```typescript
-getExplorerLink(
-  "address",
-  "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8",
-  "devnet",
-);
+getExplorerLink("address", "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8", "devnet");
 ```
 
 Will return `"https://explorer.solana.com/address/dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8?cluster=devnet"`
@@ -278,10 +265,7 @@ const logs = await getLogs(rpc, transaction);
 The `logs` will be an array of strings, eg:
 
 ```typescript
-[
-  "Program 11111111111111111111111111111111 invoke [1]",
-  "Program 11111111111111111111111111111111 success",
-];
+["Program 11111111111111111111111111111111 invoke [1]", "Program 11111111111111111111111111111111 success"];
 ```
 
 This a good way to assert your onchain programs return particular logs during unit tests.
@@ -339,9 +323,7 @@ const keyPair = await getCryptoKeyPairFromFile("somefile.json");
 or using home dir expansion:
 
 ```typescript
-const keyPair = await getCryptoKeyPairFromFile(
-  "~/code/solana/demos/steve.json",
-);
+const keyPair = await getCryptoKeyPairFromFile("~/code/solana/demos/steve.json");
 ```
 
 ### Get a keypair from an environment variable

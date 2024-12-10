@@ -33,6 +33,7 @@ import { unlink as deleteFile } from "node:fs/promises";
 import { SOL } from "../../src/lib/constants";
 import { connect } from "../../src/lib/connect";
 import { getTransferSolInstruction } from "@solana-program/system";
+import { log, stringify } from "../../src/lib/utils";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 
@@ -57,7 +58,7 @@ const LOCALHOST = "http://127.0.0.1:8899";
 //     const addressBefore = await getAddressFromPublicKey(userBefore.publicKey);
 
 //     // Check balance
-//     const balanceBeforeResponse = await rpc.getBalance(addressBefore).send();
+//     const balanceBeforeResponse = await getBalance(addressBefore).send();
 
 //     assert.ok(balanceBeforeResponse.value > 0);
 
@@ -80,7 +81,7 @@ const LOCALHOST = "http://127.0.0.1:8899";
 //     assert(addressBefore === addressAfter);
 
 //     // Check balance has not changed
-//     const balanceAfterResponse = await rpc.getBalance(addressAfter).send();
+//     const balanceAfterResponse = await getBalance(addressAfter).send();
 
 //     assert.equal(balanceBeforeResponse.value, balanceAfterResponse.value);
 
@@ -96,25 +97,16 @@ describe("airdropIfRequired", () => {
     const connection = connect();
     const user = await generateKeyPairSigner();
 
-    const originalBalanceResponse = await connection.rpc
-      .getBalance(user.address)
-      .send();
+    const originalBalanceResponse = await connection.rpc.getBalance(user.address).send();
 
     assert.equal(originalBalanceResponse.value, 0);
     const lamportsToAirdrop = lamports(1n * SOL);
 
     const minimumBalance = lamports(1n * SOL);
 
-    await airdropIfRequired(
-      connection,
-      user.address,
-      lamportsToAirdrop,
-      minimumBalance,
-    );
+    await airdropIfRequired(connection, user.address, lamportsToAirdrop, minimumBalance);
 
-    const getBalanceResponse = await connection.rpc
-      .getBalance(user.address, { commitment: "finalized" })
-      .send();
+    const getBalanceResponse = await connection.rpc.getBalance(user.address, { commitment: "finalized" }).send();
 
     const newBalance = getBalanceResponse.value;
 
@@ -123,68 +115,47 @@ describe("airdropIfRequired", () => {
     const recipient = await generateKeyPairSigner();
 
     // Spend our SOL now to ensure we can use the airdrop immediately
-    const signature = await transferLamports(
-      connection,
-      user,
-      recipient.address,
-      lamports(1_000_000n),
-    );
+    const signature = await transferLamports(connection, user, recipient.address, lamports(1_000_000n));
 
     assert.ok(signature);
   });
 
-  // test("doesn't request unnecessary airdrops", async () => {
-  //   const user = await generateKeyPairSigner();
-  //   const user.address = await getAddressFromPublicKey(user.publicKey);
-  //   const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-  //   const originalBalance = await rpc.getBalance(user.address);
-  //   assert.equal(originalBalance, 0);
-  //   const lamportsToAirdrop = lamports(1n * SOL);
+  test("doesn't request unnecessary airdrops", async () => {
+    const user = await generateKeyPairSigner();
+    const connection = connect();
+    const balance = await connection.getBalance(user.address);
+    assert.equal(balance, 0n);
+    const lamportsToAirdrop = lamports(1n * SOL);
 
-  //   // First airdrop asks for 500_000 lamports
-  //   await airdropIfRequired(
-  //     rpc,
-  //     user.address,
-  //     lamportsToAirdrop,
-  //     lamports(500_000n),
-  //   );
+    // First airdrop asks for 500_000 lamports
+    await airdropIfRequired(connection.rpc, user.address, lamportsToAirdrop, lamports(500_000n));
 
-  //   // Try a second airdrop if the balance is less than 1 SOL
-  //   const minimumBalance = lamports(1n * SOL);
-  //   const finalBalance = await airdropIfRequired(
-  //     rpc,
-  //     user.address,
-  //     lamportsToAirdrop,
-  //     minimumBalance,
-  //   );
+    // Try a second airdrop if the balance is less than 1 SOL
+    // Check second airdrop didn't happen (since we already had 1 SOL from first airdrop)
+    const minimumBalance = lamports(1n * SOL);
+    const finalBalance = await airdropIfRequired(connection, user.address, lamportsToAirdrop, minimumBalance);
+    assert.equal(finalBalance, lamportsToAirdrop);
+  });
 
-  //   // Check second airdrop didn't happen (since we already had 1 SOL from first airdrop)
-  //   assert.equal(finalBalance, lamportsToAirdrop);
-  // });
+  test("airdropIfRequired does airdrop when necessary", async () => {
+    const user = await generateKeyPairSigner();
 
-  // test("airdropIfRequired does airdrop when necessary", async () => {
-  //   const user = await generateKeyPairSigner();
-  //   const user.address = await getAddressFromPublicKey(user.publicKey);
+    const connection = connect();
+    const originalBalance = await connection.getBalance(user.address, "finalized");
+    assert.equal(originalBalance, 0);
+    // Get 999_999_999 lamports if we have less than 500_000 lamports
+    const lamportsToAirdrop = lamports(1n * SOL - 1n);
+    const balanceAfterFirstAirdrop = await airdropIfRequired(
+      connection,
+      user.address,
+      lamportsToAirdrop,
+      lamports(500_000n),
+    );
+    assert.equal(balanceAfterFirstAirdrop, lamportsToAirdrop);
 
-  //   const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-  //   const originalBalance = await rpc.getBalance(user.address);
-  //   assert.equal(originalBalance, 0);
-  //   // Get 999_999_999 lamports if we have less than 500_000 lamports
-  //   const lamportsToAirdrop = lamports(1n * SOL - 1n);
-  //   await airdropIfRequired(
-  //     rpc,
-  //     user.address,
-  //     lamportsToAirdrop,
-  //     lamports(500_000n),
-  //   );
-  //   // We only have 999_999_999 lamports, so we should need another airdrop
-  //   const finalBalance = await airdropIfRequired(
-  //     rpc,
-  //     user.address,
-  //     lamports(1n * SOL),
-  //     lamports(1n * SOL),
-  //   );
-  //   // Check second airdrop happened
-  //   assert.equal(finalBalance, lamports(2n * SOL - 1n));
-  // });
+    // We only have 999_999_999 lamports, so we should need another airdrop
+    // Check second airdrop happened
+    const finalBalance = await airdropIfRequired(connection, user.address, lamports(1n * SOL), lamports(1n * SOL));
+    assert.equal(finalBalance, lamports(2n * SOL - 1n));
+  });
 });

@@ -2,11 +2,7 @@ import { describe, test } from "node:test";
 import { CryptoKeyPair, generateKeyPair } from "@solana/web3.js";
 import { SOL } from "@solana/web3.js";
 import { Connection } from "@solana/web3.js";
-import {
-  airdropIfRequired,
-  confirmTransaction,
-  getSimulationComputeUnits,
-} from "../../src";
+import { airdropIfRequired, confirmTransaction, getSimulationComputeUnits } from "../../src";
 import { sendAndConfirmTransaction } from "@solana/web3.js";
 import { Transaction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
@@ -15,19 +11,14 @@ import { TransactionInstruction } from "@solana/web3.js";
 import { CryptoKey } from "@solana/web3.js";
 
 const LOCALHOST = "http://127.0.0.1:8899";
-const MEMO_PROGRAM_ID = new CryptoKey(
-  "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
-);
+const MEMO_PROGRAM_ID = new CryptoKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
 
 describe("confirmTransaction", () => {
   test("confirmTransaction works for a successful transaction", async () => {
     const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-    const [sender, recipient] = [
-      generateKeyPairSigner(),
-      generateKeyPairSigner(),
-    ];
+    const [sender, recipient] = [generateKeyPairSigner(), generateKeyPairSigner()];
     const lamportsToAirdrop = 2 * SOL;
-    await airdropIfRequired(rpc, sender.publicKey, lamportsToAirdrop, 1 * SOL);
+    await airdropIfRequired(connection, sender.publicKey, lamportsToAirdrop, 1 * SOL);
 
     const signature = await sendAndConfirmTransaction(
       rpc,
@@ -49,7 +40,7 @@ describe("getSimulationComputeUnits", () => {
   test("getSimulationComputeUnits returns 300 CUs for a SOL transfer, and 3888 for a SOL transfer with a memo", async () => {
     const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
     const sender = generateKeyPairSigner();
-    await airdropIfRequired(rpc, sender.publicKey, 1 * SOL, 1 * SOL);
+    await airdropIfRequired(connection, sender.publicKey, 1 * SOL, 1 * SOL);
     const recipient = generateKeyPairSigner().publicKey;
 
     const sendSol = SystemProgram.transfer({
@@ -64,12 +55,7 @@ describe("getSimulationComputeUnits", () => {
       data: Buffer.from("thanks"),
     });
 
-    const computeUnitsSendSol = await getSimulationComputeUnits(
-      rpc,
-      [sendSol],
-      sender.publicKey,
-      [],
-    );
+    const computeUnitsSendSol = await getSimulationComputeUnits(rpc, [sendSol], sender.publicKey, []);
 
     // TODO: it would be useful to have a breakdown of exactly how 300 CUs is calculated
     assert.equal(computeUnitsSendSol, 300);

@@ -6,18 +6,17 @@ import {
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
   getSignatureFromTransaction,
+  Lamports,
   sendAndConfirmTransactionFactory,
   Signature,
   signTransactionMessageWithSigners,
   TransactionMessageWithBlockhashLifetime,
 } from "@solana/web3.js";
 import { checkIsValidURL, encodeURL } from "./url";
+import { log, stringify } from "./utils";
 
 // Make an object with a map of solana cluster names to subobjects, with the subobjects containing the URL and websocket URL
-const CLUSTER_NAME_TO_URLS: Record<
-  string,
-  { httpURL: string; webSocketURL: string }
-> = {
+const CLUSTER_NAME_TO_URLS: Record<string, { httpURL: string; webSocketURL: string }> = {
   // Postel's law: be liberal in what you accept
   mainnet: {
     httpURL: "https://api.mainnet-beta.solana.com",
@@ -47,10 +46,7 @@ const KNOWN_CLUSTER_NAMES = Object.keys(CLUSTER_NAME_TO_URLS);
 // however Explorer has some particular features like mainnet not needing to
 // be explicit if it's mainnet-beta, so we'll keep it as a cluster name for now
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
-  const getExplorerLink = (
-    linkType: "transaction" | "tx" | "address" | "block",
-    id: string,
-  ): string => {
+  const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
     const searchParams: Record<string, string> = {};
     // Technically it's officially 'mainnet-beta' till Solana gets Firedancer + 1 year 100% availability but we'll accept 'mainnet' too
     if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
@@ -91,27 +87,31 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
 };
 
 // TODO: work out whetehr we want this
-// Inspire by Quicknode's https://github.com/quiknode-labs/qn-guide-examples/blob/main/solana/web3.js-2.0/helpers/index.ts
-export const createSignAndSendTransactionFactory = (
-  sendAndConfirmTransaction: ReturnType<
-    typeof sendAndConfirmTransactionFactory
-  >,
+// Inspired by Quicknode's https://github.com/quiknode-labs/qn-guide-examples/blob/main/solana/web3.js-2.0/helpers/index.ts
+export const signSendAndConfirmTransactionFactory = (
+  sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
-  const createSignAndSendTransaction = async (
-    transactionMessage: CompilableTransactionMessage &
-      TransactionMessageWithBlockhashLifetime,
+  const signSendAndConfirmTransaction = async (
+    transactionMessage: CompilableTransactionMessage & TransactionMessageWithBlockhashLifetime,
     commitment: Commitment = "processed",
     skipPreflight: boolean = true,
   ): Promise<Signature> => {
-    const signedTransaction =
-      await signTransactionMessageWithSigners(transactionMessage);
+    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
     await sendAndConfirmTransaction(signedTransaction, {
       commitment,
       skipPreflight,
     });
     return getSignatureFromTransaction(signedTransaction);
   };
-  return createSignAndSendTransaction;
+  return signSendAndConfirmTransaction;
+};
+
+const getBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  const getBalance = async (address: string, commitment: Commitment = "finalized"): Promise<Lamports> => {
+    const getBalanceResponse = await rpc.getBalance(address, { commitment }).send();
+    return getBalanceResponse.value;
+  };
+  return getBalance;
 };
 
 export const connect = (
@@ -128,10 +128,7 @@ export const connect = (
     if (!clusterWebSocketURL) {
       throw new Error(`Either provide a valid cluster name or two valid URLs.`);
     }
-    if (
-      checkIsValidURL(clusterNameOrURL) &&
-      checkIsValidURL(clusterWebSocketURL)
-    ) {
+    if (checkIsValidURL(clusterNameOrURL) && checkIsValidURL(clusterWebSocketURL)) {
       httpURL = clusterNameOrURL;
       webSocketURL = clusterWebSocketURL;
     } else {
@@ -155,11 +152,11 @@ export const connect = (
     rpc,
     rpcSubscriptions,
     sendAndConfirmTransaction,
-    // See comment above createSignAndSendTransactionFactory
-    // createSignAndSendTransaction: createSignAndSendTransactionFactory(
-    //   sendAndConfirmTransaction,
-    // ),
+    signSendAndConfirmTransaction: signSendAndConfirmTransactionFactory(sendAndConfirmTransaction),
+    getBalance: getBalanceFactory(rpc),
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
+    // TODO: we may wish to export airdropIfRequired instead
+    // so we don't bother the faucet unless we really need to
     airdrop: airdropFactory({ rpc, rpcSubscriptions }),
   };
 };
@@ -167,9 +164,9 @@ export const connect = (
 export interface Connection {
   rpc: ReturnType<typeof createSolanaRpcFromTransport>;
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
-  sendAndConfirmTransaction: ReturnType<
-    typeof sendAndConfirmTransactionFactory
-  >;
+  sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>;
+  signSendAndConfirmTransaction: ReturnType<typeof signSendAndConfirmTransactionFactory>;
+  getBalance: ReturnType<typeof getBalanceFactory>;
   getExplorerLink: ReturnType<typeof getExplorerLinkFactory>;
   airdrop: ReturnType<typeof airdropFactory>;
 }

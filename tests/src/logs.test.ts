@@ -12,12 +12,9 @@ const LOCALHOST = "http://127.0.0.1:8899";
 describe("getLogs", () => {
   test("getLogs works", async () => {
     const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-    const [sender, recipient] = [
-      generateKeyPairSigner(),
-      generateKeyPairSigner(),
-    ];
+    const [sender, recipient] = [generateKeyPairSigner(), generateKeyPairSigner()];
     const lamportsToAirdrop = 2 * SOL;
-    await airdropIfRequired(rpc, sender.publicKey, lamportsToAirdrop, 1 * SOL);
+    await airdropIfRequired(connection, sender.publicKey, lamportsToAirdrop, 1 * SOL);
 
     const transaction = await rpc.sendTransaction(
       new Transaction().add(

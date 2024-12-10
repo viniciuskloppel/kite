@@ -18,6 +18,7 @@ import {
 } from "./keypair";
 import { SOL } from "./constants";
 import { Connection } from "./connect";
+import { log } from "./utils";
 
 const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
@@ -81,17 +82,9 @@ const requestAndConfirmAirdrop = async (
     lamports: amount,
   });
 
-  console.log("Airdrop transaction signature", airdropTransactionSignature);
+  const balance = await connection.getBalance(address, "finalized");
 
-  console.log("Getting balance for address", address);
-
-  const getBalanceResponse = await connection.rpc
-    .getBalance(address, { commitment: "finalized" })
-    .send();
-
-  console.log("Updated balance for address", address, getBalanceResponse.value);
-
-  return getBalanceResponse.value;
+  return balance;
 };
 
 export const airdropIfRequired = async (
@@ -100,14 +93,10 @@ export const airdropIfRequired = async (
   airdropAmount: Lamports,
   minimumBalance: Lamports,
 ): Promise<Lamports> => {
-  const balanceResponse = await connection.rpc
-    .getBalance(address, {
-      commitment: "finalized",
-    })
-    .send();
-  if (balanceResponse.value < minimumBalance) {
-    console.log("Will request airdrop for address", address);
+  // TODO this is returning an object with send()
+  const balance = await connection.getBalance(address, "finalized");
+  if (balance < minimumBalance) {
     return requestAndConfirmAirdrop(connection, address, airdropAmount);
   }
-  return balanceResponse.value;
+  return balance;
 };

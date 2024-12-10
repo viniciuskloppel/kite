@@ -4,7 +4,8 @@
     "test": "npm run test:esm",
     "test:ci": "npm run test:cjs && npm run test:esm",
     "pretest:cjs": "npm run clean && tsc -p tsconfig.test.json",
-    "test:cjs": "node --test dist/tests/src/**/*.test.js",
-    "test:esm": "node --test --require esbuild-register src/**"
+    "_": "TODO: remove no-warnings once Ed25519 support in node is stable",
+    "test:cjs": "node --test --no-warnings dist/tests/src/**/*.test.js",
+    "test:esm": "node --test --no-warnings --require esbuild-register src/**"
   }
 }
