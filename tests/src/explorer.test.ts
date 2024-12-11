@@ -27,30 +27,18 @@ describe("getExplorerLink", () => {
   test("getExplorerLink works for an address on localnet when no network is supplied", () => {
     const { getExplorerLink } = connect();
     const link = getExplorerLink("address", "11111111111111111111111111111111");
-    assert.equal(
-      link,
-      "https://explorer.solana.com/address/11111111111111111111111111111111?cluster=custom",
-    );
+    assert.equal(link, "https://explorer.solana.com/address/11111111111111111111111111111111?cluster=custom");
   });
 
   test("getExplorerLink works for an address on mainnet", () => {
     const { getExplorerLink } = connect("mainnet-beta");
-    const link = getExplorerLink(
-      "address",
-      "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8",
-    );
-    assert.equal(
-      link,
-      "https://explorer.solana.com/address/dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8",
-    );
+    const link = getExplorerLink("address", "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8");
+    assert.equal(link, "https://explorer.solana.com/address/dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8");
   });
 
   test("getExplorerLink works for an address on devnet", () => {
     const { getExplorerLink } = connect("devnet");
-    const link = getExplorerLink(
-      "address",
-      "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8",
-    );
+    const link = getExplorerLink("address", "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8");
     assert.equal(
       link,
       "https://explorer.solana.com/address/dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8?cluster=devnet",

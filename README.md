@@ -47,13 +47,13 @@ PRs are very much welcome! Read the [CONTRIBUTING guidelines for the Solana cour
 Usage:
 
 ```typescript
-makeCryptoKeyPairs(amount);
+makeKeyPairSigners(amount);
 ```
 
-In some situations - like making tests for your onchain programs - you might need to make lots of keypairs at once. You can use `makeCryptoKeyPairs()` combined with JS destructuring to quickly create multiple variables with distinct keypairs.
+In some situations - like making tests for your onchain programs - you might need to make lots of keypairs at once. You can use `makeKeyPairSigners()` combined with JS destructuring to quickly create multiple variables with distinct keypairs.
 
 ```typescript
-const [sender, recipient] = makeCryptoKeyPairs(2);
+const [sender, recipient] = makeKeyPairSigners(2);
 ```
 
 ### Make a token mint with metadata
@@ -203,7 +203,7 @@ Request and confirm an airdrop in one step. As soon as the `await` returns, the 
 To ask for 0.5 SOL, if the balance is below 1 SOL, use:
 
 ```typescript
-const newBalance = await airdropIfRequired(rpc, keypair.publicKey, 0.5 * SOL, 1 * SOL);
+const newBalance = await airdropIfRequired(connection, keypair.publicKey, 0.5 * SOL, 1 * SOL);
 ```
 
 ### Get a Solana Explorer link for a transaction, address, or block
@@ -303,7 +303,7 @@ You can then use `ComputeBudgetProgram.setComputeUnitLimit({ units })` as the fi
 Usage:
 
 ```typescript
-getCryptoKeyPairFromFile(filename);
+getKeyPairSignerFromFile(filename);
 ```
 
 Gets a keypair from a file - the format must be the same as [Solana CLI](https://docs.solana.com/wallet-guide/file-system-wallet) uses, ie, a JSON array of numbers:
@@ -311,19 +311,19 @@ Gets a keypair from a file - the format must be the same as [Solana CLI](https:/
 To load the default keypair `~/.config/solana/id.json`, just run:
 
 ```typescript
-const keyPair = await getCryptoKeyPairFromFile(file);
+const keyPair = await getKeyPairSignerFromFile(file);
 ```
 
 or to load a specific file:
 
 ```typescript
-const keyPair = await getCryptoKeyPairFromFile("somefile.json");
+const keyPair = await getKeyPairSignerFromFile("somefile.json");
 ```
 
 or using home dir expansion:
 
 ```typescript
-const keyPair = await getCryptoKeyPairFromFile("~/code/solana/demos/steve.json");
+const keyPair = await getKeyPairSignerFromFile("~/code/solana/demos/steve.json");
 ```
 
 ### Get a keypair from an environment variable
@@ -331,13 +331,13 @@ const keyPair = await getCryptoKeyPairFromFile("~/code/solana/demos/steve.json")
 Usage:
 
 ```typescript
-getCryptoKeyPairFromEnvironment(environmentVariable);
+getKeyPairSignerFromEnvironment(environmentVariable);
 ```
 
 Gets a keypair from a secret key stored in an environment variable. This is typically used to load secret keys from [env files](https://stackoverflow.com/questions/68267862/what-is-an-env-or-dotenv-file-exactly).
 
 ```typescript
-const keypair = await getCryptoKeyPairFromEnvironment("SECRET_KEY");
+const keypair = await getKeyPairSignerFromEnvironment("SECRET_KEY");
 ```
 
 ### Add a new keypair to an env file
@@ -367,15 +367,15 @@ This will also reload the env file.
 Usage:
 
 ```typescript
-initializeCryptoKeyPair(rpc, options);
+createKeyPairSigner(rpc, options);
 ```
 
 Loads in a keypair from the filesystem, or environment and then airdrops to it if needed.
 
-How the keypair is initialized is dependent on the `initializeCryptoKeyPairOptions`:
+How the keypair is initialized is dependent on the `createKeyPairSignerOptions`:
 
 ```typescript
-interface initializeCryptoKeyPairOptions {
+interface createKeyPairSignerOptions {
   envFileName?: string;
   envVariableName?: string;
   airdropAmount?: number | null;
@@ -393,13 +393,13 @@ If `airdropAmount` amount is set to something other than `null` or `0`, this fun
 To initialize a keypair from the `.env` file, and airdrop it 1 sol if it's beneath 0.5 sol:
 
 ```typescript
-const keypair = await initializeCryptoKeyPair(rpc);
+const keypair = await createKeyPairSigner(rpc);
 ```
 
 To initialize a keypair from the `.env` file under a different variable name:
 
 ```typescript
-const keypair = await initializeCryptoKeyPair(rpc, {
+const keypair = await createKeyPairSigner(rpc, {
   envVariableName: "TEST_KEYPAIR",
 });
 ```
@@ -407,7 +407,7 @@ const keypair = await initializeCryptoKeyPair(rpc, {
 To initialize a keypair from the filesystem, and airdrop it 3 sol:
 
 ```typescript
-const keypair = await initializeCryptoKeyPair(rpc, {
+const keypair = await createKeyPairSigner(rpc, {
   keypairPath: "~/.config/solana/id.json",
   airdropAmount: SOL * 3,
 });

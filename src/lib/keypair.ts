@@ -1,23 +1,19 @@
 import base58 from "bs58";
-import { generateKeyPair, signBytes, verifySignature } from "@solana/web3.js";
+import {
+  createKeyPairSignerFromBytes,
+  generateKeyPair,
+  generateKeyPairSigner,
+  KeyPairSigner,
+  signBytes,
+  verifySignature,
+} from "@solana/web3.js";
 import { assertKeyGenerationIsAvailable } from "@solana/assertions";
+import { exportRawPrivateKeyBytes, exportRawPublicKeyBytes } from "./crypto-utils";
 
 // Anza keys concatenate the 32 bytes raw private key and the 32 bytes raw public key.
 // This format was commonly used in NaCl / libsodium when they were popular.
 export const KEYPAIR_LENGTH = 64;
 export const KEYPAIR_PUBLIC_KEY_OFFSET = 32;
-
-// 0x302e020100300506032b657004220420
-const PKCS_8_PREFIX = new Uint8Array([
-  48, 46, 2, 1, 0, 48, 5, 6, 3, 43, 101, 112, 4, 34, 4, 32,
-]);
-
-export const PKCS_8_PREFIX_LNEGTH = PKCS_8_PREFIX.length;
-
-// Allows us to use the WebCrypto API in Node
-// and fixes "Value of "this" must be of type SubtleCrypto" errors
-const exportKey = crypto.subtle.exportKey.bind(crypto.subtle);
-const importKey = crypto.subtle.importKey.bind(crypto.subtle);
 
 // Default value from Solana CLI
 const DEFAULT_FILEPATH = "~/.config/solana/id.json";
@@ -33,73 +29,20 @@ export const generateExtractableKeyPair = async (): Promise<CryptoKeyPair> => {
 };
 
 // Take a webcrypto keyPair and convert it to the same format Anza CLI uses
-export const cryptoKeypairToSecretKeyJSON = async (
-  keyPair: CryptoKeyPair,
-): Promise<string> => {
-  // Annoyingly we can't directly output the value of a private key
-  // See https://wicg.github.io/webcrypto-secure-curves/#ed25519-operations
-  // So lets strip out the PKCS8 prefix and return the raw bytes
-  if (keyPair.privateKey.extractable === false) {
-    throw new Error("Private key is not extractable");
-  }
-  const pkcs8Bytes = await exportKey("pkcs8", keyPair.privateKey);
-  const rawPrivateKeyBytes = pkcs8Bytes.slice(PKCS_8_PREFIX_LNEGTH);
+// 32 bytes raw private key followed by 32 bytes raw public key
+// (a bit odd, since the public key is usually derived from the private key, but
+// this is how NaCl / libsodium did it, and it saves a little time not having
+// to derive the public key from the private key)
+export const createJSONFromKeyPairSigner = async (keyPairSigner: KeyPairSigner): Promise<string> => {
+  const rawPrivateKeyBytes = await exportRawPrivateKeyBytes(keyPairSigner.keyPair.privateKey);
+  const rawPublicKeyBytes = await exportRawPublicKeyBytes(keyPairSigner.keyPair.publicKey);
 
-  // We can export the public key directly
-  if (keyPair.publicKey.extractable === false) {
-    throw new Error("Private key is not extractable");
-  }
-  const rawCryptoKeyBytes = await exportKey("raw", keyPair.publicKey);
-
-  // Concatenate the raw private and public keys using expansion
+  // Concatenate the raw private and public keys
   const combinedArrayBuffer = new Uint8Array(KEYPAIR_LENGTH);
   combinedArrayBuffer.set(new Uint8Array(rawPrivateKeyBytes), 0);
-  combinedArrayBuffer.set(
-    new Uint8Array(rawCryptoKeyBytes),
-    KEYPAIR_PUBLIC_KEY_OFFSET,
-  );
+  combinedArrayBuffer.set(new Uint8Array(rawPublicKeyBytes), KEYPAIR_PUBLIC_KEY_OFFSET);
 
   return JSON.stringify(Array.from(combinedArrayBuffer));
-};
-
-export const bytesToCryptoKeyPair = async (
-  bytes: Uint8Array,
-  isExtractable = false,
-): Promise<CryptoKeyPair> => {
-  // Anza keys concatenate the 32 bytes raw private key and the 32 bytes raw public key.
-  // This format was commonly used in NaCl / libsodium when they were popular.
-  if (bytes.length !== 64) {
-    throw new Error(
-      "Invalid byte length for Anza keyPair - should be 64 bytes",
-    );
-  }
-  const rawPrivateKey = bytes.subarray(0, 32);
-  const rawPublickey = bytes.subarray(32, KEYPAIR_LENGTH);
-
-  const pkcs8PrivateKey = new Uint8Array([...PKCS_8_PREFIX, ...rawPrivateKey]);
-
-  const privateKey = await importKey(
-    "pkcs8",
-    pkcs8PrivateKey,
-    { name: "Ed25519" },
-    isExtractable,
-    ["sign"],
-  );
-
-  const publicKey = await importKey(
-    "raw",
-    rawPublickey,
-    { name: "Ed25519" },
-    isExtractable,
-    ["verify"],
-  );
-
-  const keyPair: CryptoKeyPair = {
-    privateKey,
-    publicKey,
-  };
-
-  return keyPair;
 };
 
 // From solana-web3.js/examples/transfer-lamports/src/example.ts
@@ -107,9 +50,7 @@ export const bytesToCryptoKeyPair = async (
 //  generated. Here, they are inlined into the source code, but you can also imagine them being
 //  loaded from disk or, better yet, read from an environment variable."
 // Oddly, Solana Foundation propose this be added to web3.js but were rejected.
-export const getCryptoKeyPairFromFile = async (
-  filepath?: string,
-): Promise<CryptoKeyPair> => {
+export const getKeyPairSignerFromFile = async (filepath?: string): Promise<KeyPairSigner> => {
   // Node-specific imports
   const path = await import("node:path");
   const { readFile } = await import("node:fs/promises");
@@ -129,14 +70,14 @@ export const getCryptoKeyPairFromFile = async (
   try {
     const fileContentsBuffer = await readFile(filepath);
     fileContents = fileContentsBuffer.toString();
-  } catch (error) {
+  } catch (thrownObject) {
     throw new Error(`Could not read keyPair from file at '${filepath}'`);
   }
 
   try {
     // Parse file and return the keyPair
     const parsedFileContents = Uint8Array.from(JSON.parse(fileContents));
-    return bytesToCryptoKeyPair(parsedFileContents);
+    return createKeyPairSignerFromBytes(parsedFileContents);
   } catch (thrownObject) {
     const error = thrownObject as Error;
     if (!error.message.includes("Unexpected token")) {
@@ -154,24 +95,22 @@ export const getCryptoKeyPairFromFile = async (
 //  generated. Here, they are inlined into the source code, but you can also imagine them being
 //  loaded from disk or, better yet, read from an environment variable."
 // Oddly, Solana Foundation propose this be added to web3.js but were rejected.
-export const getCryptoKeyPairFromEnvironment = (variableName: string) => {
+export const getKeyPairSignerFromEnvironment = (variableName: string) => {
   const privateKeyString = process.env[variableName];
   if (!privateKeyString) {
     throw new Error(`Please set '${variableName}' in environment.`);
   }
 
   try {
-    let decodedSecretKey = Uint8Array.from(JSON.parse(privateKeyString));
-    return bytesToCryptoKeyPair(decodedSecretKey);
+    let decodedPrivateKey = Uint8Array.from(JSON.parse(privateKeyString));
+    return createKeyPairSignerFromBytes(decodedPrivateKey);
   } catch (error) {
-    throw new Error(
-      `Invalid private key in environment variable '${variableName}'!`,
-    );
+    throw new Error(`Invalid private key in environment variable '${variableName}'!`);
   }
 };
 
-export const addCryptoKeyPairToEnvFile = async (
-  keyPair: CryptoKeyPair,
+export const addKeyPairSignerToEnvFile = async (
+  keyPairSigner: KeyPairSigner,
   variableName: string,
   envFileName?: string,
 ) => {
@@ -184,20 +123,12 @@ export const addCryptoKeyPairToEnvFile = async (
   if (existingSecretKey) {
     throw new Error(`'${variableName}' already exists in env file.`);
   }
-  const privateKeyString = await cryptoKeypairToSecretKeyJSON(keyPair);
-  await appendFile(
-    envFileName,
-    // TODO: Replace with actual Solana base58 version of public key
-    // Check web3js source
-    `\n# Solana Address: $FIXME\n${variableName}=${privateKeyString}`,
-  );
+  const privateKeyString = await createJSONFromKeyPairSigner(keyPairSigner);
+  await appendFile(envFileName, `\n# Solana Address: ${keyPairSigner.address}\n${variableName}=${privateKeyString}`);
 };
 
 // Shout out to Dean from WBA for this technique
-export const makeCryptoKeyPairs = (
-  amount: number,
-): Promise<Array<CryptoKeyPair>> => {
-  return Promise.all(
-    Array.from({ length: amount }, () => generateKeyPairSigner()),
-  );
+export const makeKeyPairSigners = (amount: number): Promise<Array<KeyPairSigner>> => {
+  // TODO: this should use initializeKeypairSigner()
+  return Promise.all(Array.from({ length: amount }, () => generateKeyPairSigner()));
 };

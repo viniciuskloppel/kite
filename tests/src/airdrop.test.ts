@@ -21,9 +21,10 @@ import {
 } from "@solana/web3.js";
 import {
   airdropIfRequired,
-  initializeCryptoKeyPair,
+  DEFAULT_AIRDROP_AMOUNT,
+  createKeyPairSigner,
   transferLamports,
-  type InitializeCryptoKeyPairOptions,
+  type createKeyPairSignerOptions,
 } from "../../src";
 import assert from "node:assert";
 import dotenv from "dotenv";
@@ -35,80 +36,90 @@ import { connect } from "../../src/lib/connect";
 import { getTransferSolInstruction } from "@solana-program/system";
 import { log, stringify } from "../../src/lib/utils";
 
-const LOCALHOST = "http://127.0.0.1:8899";
+describe("getBalance", () => {
+  test("getBalance returns 0 for an a new account", async () => {
+    const keypairSigner = await generateKeyPairSigner();
+    const connection = connect();
+    const balance = await connection.getBalance(keypairSigner.address, "finalized");
+    assert.equal(balance, 0n);
+  });
 
-// describe("initializeCryptoKeyPair", () => {
-//   const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-//   const keyPairVariableName = "INITIALIZE_KEYPAIR_TEST";
+  test("getBalance returns 1 SOL after 1 SOL is airdropped", async () => {
+    const keypairSigner = await generateKeyPairSigner();
+    const connection = connect();
+    await connection.airdrop({
+      commitment: "finalized",
+      recipientAddress: keypairSigner.address,
+      lamports: lamports(1n * SOL),
+    });
+    const balance = await connection.getBalance(keypairSigner.address, "finalized");
+    assert.equal(balance, lamports(1n * SOL));
+  });
+});
 
-//   test("generates a new keyPair and airdrops needed amount", async () => {
-//     // We need to use a specific file name to avoid conflicts with other tests
-//     const envFileName = "../.env-unittest-initialize-crypto-keyPair";
+describe("createKeyPairSigner", () => {
+  const connection = connect();
+  const keyPairVariableName = "INITIALIZE_KEYPAIR_TEST";
 
-//     const initializeCryptoKeyPairOptions: InitializeCryptoKeyPairOptions = {
-//       envFileName,
-//       envVariableName: keyPairVariableName,
-//     };
+  test("createKeyPairSigner generates a new keyPair and airdrops needed amount", async () => {
+    // We need to use a specific file name to avoid conflicts with other tests
 
-//     const userBefore = await initializeCryptoKeyPair(
-//       rpc,
-//       initializeCryptoKeyPairOptions,
-//     );
+    const envFileName = "../.env-unittest-initialize-crypto-keyPair";
 
-//     const addressBefore = await getAddressFromPublicKey(userBefore.publicKey);
+    const createKeyPairSignerOptions: createKeyPairSignerOptions = {
+      envFileName,
+      envVariableName: keyPairVariableName,
+    };
 
-//     // Check balance
-//     const balanceBeforeResponse = await getBalance(addressBefore).send();
+    // TODO: this had a bug where connection.rpc was 'any' type
+    // we should investigate and fix that
+    const userBefore = await createKeyPairSigner(connection, createKeyPairSignerOptions);
 
-//     assert.ok(balanceBeforeResponse.value > 0);
+    // Check balance
+    const balanceBefore = await connection.getBalance(userBefore.address);
 
-//     // Check that the environment variable was created
-//     dotenv.config({ path: envFileName });
-//     const privateKeyString = process.env[keyPairVariableName];
-//     if (!privateKeyString) {
-//       throw new Error(`${privateKeyString} not found in environment`);
-//     }
+    assert.equal(balanceBefore, DEFAULT_AIRDROP_AMOUNT);
 
-//     // Now reload the environment and check it matches our test keyPair
-//     const userAfter = await initializeCryptoKeyPair(
-//       rpc,
-//       initializeCryptoKeyPairOptions,
-//     );
+    // Check that the environment variable was created
+    dotenv.config({ path: envFileName });
+    const privateKeyString = process.env[keyPairVariableName];
+    if (!privateKeyString) {
+      throw new Error(`${privateKeyString} not found in environment`);
+    }
 
-//     const addressAfter = await getAddressFromPublicKey(userAfter.publicKey);
+    // Now reload the environment and check it matches our test keyPair
+    const userAfter = await createKeyPairSigner(connection, createKeyPairSignerOptions);
 
-//     // Check the keyPair is the same
-//     assert(addressBefore === addressAfter);
+    // Check the keyPair is the same
+    assert(userBefore.address === userAfter.address);
 
-//     // Check balance has not changed
-//     const balanceAfterResponse = await getBalance(addressAfter).send();
+    // Check balance has not changed
+    const balanceAfter = await connection.getBalance(userAfter.address);
 
-//     assert.equal(balanceBeforeResponse.value, balanceAfterResponse.value);
+    assert.equal(balanceBefore, balanceAfter);
 
-//     // Check there is a secret key
-//     assert.ok(userAfter.privateKey);
+    // Check there is a private key
+    assert.ok(userAfter.keyPair.privateKey);
 
-//     await deleteFile(envFileName);
-//   });
-// });
+    await deleteFile(envFileName);
+  });
+});
 
 describe("airdropIfRequired", () => {
   test("Checking the balance after airdropIfRequired", async () => {
     const connection = connect();
     const user = await generateKeyPairSigner();
 
-    const originalBalanceResponse = await connection.rpc.getBalance(user.address).send();
+    const originalBalance = await connection.getBalance(user.address, "finalized");
 
-    assert.equal(originalBalanceResponse.value, 0);
+    assert.equal(originalBalance, 0);
     const lamportsToAirdrop = lamports(1n * SOL);
 
     const minimumBalance = lamports(1n * SOL);
 
     await airdropIfRequired(connection, user.address, lamportsToAirdrop, minimumBalance);
 
-    const getBalanceResponse = await connection.rpc.getBalance(user.address, { commitment: "finalized" }).send();
-
-    const newBalance = getBalanceResponse.value;
+    const newBalance = await connection.getBalance(user.address, "finalized");
 
     assert.equal(newBalance, lamportsToAirdrop);
 
@@ -120,7 +131,7 @@ describe("airdropIfRequired", () => {
     assert.ok(signature);
   });
 
-  test("doesn't request unnecessary airdrops", async () => {
+  test("airdropIfRequired doesn't request unnecessary airdrops", async () => {
     const user = await generateKeyPairSigner();
     const connection = connect();
     const balance = await connection.getBalance(user.address);

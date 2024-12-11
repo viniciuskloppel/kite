@@ -1,6 +1,6 @@
 import { Lamports } from "@solana/web3.js";
 
-export interface InitializeCryptoKeyPairOptions {
+export interface createKeyPairSignerOptions {
   envFileName?: string;
   envVariableName?: string;
   airdropAmount?: Lamports | null;

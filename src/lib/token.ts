@@ -1,5 +1,5 @@
 // import { Connection, CryptoKeyPair, CryptoKey, sendAndConfirmTransaction, Signer, SystemProgram, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-// import { makeCryptoKeyPairs } from "./keyPair";
+// import { makeKeyPairSigners } from "./keyPair";
 // import { createAssociatedTokenAccountIdempotentInstruction, createInitializeInstruction, createInitializeMetadataPointerInstruction, createInitializeMint2Instruction, createInitializeMintInstruction, createMintToInstruction, ExtensionType, getAssociatedTokenAddressSync, getMinimumBalanceForRentExemptMint, getMintLen, LENGTH_SIZE, MINT_SIZE, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, TYPE_SIZE } from "@solana/spl-token";
 // import { confirmTransaction } from "./transaction";
 // import { createUpdateFieldInstruction, pack, TokenMetadata } from "@solana/spl-token-metadata";
@@ -24,8 +24,8 @@
 //     ...usersAndTokenBalances.map((mintBalances) => mintBalances.length),
 //   );
 
-//   const users = makeCryptoKeyPairs(userCount);
-//   const mints = makeCryptoKeyPairs(mintCount);
+//   const users = makeKeyPairSigners(userCount);
+//   const mints = makeKeyPairSigners(mintCount);
 
 //   // This will be returned
 //   // [user index][mint index]address of token account

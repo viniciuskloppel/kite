@@ -1,7 +1,9 @@
 import {
   Address,
+  createSignerFromKeyPair,
   generateKeyPair,
   getAddressFromPublicKey,
+  KeyPairSigner,
   lamports,
   Lamports,
   Rpc,
@@ -9,28 +11,27 @@ import {
   // See web3.js code
   SolanaRpcApi,
 } from "@solana/web3.js";
-import type { InitializeCryptoKeyPairOptions } from "../types";
+import type { createKeyPairSignerOptions } from "../types";
 import {
-  addCryptoKeyPairToEnvFile,
+  addKeyPairSignerToEnvFile,
   generateExtractableKeyPair,
-  getCryptoKeyPairFromEnvironment,
-  getCryptoKeyPairFromFile,
+  getKeyPairSignerFromEnvironment,
+  getKeyPairSignerFromFile,
 } from "./keypair";
 import { SOL } from "./constants";
 import { Connection } from "./connect";
-import { log } from "./utils";
+import { log, stringify } from "./utils";
 
-const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
-const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
-const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
+export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
+export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
+export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
-// TODO: honestly initializeCryptoKeyPair is a bit vague
-// we can probably give this a better name,
-// just not sure what yet
-export const initializeCryptoKeyPair = async (
+// Formerly called initializeKeypair()
+// TODO: Should really be part of connection along with other functions
+export const createKeyPairSigner = async (
   connection: Connection,
-  options?: InitializeCryptoKeyPairOptions,
-): Promise<CryptoKeyPair> => {
+  options?: createKeyPairSignerOptions,
+): Promise<KeyPairSigner> => {
   const {
     keyPairPath,
     envFileName,
@@ -39,26 +40,25 @@ export const initializeCryptoKeyPair = async (
     minimumBalance = DEFAULT_MINIMUM_BALANCE,
   } = options || {};
 
-  let keyPair: CryptoKeyPair;
+  let keyPairSigner: KeyPairSigner;
 
   if (keyPairPath) {
-    keyPair = await getCryptoKeyPairFromFile(keyPairPath);
+    keyPairSigner = await getKeyPairSignerFromFile(keyPairPath);
   } else if (process.env[envVariableName]) {
-    keyPair = await getCryptoKeyPairFromEnvironment(envVariableName);
+    keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
   } else {
     // TODO: we should make a temporary keyPair and write it to the environment
     // then reload the one from the environment as non-extractable
-    keyPair = await generateExtractableKeyPair();
-    await addCryptoKeyPairToEnvFile(keyPair, envVariableName, envFileName);
+    const keyPair = await generateExtractableKeyPair();
+    keyPairSigner = await createSignerFromKeyPair(keyPair);
+    await addKeyPairSignerToEnvFile(keyPairSigner, envVariableName, envFileName);
   }
-
-  const address = await getAddressFromPublicKey(keyPair.publicKey);
 
   if (airdropAmount) {
-    await airdropIfRequired(connection, address, airdropAmount, minimumBalance);
+    await airdropIfRequired(connection, keyPairSigner.address, airdropAmount, minimumBalance);
   }
 
-  return keyPair;
+  return keyPairSigner;
 };
 
 // Not exported as we don't want to encourage people to
@@ -72,7 +72,6 @@ const requestAndConfirmAirdrop = async (
   // Wait for airdrop confirmation
   // "finalized" is slow but we must be absolutely sure
   // the airdrop has gone through
-  console.log("Requesting airdrop for address", address);
 
   // Note rpc.requestAirdrop is broken, the finalized paramater doesn't do anything.
   // https://github.com/solana-labs/solana-web3.js/issues/3683
@@ -93,7 +92,6 @@ export const airdropIfRequired = async (
   airdropAmount: Lamports,
   minimumBalance: Lamports,
 ): Promise<Lamports> => {
-  // TODO this is returning an object with send()
   const balance = await connection.getBalance(address, "finalized");
   if (balance < minimumBalance) {
     return requestAndConfirmAirdrop(connection, address, airdropAmount);
