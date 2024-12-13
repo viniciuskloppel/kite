@@ -7,9 +7,12 @@ import {
   createSolanaRpcSubscriptions,
   getSignatureFromTransaction,
   Lamports,
+  RpcFromTransport,
+  RpcTransport,
   sendAndConfirmTransactionFactory,
   Signature,
   signTransactionMessageWithSigners,
+  SolanaRpcApiFromTransport,
   TransactionMessageWithBlockhashLifetime,
 } from "@solana/web3.js";
 import { checkIsValidURL, encodeURL } from "./url";
@@ -162,7 +165,11 @@ export const connect = (
 };
 
 export interface Connection {
-  rpc: ReturnType<typeof createSolanaRpcFromTransport>;
+  // ReturnType<typeof createSolanaRpcFromTransport> doesn't work here - it will be 'any'
+  // So I've copied the return type of createSolanaRpcFromTransport manually.
+  // See https://stackoverflow.com/questions/79276895/why-does-my-interface-using-returntype-have-any-as-a-type
+  // TODO: work out why ReturnType<typeof createSolanaRpcFromTransport> doesn't work here and fix it
+  rpc: RpcFromTransport<SolanaRpcApiFromTransport<RpcTransport>, RpcTransport>;
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>;
   signSendAndConfirmTransaction: ReturnType<typeof signSendAndConfirmTransactionFactory>;

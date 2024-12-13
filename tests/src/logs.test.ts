@@ -1,31 +1,33 @@
 import { describe, test } from "node:test";
-import { Connection } from "@solana/web3.js";
-import { airdropIfRequired, getCustomErrorMessage, getLogs } from "../../src";
-import { SOL } from "@solana/web3.js";
+import { airdropIfRequired, connect, getCustomErrorMessage, getLogs, transferLamports } from "../../src";
+import { generateKeyPairSigner, lamports } from "@solana/web3.js";
 import { CryptoKeyPair } from "@solana/web3.js";
 import { Transaction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
 import assert from "node:assert";
+import { SOL } from "../../src/lib/constants";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 
 describe("getLogs", () => {
   test("getLogs works", async () => {
-    const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = connect();
-    const [sender, recipient] = [generateKeyPairSigner(), generateKeyPairSigner()];
-    const lamportsToAirdrop = 2 * SOL;
-    await airdropIfRequired(connection, sender.publicKey, lamportsToAirdrop, 1 * SOL);
+    const connection = connect();
+    const [sender, recipient] = await Promise.all([generateKeyPairSigner(), generateKeyPairSigner()]);
+    const lamportsToAirdrop = lamports(2n * SOL);
+    await airdropIfRequired(connection, sender.address, lamportsToAirdrop, lamports(1n * SOL));
 
-    const transaction = await rpc.sendTransaction(
-      new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: sender.publicKey,
-          toPubkey: recipient.publicKey,
-          lamports: 1_000_000,
-        }),
-      ),
-      [sender],
-    );
+    const transaction = await transferLamports(connection, sender, recipient.address, lamports(1n * SOL));
+
+    // const transaction = await rpc.sendTransaction(
+    //   new Transaction().add(
+    //     SystemProgram.transfer({
+    //       fromPubkey: sender.publicKey,
+    //       toPubkey: recipient.publicKey,
+    //       lamports: 1_000_000,
+    //     }),
+    //   ),
+    //   [sender],
+    // );
 
     const logs = await getLogs(rpc, transaction);
     assert.deepEqual(logs, [

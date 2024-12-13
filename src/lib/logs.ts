@@ -1,15 +1,8 @@
-import {
-  Connection,
-  RpcResponseAndContext,
-  SignatureResult,
-  SimulatedTransactionResponse,
-} from "@solana/web3.js";
+import {} from "@solana/web3.js";
 import { confirmTransaction } from "./transaction";
+import { Connection } from "./connect";
 
-export const getLogs = async (
-  rpc: Rpc<any>,
-  tx: string,
-): Promise<Array<string>> => {
+export const getLogs = async (connection: Connection, tx: string): Promise<Array<string>> => {
   await confirmTransaction(rpc, tx);
   const txDetails = await rpc.getTransaction(tx, {
     maxSupportedTransactionVersion: 0,
@@ -19,9 +12,7 @@ export const getLogs = async (
 };
 
 export const getErrorFromRPCResponse = (
-  rpcResponse: RpcResponseAndContext<
-    SignatureResult | SimulatedTransactionResponse
-  >,
+  rpcResponse: RpcResponseAndContext<SignatureResult | SimulatedTransactionResponse>,
 ) => {
   // Note: `confirmTransaction` does not throw an error if the confirmation does not succeed,
   // but rather a `TransactionError` object. so we handle that here

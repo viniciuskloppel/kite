@@ -1,21 +1,13 @@
-import {
-  AddressLookupTableAccount,
-  Commitment,
-  ComputeBudgetProgram,
-  Connection,
-  CryptoKey,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction,
-} from "@solana/web3.js";
+import { Commitment, TransactionMessage } from "@solana/web3.js";
 import { getErrorFromRPCResponse } from "./logs";
+import { Connection } from "./connect";
 
 export const confirmTransaction = async (
-  rpc: Rpc<any>,
+  connection: Connection,
   signature: string,
   commitment: Commitment = "finalized",
 ): Promise<string> => {
-  const block = await rpc.getLatestBlockhash();
+  const block = await connection.rpc.getLatestBlockhash();
   const rpcResponse = await rpc.confirmTransaction(
     {
       signature,

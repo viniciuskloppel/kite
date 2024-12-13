@@ -22,14 +22,7 @@ import {
   signTransactionMessageWithSigners,
 } from "@solana/web3.js";
 import { getTransferSolInstruction } from "@solana-program/system";
-
-interface Connection {
-  rpc: ReturnType<typeof createSolanaRpc>;
-  rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
-  sendAndConfirmTransaction: ReturnType<
-    typeof sendAndConfirmTransactionFactory
-  >;
-}
+import { Connection } from "./connect";
 
 export const transferLamports = async (
   connection: Connection,
@@ -47,9 +40,7 @@ export const transferLamports = async (
   // Tip: It is desirable for your program to fetch this block hash as late as possible before signing
   // and sending the transaction so as to ensure that it's as 'fresh' as possible.
 
-  const { value: latestBlockhash } = await connection.rpc
-    .getLatestBlockhash()
-    .send();
+  const { value: latestBlockhash } = await connection.rpc.getLatestBlockhash().send();
 
   // Step 1: create the transfer transaction
 
@@ -59,10 +50,7 @@ export const transferLamports = async (
       return setTransactionMessageFeePayer(source.address, transaction);
     },
     (transaction) => {
-      return setTransactionMessageLifetimeUsingBlockhash(
-        latestBlockhash,
-        transaction,
-      );
+      return setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, transaction);
     },
     (transaction) => {
       const instruction = getTransferSolInstruction({
@@ -80,8 +68,7 @@ export const transferLamports = async (
   // that only the owner of that account could produce. We have already loaded the account owner's
   // key pair above, so we can sign the transaction now.
 
-  const signedTransaction =
-    await signTransactionMessageWithSigners(transactionMessage);
+  const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
 
   // Step 3: send and confirm the transaction
   // Now that the transaction is signed, we send it to an RPC. The RPC will relay it to the Solana
