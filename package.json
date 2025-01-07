@@ -52,10 +52,12 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@solana-program/memo": "^0.6.1",
     "@solana-program/system": "^0.6.2",
     "@solana-program/token": "^0.4.1",
     "@solana/assertions": "^2.0.1-canary-20241114225255",
     "@solana/errors": "^2.0.1-canary-20241114225255",
+    "@solana/transaction-confirmation": "^2.0.0",
     "@solana/web3.js": "^2.0.0",
     "bs58": "^6.0.0",
     "dotenv": "^16.4.5"

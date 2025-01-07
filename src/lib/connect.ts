@@ -1,4 +1,5 @@
 import {
+  Address,
   airdropFactory,
   Commitment,
   CompilableTransactionMessage,
@@ -15,6 +16,8 @@ import {
   SolanaRpcApiFromTransport,
   TransactionMessageWithBlockhashLifetime,
 } from "@solana/web3.js";
+import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
+
 import { checkIsValidURL, encodeURL } from "./url";
 import { log, stringify } from "./utils";
 
@@ -117,6 +120,50 @@ const getBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>)
   return getBalance;
 };
 
+const airdropIfRequiredFactory = async (
+  rpc: ReturnType<typeof createSolanaRpcFromTransport>,
+  rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>,
+) => {
+  const getBalance = getBalanceFactory(rpc);
+  // Not exported as we don't want to encourage people to
+  // request airdrops when they don't need them, ie - don't bother
+  // the faucet unless you really need to!
+  // Note rpc.requestAirdrop is broken, the finalized paramater doesn't do anything
+  // despite the docs repeatedly referring to rpc.requestAirdrop
+  // https://github.com/solana-labs/solana-web3.js/issues/3683
+  const airdrop = airdropFactory({ rpc, rpcSubscriptions });
+
+  const airdropIfRequired = async (
+    address: Address,
+    airdropAmount: Lamports,
+    minimumBalance: Lamports,
+  ): Promise<Lamports> => {
+    if (airdropAmount < 0n) {
+      throw new Error(`Airdrop amount must be a positive number, not ${airdropAmount}`);
+    }
+    if (minimumBalance === 0n) {
+      const airdropTransactionSignature = await airdrop({
+        commitment: "finalized",
+        recipientAddress: address,
+        lamports: airdropAmount,
+      });
+      return getBalance(address, "finalized");
+    }
+    const balance = await getBalance(address, "finalized");
+    if (balance > minimumBalance) {
+      return balance;
+    }
+    const airdropTransactionSignature = await airdrop({
+      commitment: "finalized",
+      recipientAddress: address,
+      lamports: airdropAmount,
+    });
+
+    return getBalance(address, "finalized");
+  };
+  return airdropIfRequired;
+};
+
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
@@ -151,6 +198,14 @@ export const connect = (
     rpc,
     rpcSubscriptions,
   });
+
+  // Let's avoid data types like 'Promise' into the function name
+  // we're not using Hungarian notation, this isn't common TS behavior, and it's not necessary to do so
+  const getRecentSignatureConfirmation = createRecentSignatureConfirmationPromiseFactory({
+    rpc,
+    rpcSubscriptions,
+  });
+
   return {
     rpc,
     rpcSubscriptions,
@@ -158,9 +213,8 @@ export const connect = (
     signSendAndConfirmTransaction: signSendAndConfirmTransactionFactory(sendAndConfirmTransaction),
     getBalance: getBalanceFactory(rpc),
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
-    // TODO: we may wish to export airdropIfRequired instead
-    // so we don't bother the faucet unless we really need to
-    airdrop: airdropFactory({ rpc, rpcSubscriptions }),
+    airdropIfRequired: airdropIfRequiredFactory(rpc, rpcSubscriptions),
+    getRecentSignatureConfirmation,
   };
 };
 
@@ -175,5 +229,6 @@ export interface Connection {
   signSendAndConfirmTransaction: ReturnType<typeof signSendAndConfirmTransactionFactory>;
   getBalance: ReturnType<typeof getBalanceFactory>;
   getExplorerLink: ReturnType<typeof getExplorerLinkFactory>;
-  airdrop: ReturnType<typeof airdropFactory>;
+  getRecentSignatureConfirmation: ReturnType<typeof createRecentSignatureConfirmationPromiseFactory>;
+  airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>;
 }

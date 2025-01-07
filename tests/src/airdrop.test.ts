@@ -37,7 +37,7 @@ import { getTransferSolInstruction } from "@solana-program/system";
 import { log, stringify } from "../../src/lib/utils";
 
 describe("getBalance", () => {
-  test("getBalance returns 0 for an a new account", async () => {
+  test("getBalance returns 0 for a new account", async () => {
     const keypairSigner = await generateKeyPairSigner();
     const connection = connect();
     const balance = await connection.getBalance(keypairSigner.address, "finalized");
@@ -139,7 +139,7 @@ describe("airdropIfRequired", () => {
     const lamportsToAirdrop = lamports(1n * SOL);
 
     // First airdrop asks for 500_000 lamports
-    await airdropIfRequired(connection.rpc, user.address, lamportsToAirdrop, lamports(500_000n));
+    await airdropIfRequired(connection, user.address, lamportsToAirdrop, lamports(500_000n));
 
     // Try a second airdrop if the balance is less than 1 SOL
     // Check second airdrop didn't happen (since we already had 1 SOL from first airdrop)
