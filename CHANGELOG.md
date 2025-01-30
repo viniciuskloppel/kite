@@ -3,6 +3,7 @@
 ## 3.0
 
 - Use @solana/web3.js version 2
+- Remove CommonJS support
 
 ### General web3.js version 2 changes
 

@@ -6,7 +6,7 @@
 
 Kite, formerly known as `@solana-developers/helpers`, leverages the speed and elegance of [web3.js version 2](https://github.com/anza-xyz/solana-web3.js) but provides a simpler environment to get more done quickly.
 
-More specifically, Kite allows you do most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available.
+More specifically, Kite allows you **do most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function**Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
 
 Kite was created by the original creator of `@solana-developers/helpers`, the most popular library for web3.js version 1. The `kite` package includes contributions from [Helius](https://helous.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
 
@@ -16,7 +16,7 @@ Many Solana thinghs - Solana itself, Sealevel, Anchor, Poseidon etc. - are sea t
 
 ## What can I do with this module?
 
-[TODO - READD HEADINGS]
+[TODO - REDO HEADINGS]
 
 ## Installation
 
@@ -28,7 +28,7 @@ npm i @helius/kite
 
 PRs are very much welcome! Read the [CONTRIBUTING guidelines for the Solana course](https://github.com/Unboxed-Software/solana-course/blob/main/CONTRIBUTING.md#code) then send a PR!
 
-
+## Connect to you RPC provider
 
 
 # OLD CONTENT BELOW
