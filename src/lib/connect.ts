@@ -48,9 +48,6 @@ const CLUSTER_NAME_TO_URLS: Record<string, { httpURL: string; webSocketURL: stri
 
 const KNOWN_CLUSTER_NAMES = Object.keys(CLUSTER_NAME_TO_URLS);
 
-// We could modify this to accept a URL instead of a cluster name
-// however Explorer has some particular features like mainnet not needing to
-// be explicit if it's mainnet-beta, so we'll keep it as a cluster name for now
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
     const searchParams: Record<string, string> = {};
