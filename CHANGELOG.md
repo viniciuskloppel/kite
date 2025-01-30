@@ -5,6 +5,8 @@
 - Use @solana/web3.js version 2
 - Remove CommonJS support
 
+`initializeKeypair` is now `createWallet` 
+
 ### General web3.js version 2 changes
 
 - `Keypair` is now `KeyPairSigner`. `Keypair.generate();` is now `generateKeyPairSigner()`.
@@ -15,6 +17,8 @@
 - Values are in `lamports` which can be made from the native JS `BigInt`, so `1n` instead of `1`.
 - Commitment levels are defined explicitly
 - We get the transaction signature from signed transactions rather than having signatures as a return value
+
+
 
 ### Additions
 

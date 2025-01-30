@@ -4,9 +4,12 @@ import {
   Commitment,
   CompilableTransactionMessage,
   createDefaultRpcTransport,
+  createSignerFromKeyPair,
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
   getSignatureFromTransaction,
+  KeyPairSigner,
+  lamports,
   Lamports,
   RpcFromTransport,
   RpcTransport,
@@ -20,6 +23,18 @@ import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transac
 
 import { checkIsValidURL, encodeURL } from "./url";
 import { log, stringify } from "./utils";
+import { createKeyPairSignerOptions } from "./types";
+import {
+  addKeyPairSignerToEnvFile,
+  generateExtractableKeyPair,
+  getKeyPairSignerFromEnvironment,
+  getKeyPairSignerFromFile,
+} from "./keypair";
+import { SOL } from "./constants";
+
+export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
+export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
+export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
 // Make an object with a map of solana cluster names to subobjects, with the subobjects containing the URL and websocket URL
 const CLUSTER_NAME_TO_URLS: Record<string, { httpURL: string; webSocketURL: string }> = {
@@ -117,17 +132,20 @@ const getBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>)
   return getBalance;
 };
 
-const airdropIfRequiredFactory = async (
+const airdropIfRequiredFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>,
 ) => {
   const getBalance = getBalanceFactory(rpc);
-  // Not exported as we don't want to encourage people to
+  // Plain 'airdrop' is exported as we don't want to encourage people to
   // request airdrops when they don't need them, ie - don't bother
   // the faucet unless you really need to!
+  //
   // Note rpc.requestAirdrop is broken, the finalized paramater doesn't do anything
   // despite the docs repeatedly referring to rpc.requestAirdrop
   // https://github.com/solana-labs/solana-web3.js/issues/3683
+  //
+  // @ts-expect-error TODO need to work out devnet/mainnet typing issue re: airdrops
   const airdrop = airdropFactory({ rpc, rpcSubscriptions });
 
   const airdropIfRequired = async (
@@ -159,6 +177,42 @@ const airdropIfRequiredFactory = async (
     return getBalance(address, "finalized");
   };
   return airdropIfRequired;
+};
+
+// Formerly called initializeKeypair()
+// https://assets.fengsi.io/pr:sharp/rs:fill:1600:1067:1:1/g:ce/q:80/L2FwaS9qZGxlYXRoZXJnb29kcy9vcmlnaW5hbHMvYjZmNmU2ODAtNzY3OC00MDFiLWE1MzctODg4MWQyMmMzZWIyLmpwZw.jpg
+const createWalletFactory = async (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
+  const createWallet = async (options?: createKeyPairSignerOptions): Promise<KeyPairSigner> => {
+    const {
+      keyPairPath,
+      envFileName,
+      envVariableName = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
+      airdropAmount = DEFAULT_AIRDROP_AMOUNT,
+      minimumBalance = DEFAULT_MINIMUM_BALANCE,
+    } = options || {};
+
+    let keyPairSigner: KeyPairSigner;
+
+    if (keyPairPath) {
+      keyPairSigner = await getKeyPairSignerFromFile(keyPairPath);
+    } else if (process.env[envVariableName]) {
+      keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
+    } else {
+      // TODO: we should make a temporary keyPair and write it to the environment
+      // then reload the one from the environment as non-extractable
+      const keyPair = await generateExtractableKeyPair();
+      keyPairSigner = await createSignerFromKeyPair(keyPair);
+      await addKeyPairSignerToEnvFile(keyPairSigner, envVariableName, envFileName);
+    }
+
+    if (airdropAmount) {
+      await airdropIfRequired(keyPairSigner.address, airdropAmount, minimumBalance);
+    }
+
+    return keyPairSigner;
+  };
+
+  return createWallet;
 };
 
 export const connect = (
@@ -203,6 +257,10 @@ export const connect = (
     rpcSubscriptions,
   });
 
+  const airdropIfRequired = airdropIfRequiredFactory(rpc, rpcSubscriptions);
+
+  const createWallet = createWalletFactory(airdropIfRequired);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -210,7 +268,8 @@ export const connect = (
     signSendAndConfirmTransaction: signSendAndConfirmTransactionFactory(sendAndConfirmTransaction),
     getBalance: getBalanceFactory(rpc),
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
-    airdropIfRequired: airdropIfRequiredFactory(rpc, rpcSubscriptions),
+    airdropIfRequired,
+    createWallet,
     getRecentSignatureConfirmation,
   };
 };
@@ -228,4 +287,5 @@ export interface Connection {
   getExplorerLink: ReturnType<typeof getExplorerLinkFactory>;
   getRecentSignatureConfirmation: ReturnType<typeof createRecentSignatureConfirmationPromiseFactory>;
   airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>;
+  createWallet: ReturnType<typeof createWalletFactory>;
 }
