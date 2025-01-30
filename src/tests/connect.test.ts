@@ -56,6 +56,7 @@ describe("createWallet", () => {
     // Use a specific file name to avoid conflicts with other tests
     const envFileName = "../.env-unittest-create-wallet";
 
+    // We use these a couple of times, so it's easier to have them in a variable
     const createWalletOptions: createWalletOptions = {
       envFileName,
       envVariableName: keyPairVariableName,
