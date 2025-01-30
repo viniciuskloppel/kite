@@ -165,7 +165,8 @@ const airdropIfRequiredFactory = (
       return getBalance(address, "finalized");
     }
     const balance = await getBalance(address, "finalized");
-    if (balance > minimumBalance) {
+
+    if (balance >= minimumBalance) {
       return balance;
     }
     const airdropTransactionSignature = await airdrop({

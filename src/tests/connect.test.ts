@@ -119,7 +119,6 @@ describe("airdropIfRequired", () => {
     assert.ok(signature);
   });
 
-  // TODO: this test is failing
   test("airdropIfRequired doesn't request unnecessary airdrops", async () => {
     const user = await generateKeyPairSigner();
     const connection = connect();
