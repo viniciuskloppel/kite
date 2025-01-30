@@ -19,22 +19,18 @@ import {
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
 } from "@solana/web3.js";
-import {
-  airdropIfRequired,
-  DEFAULT_AIRDROP_AMOUNT,
-  createKeyPairSigner,
-  transferLamports,
-  type createKeyPairSignerOptions,
-} from "../..";
+import { type createKeyPairSignerOptions } from "../types";
+import { DEFAULT_AIRDROP_AMOUNT, createKeyPairSigner } from "../lib/airdrop";
+import { transferLamports } from "../lib/transfer-lamports";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
 // import { SystemProgram } from "@solana/web3.js";
 // import { Transaction } from "@solana/web3.js";
-import { SOL } from "../../lib/constants";
-import { connect } from "../../lib/connect";
+import { SOL } from "../lib/constants";
+import { connect } from "../lib/connect";
 import { getTransferSolInstruction } from "@solana-program/system";
-import { log, stringify } from "../../lib/utils";
+import { log, stringify } from "../lib/utils";
 
 describe("getBalance", () => {
   test("getBalance returns 0 for a new account", async () => {
