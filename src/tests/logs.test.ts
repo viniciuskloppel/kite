@@ -1,8 +1,8 @@
 import { describe, test } from "node:test";
-import { airdropIfRequired, connect, getCustomErrorMessage, getLogs, transferLamports } from "../..";
+import { connect, getCustomErrorMessage, getLogs, transferLamports } from "..";
 import { generateKeyPairSigner, lamports, CryptoKeyPair, Transaction, SystemProgram } from "@solana/web3.js";
 import assert from "node:assert";
-import { SOL } from "../../lib/constants";
+import { SOL } from "../lib/constants";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 
@@ -11,7 +11,7 @@ describe("getLogs", () => {
     const connection = connect();
     const [sender, recipient] = await Promise.all([generateKeyPairSigner(), generateKeyPairSigner()]);
     const lamportsToAirdrop = lamports(2n * SOL);
-    await airdropIfRequired(connection, sender.address, lamportsToAirdrop, lamports(1n * SOL));
+    await connection.airdropIfRequired(sender.address, lamportsToAirdrop, lamports(1n * SOL));
 
     const transaction = await transferLamports(connection, sender, recipient.address, lamports(1n * SOL));
 

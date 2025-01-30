@@ -3,23 +3,6 @@ import { confirmTransaction } from "./transaction";
 import { Connection } from "./connect";
 import { log, stringify } from "./utils";
 
-export const getLogs = async (connection: Connection, signature: string): Promise<Array<string>> => {
-  // TODO: we may need to confirm the transaction, not sure
-  //also not documented how to do this in the web3.js docs
-  // await confirmTransaction(rpc, tx);
-  assertIsSignature(signature);
-  const transaction = await connection.rpc.getTransaction(signature, {
-    maxSupportedTransactionVersion: 0,
-    commitment: "confirmed",
-  });
-  log(">>> transaction", stringify(transaction));
-  log(">>> constructor", transaction.constructor.name);
-
-  // ASK ON STRACKOVERFLOW WHERE I CAN GET LOGS FROM
-
-  return []; // txDetails?.meta?.logMessages || [];
-};
-
 export const getErrorFromRPCResponse = (
   rpcResponse: RpcResponseAndContext<SignatureResult | SimulatedTransactionResponse>,
 ) => {
