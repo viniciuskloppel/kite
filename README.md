@@ -4,11 +4,11 @@
 
 ## A modern Solana TypeScript framework for the browser and node.js
 
-Kite, formerly known as `@solana-developers/helpers`, leverages the speed and elegance of [web3.js version 2]() but provides a simpler environment to get more done quickly.
+Kite, formerly known as `@solana-developers/helpers`, leverages the speed and elegance of [web3.js version 2](https://github.com/anza-xyz/solana-web3.js) but provides a simpler environment to get more done quickly.
 
 More specifically, Kite allows you do most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available.
 
-The `kite` package includes contributions from [Mike MacCana](https://mikemaccana.com), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
+Kite was created by the original creator of `@solana-developers/helpers`, the most popular library for web3.js version 1. The `kite` package includes contributions from [Helius](https://helous.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
 
 ## Why the name 'Kite'?
 
@@ -16,77 +16,24 @@ Many Solana thinghs - Solana itself, Sealevel, Anchor, Poseidon etc. - are sea t
 
 ## What can I do with this module?
 
-## Before and After Comparison (MIKE TESTING)
-
-<div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 12px;">
-    <div style="padding: 12px;">
-        ### Regular web3.js version 2
-        - Item 1
-        - Item 2
-        - Item 3
-    </div>
-    <div style="padding: 12px;">
-        ### With Kite
-        - Item A
-        - Item B
-        - Item C
-    </div>
-</div>
-
-<div style="display: flex;">
-    <div style="flex: 50%; padding: 12px;">
-        ### Regular web3.js version 2
-        - Item 1
-        - Item 2
-        - Item 3
-    </div>
-    <div style="flex: 50%; padding: 12px;">
-        ### With Kite
-        - Item A
-        - Item B
-        - Item C
-    </div>
-</div>
-
-[Make a funded wallet][#make-a-funded-wallet]
-
-[Make multiple keypairs at once](#make-multiple-keypairs-at-once)
-
-[Make a token mint with metadata](#make-a-token-mint-with-metadata)
-
-[Create multiple accounts with balances of different tokens in a single step](#create-users-mints-and-token-accounts-in-a-single-step)
-
-[Resolve a custom error message](#resolve-a-custom-error-message)
-
-[Get an airdrop if your balance is below some amount](#get-an-airdrop-if-your-balance-is-below-some-amount)
-
-[Get a Solana Explorer link for a transaction, address, or block](#get-a-solana-explorer-link-for-a-transaction-address-or-block)
-
-[Confirm a transaction](#confirm-a-transaction)
-
-[Get the logs for a transaction](#get-the-logs-for-a-transaction)
-
-[Get simulated compute units (CUs) for transaction instructions](#get-simulated-compute-units-cus-for-transaction-instructions)
-
-[Get a keypair from a keypair file](#get-a-keypair-from-a-keypair-file)
-
-[Get a keypair from an environment variable](#get-a-keypair-from-an-environment-variable)
-
-[Add a new keypair to an env file](#add-a-new-keypair-to-an-env-file)
-
-[Load or create a keypair and airdrop to it if needed](#load-or-create-a-keypair-and-airdrop-to-it-if-needed)
+[TODO - READD HEADINGS]
 
 ## Installation
 
 ```bash
-npm i @solana-developers/helpers
+npm i @helius/kite
 ```
 
 ## Contributing
 
 PRs are very much welcome! Read the [CONTRIBUTING guidelines for the Solana course](https://github.com/Unboxed-Software/solana-course/blob/main/CONTRIBUTING.md#code) then send a PR!
 
-## helpers for the browser and node.js
+
+
+
+# OLD CONTENT BELOW
+
+
 
 ### Make multiple keypairs at once
 
