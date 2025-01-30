@@ -231,3 +231,20 @@ describe("getExplorerLink", () => {
     );
   });
 });
+
+describe("getLogs", () => {
+  test("getLogs works", async () => {
+    const connection = connect();
+    const [sender, recipient] = await Promise.all([generateKeyPairSigner(), generateKeyPairSigner()]);
+    const lamportsToAirdrop = lamports(2n * SOL);
+    await connection.airdropIfRequired(sender.address, lamportsToAirdrop, lamports(1n * SOL));
+
+    const signature = await transferLamports(connection, sender, recipient.address, lamports(1n * SOL));
+
+    const logs = await connection.getLogs(signature);
+    assert.deepEqual(logs, [
+      "Program 11111111111111111111111111111111 invoke [1]",
+      "Program 11111111111111111111111111111111 success",
+    ]);
+  });
+});

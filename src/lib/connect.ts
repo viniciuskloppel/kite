@@ -219,20 +219,16 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
 
 const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   const getLogs = async (signature: string): Promise<Array<string>> => {
-    // TODO: we may need to confirm the transaction, not sure
-    // also not documented how to do this in the web3.js docs
-    // await confirmTransaction(rpc, tx);
     assertIsSignature(signature);
-    const transaction = await rpc.getTransaction(signature, {
-      maxSupportedTransactionVersion: 0,
-      commitment: "confirmed",
-    });
-    log(">>> transaction", stringify(transaction));
-    log(">>> constructor", transaction.constructor.name);
 
-    // ASK ON STACKOVERFLOW WHERE I CAN GET LOGS FROM
+    const transaction = await rpc
+      .getTransaction(signature, {
+        maxSupportedTransactionVersion: 0,
+        commitment: "confirmed",
+      })
+      .send();
 
-    return []; // txDetails?.meta?.logMessages || [];
+    return transaction.meta?.logMessages ?? [];
   };
   return getLogs;
 };
