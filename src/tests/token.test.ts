@@ -1,10 +1,10 @@
 import { describe, test } from "node:test";
 import { generateKeyPair, generateKeyPairSigner, lamports } from "@solana/web3.js";
-import { airdropIfRequired, connect, createAccountsMintsAndTokenAccounts, makeTokenMint } from "../../src";
+import { airdropIfRequired, connect, createAccountsMintsAndTokenAccounts, makeTokenMint } from "../..";
 import { getTokenMetadata } from "@solana/spl-token";
 import assert from "node:assert";
 import { getDefaultRpc } from "./connect";
-import { SOL } from "../../src/lib/constants";
+import { SOL } from "../../lib/constants";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 

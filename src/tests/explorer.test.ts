@@ -1,4 +1,4 @@
-import { connect } from "../../src/index";
+import { connect } from "../../index";
 import { describe, test } from "node:test";
 import assert from "node:assert";
 

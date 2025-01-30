@@ -1,8 +1,8 @@
 import { describe, test } from "node:test";
-import { airdropIfRequired, confirmTransaction, connect } from "../../src";
+import { airdropIfRequired, confirmTransaction, connect } from "../..";
 import { Address, generateKeyPairSigner } from "@solana/web3.js";
 import assert from "node:assert";
-import { SOL } from "../../src/lib/constants";
+import { SOL } from "../../lib/constants";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 
