@@ -7,14 +7,14 @@ import {
   getKeyPairSignerFromEnvironment,
   getKeyPairSignerFromFile,
   makeKeyPairSigners,
-} from "../..";
+} from "..";
 // See https://m.media-amazon.com/images/I/51TJeGHxyTL._SY445_SX342_.jpg
 import { exec as execNoPromises } from "node:child_process";
 import { promisify } from "node:util";
 import { writeFile, unlink as deleteFile } from "node:fs/promises";
 import dotenv from "dotenv";
 import { createSignerFromKeyPair, KeyPairSigner, createKeyPairSignerFromBytes } from "@solana/web3.js";
-import { log } from "../../lib/utils";
+import { log } from "../lib/utils";
 
 const exec = promisify(execNoPromises);
 const TEMP_DIR = "temp";
