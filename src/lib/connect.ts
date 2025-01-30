@@ -1,6 +1,7 @@
 import {
   Address,
   airdropFactory,
+  assertIsSignature,
   Commitment,
   CompilableTransactionMessage,
   createDefaultRpcTransport,
@@ -216,13 +217,13 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
   return createWallet;
 };
 
-const getLogsFactory = (connection: Connection) => {
+const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   const getLogs = async (signature: string): Promise<Array<string>> => {
     // TODO: we may need to confirm the transaction, not sure
     // also not documented how to do this in the web3.js docs
     // await confirmTransaction(rpc, tx);
     assertIsSignature(signature);
-    const transaction = await connection.rpc.getTransaction(signature, {
+    const transaction = await rpc.getTransaction(signature, {
       maxSupportedTransactionVersion: 0,
       commitment: "confirmed",
     });
@@ -282,6 +283,8 @@ export const connect = (
 
   const createWallet = createWalletFactory(airdropIfRequired);
 
+  const getLogs = getLogsFactory(rpc);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -291,6 +294,7 @@ export const connect = (
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
     airdropIfRequired,
     createWallet,
+    getLogs,
     getRecentSignatureConfirmation,
   };
 };
@@ -309,4 +313,5 @@ export interface Connection {
   getRecentSignatureConfirmation: ReturnType<typeof createRecentSignatureConfirmationPromiseFactory>;
   airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>;
   createWallet: ReturnType<typeof createWalletFactory>;
+  getLogs: ReturnType<typeof getLogsFactory>;
 }

@@ -6,6 +6,7 @@ import { SOL } from "../lib/constants";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 
+// WIP _FIXING THIS TODO
 describe("getLogs", () => {
   test("getLogs works", async () => {
     const connection = connect();
