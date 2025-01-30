@@ -1,8 +1,54 @@
-# Solana helpers
 
-The `helpers` package contains Solana helper functions, for use in the browser and/or node.js, [made by the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319) and our friends at [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
+
+# Kite 🪁
+
+## A modern Solana TypeScript framework for the browser and node.js
+
+Kite, formerly known as `@solana-developers/helpers`, leverages the speed and elegance of [web3.js version 2]() but provides a simpler environment to get more done quickly.
+
+More specifically, Kite allows you do most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available.
+
+The `kite` package includes contributions from [Mike MacCana](https://mikemaccana.com), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
+
+## Why the name 'Kite'?
+
+Many Solana thinghs - Solana itself, Sealevel, Anchor, Poseidon etc. - are sea themed. Kite is a high level framework, so what is high above a beach? Kites! 🪁😃
 
 ## What can I do with this module?
+
+## Before and After Comparison (MIKE TESTING)
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 12px;">
+    <div style="padding: 12px;">
+        ### Regular web3.js version 2
+        - Item 1
+        - Item 2
+        - Item 3
+    </div>
+    <div style="padding: 12px;">
+        ### With Kite
+        - Item A
+        - Item B
+        - Item C
+    </div>
+</div>
+
+<div style="display: flex;">
+    <div style="flex: 50%; padding: 12px;">
+        ### Regular web3.js version 2
+        - Item 1
+        - Item 2
+        - Item 3
+    </div>
+    <div style="flex: 50%; padding: 12px;">
+        ### With Kite
+        - Item A
+        - Item B
+        - Item C
+    </div>
+</div>
+
+[Make a funded wallet][#make-a-funded-wallet]
 
 [Make multiple keypairs at once](#make-multiple-keypairs-at-once)
 
@@ -475,3 +521,8 @@ esrun --node-no-warnings --node-test-name-pattern="getCustomErrorMessage" tests/
 ```
 
 To just run tests matching the name `getCustomErrorMessage`.
+## See also 
+
+SEE https://solana.com/developers/cookbook/transactions/send-sol
+https://blog.triton.one/ping-thing-solanaweb3js-2x-walkthrough
+Also quicknode helpers
