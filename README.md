@@ -32,6 +32,54 @@ PRs are very much welcome! Read the [CONTRIBUTING guidelines](CONTRIBUTING.md) t
 
 ## Connect to your RPC provider
 
+Using the local cluster (ie, `solana-test-validator` running on your machine):
+
+```typescript
+const connection = connect();
+```
+
+Using Helius:
+
+```typescript
+const { getExplorerLink } = connect(
+  `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
+  `wss://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
+);
+```
+
+Using mainnet-beta:
+
+```typescript
+const connection = connect("mainnet-beta");
+```
+
+## Loading keypairs from a file
+
+```typescript
+const keyPairSigner = await getKeyPairSignerFromFile('key-pair.json');
+```
+
+## Make multiple keypairs at once
+
+```typescript
+const keyPairs = await makeKeyPairSigners(3);
+```
+
+## Create a wallet with some SOL in it
+
+```typescript
+const keyPairSigner = await connection.createWallet(connection, 'key-pair.json', 1 * SOL);
+```
+
+## Transfer SOL
+
+```typescript
+const signature = await transferLamports(connection, keyPairSigner, recipient, amount);
+```
+
+## Transfer tokens
+
+<hr>
 
 # OLD CONTENT BELOW
 
