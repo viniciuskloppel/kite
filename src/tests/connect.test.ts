@@ -1,26 +1,6 @@
 import { describe, test } from "node:test";
-import {
-  appendTransactionMessageInstruction,
-  appendTransactionMessageInstructions,
-  createKeyPairSignerFromBytes,
-  createSignerFromKeyPair,
-  createSolanaRpcSubscriptions,
-  createTransactionMessage,
-  executeRpcPubSubSubscriptionPlan,
-  generateKeyPair,
-  generateKeyPairSigner,
-  getAddressFromPublicKey,
-  getSignatureFromTransaction,
-  lamports,
-  pipe,
-  sendAndConfirmTransactionFactory,
-  setTransactionMessageFeePayer,
-  setTransactionMessageFeePayerSigner,
-  setTransactionMessageLifetimeUsingBlockhash,
-  signTransactionMessageWithSigners,
-} from "@solana/web3.js";
+import { generateKeyPairSigner, lamports } from "@solana/web3.js";
 import { type createWalletOptions } from "../lib/types";
-import { transferLamports } from "../lib/transfer-lamports";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
@@ -28,8 +8,6 @@ import { unlink as deleteFile } from "node:fs/promises";
 // import { Transaction } from "@solana/web3.js";
 import { SOL } from "../lib/constants";
 import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
-import { getTransferSolInstruction } from "@solana-program/system";
-import { log, stringify } from "../lib/utils";
 
 describe("getBalance", () => {
   test("getBalance returns 0 for a new account", async () => {
@@ -115,7 +93,7 @@ describe("airdropIfRequired", () => {
     const recipient = await generateKeyPairSigner();
 
     // Spend our SOL now to ensure we can use the airdrop immediately
-    const signature = await transferLamports(connection, user, recipient.address, lamports(1_000_000n));
+    const signature = await connection.transferLamports(user, recipient.address, lamports(1_000_000n));
 
     assert.ok(signature);
   });

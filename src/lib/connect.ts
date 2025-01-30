@@ -6,22 +6,29 @@ import {
   CompilableTransactionMessage,
   createDefaultRpcTransport,
   createSignerFromKeyPair,
+  createSolanaRpc,
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
+  createTransactionMessage,
   getSignatureFromTransaction,
   KeyPairSigner,
   lamports,
   Lamports,
+  pipe,
   RpcFromTransport,
   RpcTransport,
   sendAndConfirmTransactionFactory,
+  setTransactionMessageFeePayer,
+  setTransactionMessageLifetimeUsingBlockhash,
   Signature,
   signTransactionMessageWithSigners,
   SolanaRpcApiFromTransport,
   TransactionMessageWithBlockhashLifetime,
+  appendTransactionMessageInstruction,
 } from "@solana/web3.js";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 
+import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import { log, stringify } from "./utils";
 import { createWalletOptions } from "./types";
@@ -233,6 +240,45 @@ const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) =>
   return getLogs;
 };
 
+const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  // Adapted from https://solana.com/developers/docs/transactions/examples/transfer-sol-with-web3-js/
+  const transferLamports = async (source: KeyPairSigner, destination: Address, amount: Lamports) => {
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    // Step 1: create the transfer transaction
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (transaction) => {
+        return setTransactionMessageFeePayer(source.address, transaction);
+      },
+      (transaction) => {
+        return setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, transaction);
+      },
+      (transaction) => {
+        const instruction = getTransferSolInstruction({
+          amount,
+          destination: destination,
+          source: source,
+        });
+        return appendTransactionMessageInstruction(instruction, transaction);
+      },
+    );
+
+    // Step 2: sign the transaction
+    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+
+    // Step 3: send and confirm the transaction
+    await rpc.sendAndConfirmTransaction(signedTransaction, {
+      commitment: "confirmed",
+    });
+
+    const signature = getSignatureFromTransaction(signedTransaction);
+
+    return signature;
+  };
+  return transferLamports;
+};
+
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
@@ -281,6 +327,8 @@ export const connect = (
 
   const getLogs = getLogsFactory(rpc);
 
+  const transferLamports = transferLamportsFactory(rpc);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -292,6 +340,7 @@ export const connect = (
     createWallet,
     getLogs,
     getRecentSignatureConfirmation,
+    transferLamports,
   };
 };
 
@@ -310,4 +359,5 @@ export interface Connection {
   airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>;
   createWallet: ReturnType<typeof createWalletFactory>;
   getLogs: ReturnType<typeof getLogsFactory>;
+  transferLamports: ReturnType<typeof transferLamportsFactory>;
 }

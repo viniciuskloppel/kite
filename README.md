@@ -68,13 +68,13 @@ const keyPairs = await makeKeyPairSigners(3);
 ## Create a wallet with some SOL in it
 
 ```typescript
-const keyPairSigner = await connection.createWallet(connection, 'key-pair.json', 1 * SOL);
+const keyPairSigner = await connection.createWallet('key-pair.json', 1 * SOL);
 ```
 
 ## Transfer SOL
 
 ```typescript
-const signature = await transferLamports(connection, keyPairSigner, recipient, amount);
+const signature = await connection.transferLamports(keyPairSigner, recipient, amount);
 ```
 
 ## Transfer tokens
