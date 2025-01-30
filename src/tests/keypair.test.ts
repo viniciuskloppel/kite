@@ -50,7 +50,7 @@ describe("addCryptoKeyPairToEnvFile", () => {
 
   test("Adds keyPairSigner to env file if variable doesn't exist", async () => {
     // We need to use a specific file name to avoid conflicts with other tests
-    const envFileName = "../.env-unittest-addkeyPairtoenvfile";
+    const envFileName = "../.env-unittest-add-key-pair-to-env-file";
     await addKeyPairSignerToEnvFile(testKeyPairSigner, "TEMP_KEYPAIR", envFileName);
     // Now reload the environment and check it matches our test keyPair
     dotenv.config({ path: envFileName });

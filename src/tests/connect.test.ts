@@ -19,7 +19,7 @@ import {
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
 } from "@solana/web3.js";
-import { type createKeyPairSignerOptions } from "../lib/types";
+import { type createWalletOptions } from "../lib/types";
 import { transferLamports } from "../lib/transfer-lamports";
 import assert from "node:assert";
 import dotenv from "dotenv";
@@ -27,7 +27,7 @@ import { unlink as deleteFile } from "node:fs/promises";
 // import { SystemProgram } from "@solana/web3.js";
 // import { Transaction } from "@solana/web3.js";
 import { SOL } from "../lib/constants";
-import { connect } from "../lib/connect";
+import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
 import { getTransferSolInstruction } from "@solana-program/system";
 import { log, stringify } from "../lib/utils";
 
@@ -48,129 +48,116 @@ describe("getBalance", () => {
   });
 });
 
-// describe("createKeyPairSigner", () => {
-//   const connection = connect();
-//   const keyPairVariableName = "INITIALIZE_KEYPAIR_TEST";
+describe("createWallet", () => {
+  const connection = connect();
+  const keyPairVariableName = "INITIALIZE_KEYPAIR_TEST";
 
-//   test("createKeyPairSigner generates a new keyPair and airdrops needed amount", async () => {
-//     // We need to use a specific file name to avoid conflicts with other tests
+  test("createWallet generates a new keyPair with a SOL balance", async () => {
+    // Use a specific file name to avoid conflicts with other tests
+    const envFileName = "../.env-unittest-create-wallet";
 
-//     const envFileName = "../.env-unittest-initialize-crypto-keyPair";
+    const createWalletOptions: createWalletOptions = {
+      envFileName,
+      envVariableName: keyPairVariableName,
+    };
 
-//     const createKeyPairSignerOptions: createKeyPairSignerOptions = {
-//       envFileName,
-//       envVariableName: keyPairVariableName,
-//     };
+    const userBefore = await connection.createWallet(createWalletOptions);
 
-//     // TODO: this had a bug where connection.rpc was 'any' type
-//     // we should investigate and fix that
-//     const userBefore = await createKeyPairSigner(connection, createKeyPairSignerOptions);
+    // Check balance
+    const balanceBefore = await connection.getBalance(userBefore.address);
 
-//     // Check balance
-//     const balanceBefore = await connection.getBalance(userBefore.address);
+    assert.equal(balanceBefore, DEFAULT_AIRDROP_AMOUNT);
 
-//     assert.equal(balanceBefore, DEFAULT_AIRDROP_AMOUNT);
+    // Check that the environment variable was created
+    dotenv.config({ path: envFileName });
+    const privateKeyString = process.env[keyPairVariableName];
+    if (!privateKeyString) {
+      throw new Error(`${privateKeyString} not found in environment`);
+    }
 
-//     // Check that the environment variable was created
-//     dotenv.config({ path: envFileName });
-//     const privateKeyString = process.env[keyPairVariableName];
-//     if (!privateKeyString) {
-//       throw new Error(`${privateKeyString} not found in environment`);
-//     }
+    // Now reload the environment and check it matches our test keyPair
+    const userAfter = await connection.createWallet(createWalletOptions);
 
-//     // Now reload the environment and check it matches our test keyPair
-//     const userAfter = await createKeyPairSigner(connection, createKeyPairSignerOptions);
+    // Check the keyPair is the same
+    assert(userBefore.address === userAfter.address);
 
-//     // Check the keyPair is the same
-//     assert(userBefore.address === userAfter.address);
+    // Check balance has not changed
+    const balanceAfter = await connection.getBalance(userAfter.address);
 
-//     // Check balance has not changed
-//     const balanceAfter = await connection.getBalance(userAfter.address);
+    assert.equal(balanceBefore, balanceAfter);
 
-//     assert.equal(balanceBefore, balanceAfter);
+    // Check there is a private key
+    assert.ok(userAfter.keyPair.privateKey);
 
-//     // Check there is a private key
-//     assert.ok(userAfter.keyPair.privateKey);
+    await deleteFile(envFileName);
+  });
+});
 
-//     await deleteFile(envFileName);
-//   });
-// });
+describe("airdropIfRequired", () => {
+  test("Checking the balance after airdropIfRequired", async () => {
+    const connection = connect();
+    const user = await generateKeyPairSigner();
 
-// describe("airdropIfRequired", () => {
-//   test("Checking the balance after airdropIfRequired", async () => {
-//     const connection = connect();
-//     const user = await generateKeyPairSigner();
+    const originalBalance = await connection.getBalance(user.address, "finalized");
 
-//     const originalBalance = await connection.getBalance(user.address, "finalized");
+    assert.equal(originalBalance, 0);
+    const lamportsToAirdrop = lamports(1n * SOL);
 
-//     assert.equal(originalBalance, 0);
-//     const lamportsToAirdrop = lamports(1n * SOL);
+    const minimumBalance = lamports(1n * SOL);
 
-//     const minimumBalance = lamports(1n * SOL);
+    await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
 
-//     await connection.airdropIfRequired(connection, user.address, lamportsToAirdrop, minimumBalance);
+    const newBalance = await connection.getBalance(user.address, "finalized");
 
-//     const newBalance = await connection.getBalance(user.address, "finalized");
+    assert.equal(newBalance, lamportsToAirdrop);
 
-//     assert.equal(newBalance, lamportsToAirdrop);
+    const recipient = await generateKeyPairSigner();
 
-//     const recipient = await generateKeyPairSigner();
+    // Spend our SOL now to ensure we can use the airdrop immediately
+    const signature = await transferLamports(connection, user, recipient.address, lamports(1_000_000n));
 
-//     // Spend our SOL now to ensure we can use the airdrop immediately
-//     const signature = await transferLamports(connection, user, recipient.address, lamports(1_000_000n));
+    assert.ok(signature);
+  });
 
-//     assert.ok(signature);
-//   });
+  // TODO: this test is failing
+  test("airdropIfRequired doesn't request unnecessary airdrops", async () => {
+    const user = await generateKeyPairSigner();
+    const connection = connect();
+    const balance = await connection.getBalance(user.address);
+    assert.equal(balance, 0n);
+    const lamportsToAirdrop = lamports(1n * SOL);
 
-//   test("airdropIfRequired doesn't request unnecessary airdrops", async () => {
-//     const user = await generateKeyPairSigner();
-//     const connection = connect();
-//     const balance = await connection.getBalance(user.address);
-//     assert.equal(balance, 0n);
-//     const lamportsToAirdrop = lamports(1n * SOL);
+    // First airdrop asks for 500_000 lamports
+    await connection.airdropIfRequired(user.address, lamportsToAirdrop, lamports(500_000n));
 
-//     // First airdrop asks for 500_000 lamports
-//     await connection.airdropIfRequired(connection, user.address, lamportsToAirdrop, lamports(500_000n));
+    // Try a second airdrop if the balance is less than 1 SOL
+    // Check second airdrop didn't happen (since we already had 1 SOL from first airdrop)
+    const minimumBalance = lamports(1n * SOL);
+    const finalBalance = await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
+    assert.equal(finalBalance, lamportsToAirdrop);
+  });
 
-//     // Try a second airdrop if the balance is less than 1 SOL
-//     // Check second airdrop didn't happen (since we already had 1 SOL from first airdrop)
-//     const minimumBalance = lamports(1n * SOL);
-//     const finalBalance = await connection.airdropIfRequired(
-//       connection,
-//       user.address,
-//       lamportsToAirdrop,
-//       minimumBalance,
-//     );
-//     assert.equal(finalBalance, lamportsToAirdrop);
-//   });
+  test("airdropIfRequired does airdrop when necessary", async () => {
+    const user = await generateKeyPairSigner();
 
-//   test("airdropIfRequired does airdrop when necessary", async () => {
-//     const user = await generateKeyPairSigner();
+    const connection = connect();
+    const originalBalance = await connection.getBalance(user.address, "finalized");
+    assert.equal(originalBalance, 0);
+    // Get 999_999_999 lamports if we have less than 500_000 lamports
+    const lamportsToAirdrop = lamports(1n * SOL - 1n);
+    const balanceAfterFirstAirdrop = await connection.airdropIfRequired(
+      user.address,
+      lamportsToAirdrop,
+      lamports(500_000n),
+    );
+    assert.equal(balanceAfterFirstAirdrop, lamportsToAirdrop);
 
-//     const connection = connect();
-//     const originalBalance = await connection.getBalance(user.address, "finalized");
-//     assert.equal(originalBalance, 0);
-//     // Get 999_999_999 lamports if we have less than 500_000 lamports
-//     const lamportsToAirdrop = lamports(1n * SOL - 1n);
-//     const balanceAfterFirstAirdrop = await connection.airdropIfRequired(
-//       connection,
-//       user.address,
-//       lamportsToAirdrop,
-//       lamports(500_000n),
-//     );
-//     assert.equal(balanceAfterFirstAirdrop, lamportsToAirdrop);
-
-//     // We only have 999_999_999 lamports, so we should need another airdrop
-//     // Check second airdrop happened
-//     const finalBalance = await connection.airdropIfRequired(
-//       connection,
-//       user.address,
-//       lamports(1n * SOL),
-//       lamports(1n * SOL),
-//     );
-//     assert.equal(finalBalance, lamports(2n * SOL - 1n));
-//   });
-// });
+    // We only have 999_999_999 lamports, so we should need another airdrop
+    // Check second airdrop happened
+    const finalBalance = await connection.airdropIfRequired(user.address, lamports(1n * SOL), lamports(1n * SOL));
+    assert.equal(finalBalance, lamports(2n * SOL - 1n));
+  });
+});
 
 // describe("getExplorerLink", () => {
 //   test("getExplorerLink works for a block on mainnet", () => {

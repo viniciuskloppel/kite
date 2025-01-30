@@ -360,15 +360,15 @@ This will also reload the env file.
 Usage:
 
 ```typescript
-createKeyPairSigner(rpc, options);
+createWallet(rpc, options);
 ```
 
 Loads in a keypair from the filesystem, or environment and then airdrops to it if needed.
 
-How the keypair is initialized is dependent on the `createKeyPairSignerOptions`:
+How the keypair is initialized is dependent on the `createWalletOptions`:
 
 ```typescript
-interface createKeyPairSignerOptions {
+interface createWalletOptions {
   envFileName?: string;
   envVariableName?: string;
   airdropAmount?: number | null;
@@ -386,13 +386,13 @@ If `airdropAmount` amount is set to something other than `null` or `0`, this fun
 To initialize a keypair from the `.env` file, and airdrop it 1 sol if it's beneath 0.5 sol:
 
 ```typescript
-const keypair = await createKeyPairSigner(rpc);
+const keypair = await createWallet(rpc);
 ```
 
 To initialize a keypair from the `.env` file under a different variable name:
 
 ```typescript
-const keypair = await createKeyPairSigner(rpc, {
+const keypair = await createWallet(rpc, {
   envVariableName: "TEST_KEYPAIR",
 });
 ```
@@ -400,7 +400,7 @@ const keypair = await createKeyPairSigner(rpc, {
 To initialize a keypair from the filesystem, and airdrop it 3 sol:
 
 ```typescript
-const keypair = await createKeyPairSigner(rpc, {
+const keypair = await createWallet(rpc, {
   keypairPath: "~/.config/solana/id.json",
   airdropAmount: SOL * 3,
 });

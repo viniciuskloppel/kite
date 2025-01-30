@@ -23,7 +23,7 @@ import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transac
 
 import { checkIsValidURL, encodeURL } from "./url";
 import { log, stringify } from "./utils";
-import { createKeyPairSignerOptions } from "./types";
+import { createWalletOptions } from "./types";
 import {
   addKeyPairSignerToEnvFile,
   generateExtractableKeyPair,
@@ -181,8 +181,8 @@ const airdropIfRequiredFactory = (
 
 // Formerly called initializeKeypair()
 // https://assets.fengsi.io/pr:sharp/rs:fill:1600:1067:1:1/g:ce/q:80/L2FwaS9qZGxlYXRoZXJnb29kcy9vcmlnaW5hbHMvYjZmNmU2ODAtNzY3OC00MDFiLWE1MzctODg4MWQyMmMzZWIyLmpwZw.jpg
-const createWalletFactory = async (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
-  const createWallet = async (options?: createKeyPairSignerOptions): Promise<KeyPairSigner> => {
+const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
+  const createWallet = async (options?: createWalletOptions): Promise<KeyPairSigner> => {
     const {
       keyPairPath,
       envFileName,

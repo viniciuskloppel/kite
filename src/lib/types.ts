@@ -1,6 +1,6 @@
 import { Lamports } from "@solana/web3.js";
 
-export interface createKeyPairSignerOptions {
+export interface createWalletOptions {
   envFileName?: string;
   envVariableName?: string;
   airdropAmount?: Lamports | null;
