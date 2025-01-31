@@ -36,11 +36,14 @@ import { getCreateAccountInstruction } from "@solana-program/system";
 import {
   findAssociatedTokenPda,
   getCreateAssociatedTokenInstructionAsync,
+  getInitializeMetadataPointerInstruction,
   getInitializeMintInstruction,
   getMintSize,
   getMintToInstruction,
   getTransferInstruction,
+  getUpdateTokenMetadataFieldInstruction,
   TOKEN_2022_PROGRAM_ADDRESS,
+  tokenMetadataField,
 } from "@solana-program/token-2022";
 
 import { getTransferSolInstruction } from "@solana-program/system";
@@ -330,6 +333,15 @@ const makeTokenMintFactory = (
       programAddress: TOKEN_2022_PROGRAM_ADDRESS,
     });
 
+    // Initialize metadata pointer (so the mint points to itself for metadata)
+    // MM note I needed to add this
+    const initializeMetadataPointerInstruction = getInitializeMetadataPointerInstruction({
+      mint: mint.address,
+      authority: mintAuthority.address,
+      // Ie, you can find the metadata address by looking at the mint address
+      metadataAddress: mint.address,
+    });
+
     // Instruction to initialize mint account data
     // Invokes the token 2022 program
     const initializeMintInstruction = getInitializeMintInstruction({
@@ -338,8 +350,26 @@ const makeTokenMintFactory = (
       mintAuthority: mintAuthority.address,
     });
 
+    // Nobody knows what this is
+    const initializeInstruction = getInitializeInstruction({});
+
+    // See clients/js/test/extensions/tokenMetadata/updateTokenMetadataField.test.ts
+    const updateTokenMetadataFieldInstructions = additionalMetadata.map((additionalMetadataItem) => {
+      return getUpdateTokenMetadataFieldInstruction({
+        metadata: mint.address,
+        updateAuthority: mintAuthority,
+        field: tokenMetadataField(additionalMetadataItem[0]),
+        value: additionalMetadataItem[1],
+      });
+    });
+
     // Order of instructions to add to transaction
-    const instructions = [createAccountInstruction, initializeMintInstruction];
+    const instructions = [
+      createAccountInstruction,
+      initializeMetadataPointerInstruction,
+      initializeMintInstruction,
+      initializeInstruction,
+    ];
 
     // Get latest blockhash to include in transaction
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
@@ -369,99 +399,6 @@ const makeTokenMintFactory = (
 
     return transactionSignature;
   };
-  // const oldMakeTokenMint = async (
-  //   mintAuthority: KeyPairSigner,
-  //   name: string,
-  //   symbol: string,
-  //   decimals: number,
-  //   uri: string,
-  //   additionalMetadata: Array<[string, string]> | Record<string, string> = [],
-  //   updateAuthority: Address = mintAuthority.address,
-  //   freezeAuthority: Address | null = null,
-  // ) => {
-  //   const mint = generateKeyPairSigner();
-
-  //   if (!Array.isArray(additionalMetadata)) {
-  //     additionalMetadata = Object.entries(additionalMetadata);
-  //   }
-
-  //   createUpdateFieldInstruction;
-
-  //   // // CONVERT ALL THESE TO WEB3 V2
-  //   // const addMetadataInstructions = additionalMetadata.map((additionalMetadataItem) => {
-  //   //   return createUpdateFieldInstruction({
-  //   //     metadata: mint.publicKey,
-  //   //     updateAuthority: updateAuthority,
-  //   //     programId: TOKEN_2022_PROGRAM_ID,
-  //   //     field: additionalMetadataItem[0],
-  //   //     value: additionalMetadataItem[1],
-  //   //   });
-  //   // });
-
-  //   // const metadata: TokenMetadata = {
-  //   //   mint: mint.publicKey,
-  //   //   name,
-  //   //   symbol,
-  //   //   uri,
-  //   //   additionalMetadata,
-  //   // };
-
-  //   // // Work out how much SOL we need to store our Token
-  //   // const mintLength = getMintLen([ExtensionType.MetadataPointer]);
-  //   // const metadataLength = TYPE_SIZE + LENGTH_SIZE + pack(metadata).length;
-  //   // const mintLamports = await rpc.getMinimumBalanceForRentExemption(mintLength + metadataLength);
-
-  //   // const mintTransaction = new Transaction().add(
-  //   //   // Create Account
-  //   //   SystemProgram.createAccount({
-  //   //     fromPubkey: mintAuthority.publicKey,
-  //   //     newAccountPubkey: mint.publicKey,
-  //   //     space: mintLength,
-  //   //     lamports: mintLamports,
-  //   //     programId: TOKEN_2022_PROGRAM_ID,
-  //   //   }),
-
-  //   //   // Initialize metadata pointer (so the mint points to itself for metadata)
-  //   //   createInitializeMetadataPointerInstruction(
-  //   //     mint.publicKey,
-  //   //     mintAuthority.publicKey,
-  //   //     mint.publicKey,
-  //   //     TOKEN_2022_PROGRAM_ID,
-  //   //   ),
-
-  //   //   // Initialize mint
-  //   //   createInitializeMintInstruction(
-  //   //     mint.publicKey,
-  //   //     decimals,
-  //   //     mintAuthority.publicKey,
-  //   //     freezeAuthority,
-  //   //     TOKEN_2022_PROGRAM_ID,
-  //   //   ),
-
-  //   //   // Initialize
-  //   //   createInitializeInstruction({
-  //   //     programId: TOKEN_2022_PROGRAM_ID,
-  //   //     mint: mint.publicKey,
-  //   //     metadata: mint.publicKey,
-  //   //     name: metadata.name,
-  //   //     symbol: metadata.symbol,
-  //   //     uri: metadata.uri,
-  //   //     mintAuthority: mintAuthority.publicKey,
-  //   //     updateAuthority: updateAuthority,
-  //   //   }),
-
-  //   //   // Update field (actually used to add a custom field)
-  //   //   // See https://github.com/solana-labs/solana-program-library/blob/master/token/js/examples/metadata.ts#L81C6-L81C6
-  //   //   // Must come last!
-  //   //   ...addMetadataInstructions,
-  //   // );
-
-  //   // const signature = await sendAndConfirmTransaction(rpc, mintTransaction, [mintAuthority, mint]);
-
-  //   // return mint.publicKey;
-  //   throw new Error("Not implemented");
-  // };
-  return makeTokenMint;
 };
 
 export const connect = (
