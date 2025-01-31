@@ -299,8 +299,17 @@ const makeTokenMintFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
-  const makeTokenMint = async (mintAuthority: KeyPairSigner, decimals: number) => {
+  const makeTokenMint = async (
+    mintAuthority: KeyPairSigner,
+    decimals: number,
+    additionalMetadata: Array<[string, string]> | Record<string, string> = [],
+  ) => {
     // Adapted from https://solana.stackexchange.com/questions/19747/how-do-i-make-a-token-with-metadata-using-web3-js-version-2/19748#19748
+
+    // Convert additionalMetadata to an array if it's a record
+    if (!Array.isArray(additionalMetadata)) {
+      additionalMetadata = Object.entries(additionalMetadata);
+    }
 
     // Generate keypairs for mint
     const mint = await generateKeyPairSigner();
