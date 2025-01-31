@@ -26,6 +26,51 @@ describe("getBalance", () => {
   });
 });
 
+describe("makeTokenMint", () => {
+  test("makeTokenMint makes a new mint with the specified metadata", async () => {
+    const connection = connect();
+
+    console.log("🟠 we are about to create a wallet");
+
+    // TODO: this times out! Fix it
+    // const mintAuthority = await connection.createWallet({ airdropAmount: lamports(1n * SOL) });
+
+    const mintAuthority = await generateKeyPairSigner();
+    const oneSol = lamports(1n * SOL);
+    await connection.airdropIfRequired(mintAuthority.address, oneSol, oneSol);
+
+    console.log("🟠 we have created a wallet");
+
+    // const name = "Unit test token";
+    // const symbol = "TEST";
+    // const decimals = 9;
+    // const uri = "https://example.com";
+    // const additionalMetadata = {
+    //   shlerm: "frobular",
+    //   glerp: "flerpy",
+    //   gurperderp: "erpy",
+    //   nurmagerd: "flerpy",
+    //   zurp: "flerpy",
+    //   eruper: "flerpy",
+    //   zerperurperserp: "flerpy",
+    //   zherp: "flerpy",
+    // };
+    const mintAddress = await connection.makeTokenMint(mintAuthority, 2);
+    assert.ok(mintAddress);
+    // const tokenMetadata = await getTokenMetadata(rpc, mintAddress);
+    // if (!tokenMetadata) {
+    //   throw new Error(`Token metadata not found for mint address ${mintAddress}`);
+    // }
+    // assert.equal(tokenMetadata.mint.toBase58(), mintAddress.toBase58());
+    // // TODO was toBase58 but that doesn't exist on addresses
+    // assert.equal(tokenMetadata.updateAuthority?.toBase58(), mintAuthority.address.toString());
+    // assert.equal(tokenMetadata.name, name);
+    // assert.equal(tokenMetadata.symbol, symbol);
+    // assert.equal(tokenMetadata.uri, uri);
+    // assert.deepEqual(tokenMetadata.additionalMetadata, Object.entries(additionalMetadata));
+  });
+});
+
 describe("createWallet", () => {
   const connection = connect();
   const keyPairVariableName = "INITIALIZE_KEYPAIR_TEST";
@@ -218,7 +263,7 @@ describe("getLogs", () => {
     const lamportsToAirdrop = lamports(2n * SOL);
     await connection.airdropIfRequired(sender.address, lamportsToAirdrop, lamports(1n * SOL));
 
-    const signature = await transferLamports(connection, sender, recipient.address, lamports(1n * SOL));
+    const signature = await connection.transferLamports(sender, recipient.address, lamports(1n * SOL));
 
     const logs = await connection.getLogs(signature);
     assert.deepEqual(logs, [

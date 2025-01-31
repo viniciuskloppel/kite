@@ -52,6 +52,7 @@
     "@solana-program/memo": "^0.6.1",
     "@solana-program/system": "^0.6.2",
     "@solana-program/token": "^0.4.1",
+    "@solana-program/token-2022": "^0.3.4",
     "@solana/assertions": "^2.0.1-canary-20241114225255",
     "@solana/errors": "^2.0.1-canary-20241114225255",
     "@solana/transaction-confirmation": "^2.0.0",

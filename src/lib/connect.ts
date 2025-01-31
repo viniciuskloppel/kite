@@ -1,6 +1,9 @@
 import {
+  address,
   Address,
   airdropFactory,
+  appendTransactionMessageInstruction,
+  appendTransactionMessageInstructions,
   assertIsSignature,
   Commitment,
   CompilableTransactionMessage,
@@ -10,6 +13,7 @@ import {
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
   createTransactionMessage,
+  generateKeyPairSigner,
   getSignatureFromTransaction,
   KeyPairSigner,
   lamports,
@@ -19,14 +23,25 @@ import {
   RpcTransport,
   sendAndConfirmTransactionFactory,
   setTransactionMessageFeePayer,
+  setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   Signature,
   signTransactionMessageWithSigners,
   SolanaRpcApiFromTransport,
   TransactionMessageWithBlockhashLifetime,
-  appendTransactionMessageInstruction,
 } from "@solana/web3.js";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
+
+import { getCreateAccountInstruction } from "@solana-program/system";
+import {
+  findAssociatedTokenPda,
+  getCreateAssociatedTokenInstructionAsync,
+  getInitializeMintInstruction,
+  getMintSize,
+  getMintToInstruction,
+  getTransferInstruction,
+  TOKEN_2022_PROGRAM_ADDRESS,
+} from "@solana-program/token-2022";
 
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
@@ -39,6 +54,7 @@ import {
   getKeyPairSignerFromFile,
 } from "./keypair";
 import { SOL } from "./constants";
+import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
@@ -279,6 +295,166 @@ const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTrans
   return transferLamports;
 };
 
+const makeTokenMintFactory = (
+  rpc: ReturnType<typeof createSolanaRpcFromTransport>,
+  sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
+) => {
+  const makeTokenMint = async (mintAuthority: KeyPairSigner, decimals: number) => {
+    // Adapted from https://solana.stackexchange.com/questions/19747/how-do-i-make-a-token-with-metadata-using-web3-js-version-2/19748#19748
+
+    // Generate keypairs for mint
+    const mint = await generateKeyPairSigner();
+
+    // Get default mint account size (in bytes), no extensions enabled
+    const space = BigInt(getMintSize());
+
+    // Get minimum balance for rent exemption
+    const rent = await rpc.getMinimumBalanceForRentExemption(space).send();
+
+    // Instruction to create new account for mint (token 2022 program)
+    // Invokes the system program
+    const createAccountInstruction = getCreateAccountInstruction({
+      payer: mintAuthority,
+      newAccount: mint,
+      lamports: rent,
+      space,
+      programAddress: TOKEN_2022_PROGRAM_ADDRESS,
+    });
+
+    // Instruction to initialize mint account data
+    // Invokes the token 2022 program
+    const initializeMintInstruction = getInitializeMintInstruction({
+      mint: mint.address,
+      decimals,
+      mintAuthority: mintAuthority.address,
+    });
+
+    // Order of instructions to add to transaction
+    const instructions = [createAccountInstruction, initializeMintInstruction];
+
+    // Get latest blockhash to include in transaction
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    // Create transaction message
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }), // Create transaction message
+      (tx) => setTransactionMessageFeePayerSigner(mintAuthority, tx), // Set fee payer
+      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx), // Set transaction blockhash
+      (tx) => appendTransactionMessageInstructions(instructions, tx), // Append instructions
+    );
+
+    // Sign transaction message with required signers
+    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+
+    console.log("🟠 we are about to send and confirm the transaction");
+
+    // Send and confirm transaction
+    await sendAndConfirmTransaction(signedTransaction, { commitment: "confirmed" });
+
+    console.log("🟠 we have sent and confirmed the transaction");
+
+    // Get transaction signature for creating mint
+    const transactionSignature = getSignatureFromTransaction(signedTransaction);
+
+    console.log("🟠 we have got the transaction signature");
+
+    return transactionSignature;
+  };
+  // const oldMakeTokenMint = async (
+  //   mintAuthority: KeyPairSigner,
+  //   name: string,
+  //   symbol: string,
+  //   decimals: number,
+  //   uri: string,
+  //   additionalMetadata: Array<[string, string]> | Record<string, string> = [],
+  //   updateAuthority: Address = mintAuthority.address,
+  //   freezeAuthority: Address | null = null,
+  // ) => {
+  //   const mint = generateKeyPairSigner();
+
+  //   if (!Array.isArray(additionalMetadata)) {
+  //     additionalMetadata = Object.entries(additionalMetadata);
+  //   }
+
+  //   createUpdateFieldInstruction;
+
+  //   // // CONVERT ALL THESE TO WEB3 V2
+  //   // const addMetadataInstructions = additionalMetadata.map((additionalMetadataItem) => {
+  //   //   return createUpdateFieldInstruction({
+  //   //     metadata: mint.publicKey,
+  //   //     updateAuthority: updateAuthority,
+  //   //     programId: TOKEN_2022_PROGRAM_ID,
+  //   //     field: additionalMetadataItem[0],
+  //   //     value: additionalMetadataItem[1],
+  //   //   });
+  //   // });
+
+  //   // const metadata: TokenMetadata = {
+  //   //   mint: mint.publicKey,
+  //   //   name,
+  //   //   symbol,
+  //   //   uri,
+  //   //   additionalMetadata,
+  //   // };
+
+  //   // // Work out how much SOL we need to store our Token
+  //   // const mintLength = getMintLen([ExtensionType.MetadataPointer]);
+  //   // const metadataLength = TYPE_SIZE + LENGTH_SIZE + pack(metadata).length;
+  //   // const mintLamports = await rpc.getMinimumBalanceForRentExemption(mintLength + metadataLength);
+
+  //   // const mintTransaction = new Transaction().add(
+  //   //   // Create Account
+  //   //   SystemProgram.createAccount({
+  //   //     fromPubkey: mintAuthority.publicKey,
+  //   //     newAccountPubkey: mint.publicKey,
+  //   //     space: mintLength,
+  //   //     lamports: mintLamports,
+  //   //     programId: TOKEN_2022_PROGRAM_ID,
+  //   //   }),
+
+  //   //   // Initialize metadata pointer (so the mint points to itself for metadata)
+  //   //   createInitializeMetadataPointerInstruction(
+  //   //     mint.publicKey,
+  //   //     mintAuthority.publicKey,
+  //   //     mint.publicKey,
+  //   //     TOKEN_2022_PROGRAM_ID,
+  //   //   ),
+
+  //   //   // Initialize mint
+  //   //   createInitializeMintInstruction(
+  //   //     mint.publicKey,
+  //   //     decimals,
+  //   //     mintAuthority.publicKey,
+  //   //     freezeAuthority,
+  //   //     TOKEN_2022_PROGRAM_ID,
+  //   //   ),
+
+  //   //   // Initialize
+  //   //   createInitializeInstruction({
+  //   //     programId: TOKEN_2022_PROGRAM_ID,
+  //   //     mint: mint.publicKey,
+  //   //     metadata: mint.publicKey,
+  //   //     name: metadata.name,
+  //   //     symbol: metadata.symbol,
+  //   //     uri: metadata.uri,
+  //   //     mintAuthority: mintAuthority.publicKey,
+  //   //     updateAuthority: updateAuthority,
+  //   //   }),
+
+  //   //   // Update field (actually used to add a custom field)
+  //   //   // See https://github.com/solana-labs/solana-program-library/blob/master/token/js/examples/metadata.ts#L81C6-L81C6
+  //   //   // Must come last!
+  //   //   ...addMetadataInstructions,
+  //   // );
+
+  //   // const signature = await sendAndConfirmTransaction(rpc, mintTransaction, [mintAuthority, mint]);
+
+  //   // return mint.publicKey;
+  //   throw new Error("Not implemented");
+  // };
+  return makeTokenMint;
+};
+
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
@@ -329,6 +505,8 @@ export const connect = (
 
   const transferLamports = transferLamportsFactory(rpc);
 
+  const makeTokenMint = makeTokenMintFactory(rpc, sendAndConfirmTransaction);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -341,6 +519,7 @@ export const connect = (
     getLogs,
     getRecentSignatureConfirmation,
     transferLamports,
+    makeTokenMint,
   };
 };
 
@@ -360,4 +539,5 @@ export interface Connection {
   createWallet: ReturnType<typeof createWalletFactory>;
   getLogs: ReturnType<typeof getLogsFactory>;
   transferLamports: ReturnType<typeof transferLamportsFactory>;
+  makeTokenMint: ReturnType<typeof makeTokenMintFactory>;
 }
