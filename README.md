@@ -41,7 +41,7 @@ const connection = connect();
 Using Helius:
 
 ```typescript
-const { getExplorerLink } = connect(
+const connection = connect(
   `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
   `wss://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
 );

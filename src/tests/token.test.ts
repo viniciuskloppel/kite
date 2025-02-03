@@ -8,6 +8,7 @@ import { SOL } from "../lib/constants";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 
+// TODO: this is web3.js version 1
 // describe("createAccountsMintsAndTokenAccounts", () => {
 //   test("createAccountsMintsAndTokenAccounts works", async () => {
 //     const payer = await generateKeyPairSigner();

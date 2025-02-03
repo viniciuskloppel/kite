@@ -4,8 +4,6 @@ import { type createWalletOptions } from "../lib/types";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
-// import { SystemProgram } from "@solana/web3.js";
-// import { Transaction } from "@solana/web3.js";
 import { SOL } from "../lib/constants";
 import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
 
@@ -30,33 +28,32 @@ describe("makeTokenMint", () => {
   test("makeTokenMint makes a new mint with the specified metadata", async () => {
     const connection = connect();
 
-    console.log("🟠 we are about to create a wallet");
+    const mintAuthority = await connection.createWallet({ airdropAmount: lamports(1n * SOL) });
 
-    // TODO: this times out! Fix it
-    // const mintAuthority = await connection.createWallet({ airdropAmount: lamports(1n * SOL) });
-
-    const mintAuthority = await generateKeyPairSigner();
     const oneSol = lamports(1n * SOL);
     await connection.airdropIfRequired(mintAuthority.address, oneSol, oneSol);
 
-    console.log("🟠 we have created a wallet");
+    const name = "Unit test token";
+    const symbol = "TEST";
+    const decimals = 9;
+    const uri = "https://example.com";
+    const additionalMetadata = {
+      keyOne: "valueOne",
+      keyTwo: "valueTwo",
+    };
+    const transactionSignature = await connection.makeTokenMint(
+      mintAuthority,
+      decimals,
+      name,
+      symbol,
+      uri,
+      additionalMetadata,
+    );
 
-    // const name = "Unit test token";
-    // const symbol = "TEST";
-    // const decimals = 9;
-    // const uri = "https://example.com";
-    // const additionalMetadata = {
-    //   shlerm: "frobular",
-    //   glerp: "flerpy",
-    //   gurperderp: "erpy",
-    //   nurmagerd: "flerpy",
-    //   zurp: "flerpy",
-    //   eruper: "flerpy",
-    //   zerperurperserp: "flerpy",
-    //   zherp: "flerpy",
-    // };
-    const mintAddress = await connection.makeTokenMint(mintAuthority, 2);
-    assert.ok(mintAddress);
+    assert.ok(transactionSignature);
+
+    // TODO: get the token metadata for the mint at transactionSignature
+    // this code is web3.js version 1
     // const tokenMetadata = await getTokenMetadata(rpc, mintAddress);
     // if (!tokenMetadata) {
     //   throw new Error(`Token metadata not found for mint address ${mintAddress}`);
