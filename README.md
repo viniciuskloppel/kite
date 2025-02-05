@@ -1,30 +1,89 @@
 
 
-# Kite 🪁
+# Introducing Kite, a modern Solana framework for the browser and node.js 🪁
 
 ## A modern Solana framework for the browser and node.js
 
-Kite, formerly known as `@solana-developers/helpers`, leverages the speed and elegance of [Solana web3.js version 2](https://github.com/anza-xyz/solana-web3.js) but provides a simpler environment to get more done quickly.
+Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but provides a simpler environment to get more done quickly.
 
-More specifically, Kite allows you **do most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
+More specifically, Kite allows you to **do the most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
 
-Kite was created by the original creator of `@solana-developers/helpers`, the most popular library for web3.js version 1. The `kite` package includes contributions from [Helius](https://helius.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
+Kite is a web3.js v2 version of  `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](), by the original author. The `kite` package includes updated versions of all the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
 
 ## Why the name 'Kite'?
 
-Many Solana thinghs - Solana itself, Sealevel, Anchor, Poseidon etc. - are sea themed. Kite is a high level framework, so what is high above a beach? Kites! 🪁😃
+Many Solana things - Solana itself, Sealevel, Anchor, Poseidon, etc. - are sea-themed. Kite is a high-level framework, so what is high above a beach? Kites! 🪁😃
 
-## What can I do with this module?
+## Starting Kite
 
-[FILL IN USING UNIT TESTS AS EXAMPLES]
+web3.js v2 with Kite
 
-[TODO - REDO HEADINGS]
+```typescript
+const connection = connect();
+```
+
+The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta", "testnet", "devnet", "helius-mainnet-beta", "helius-testnet," "helius-devnet". The Helius names require `HELIUS_API_KEY` to be set in your environment.
+
+You can also specify an arbitrary RPC URL and RPC subscription URL
+
+```
+const connection = connect("https://mainnet.example.com/", "wss://mainnet.example.com/");
+```
+
+After you've made a connection Kite is ready to use. **You don't need to set up any factories, they're already configured.** Connection has the following properties out of the box:
+
+```
+createWallet
+sendAndConfirmTransaction
+signSendAndConfirmTransaction
+getBalance
+getExplorerLink
+getRecentSignatureConfirmation
+airdropIfRequired
+getLogs
+transferLamports
+makeTokenMint
+```
+
+## **createWallet** - make a wallet funded with SOL
+
+createWallet() creates a wallet funded with SOL, and optionally saves the keypair to an `.env` file.  
+
+<!-- Generate docs for createWallet -->
+
+```typescript
+const keyPairSigner = await createWallet();
+```
+
+
+
+## What are the downsides?
+
+- It's new, and there's less examples.
+- You make your own implementation of everything with a factory. Need to do a thing?  In web3.js had a function called doThing(), web3.js version 2 has a function called doThingFactory(), which you can pass your own options to and get a doThing() function from. 
+- Many common tasks - loading a keypair from a file, 
+
+@solanahelpers 
 
 ## Installation
 
 ```bash
 npm i @helius/kite
 ```
+
+## 
+
+## What can I do with this module?
+
+
+
+
+
+
+
+[FILL IN USING UNIT TESTS AS EXAMPLES]
+
+[TODO - REDO HEADINGS]
 
 ## Contributing
 
