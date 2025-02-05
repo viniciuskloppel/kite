@@ -18,14 +18,40 @@ export const KEYPAIR_PUBLIC_KEY_OFFSET = 32;
 // Default value from Solana CLI
 const DEFAULT_FILEPATH = "~/.config/solana/id.json";
 
-export const generateExtractableKeyPair = async (): Promise<CryptoKeyPair> => {
+export const generateExtractableKeyPair = async (
+  prefix: string | null = null,
+  suffix: string | null = null,
+): Promise<CryptoKeyPair> => {
   await assertKeyGenerationIsAvailable();
-  const keyPair = await crypto.subtle.generateKey(
-    /* algorithm */ "Ed25519", // Native implementation status: https://github.com/WICG/webcrypto-secure-curves/issues/20
-    /* extractable */ true, //  Allows the private key to be exported (eg for saving it to a file)
-    /* allowed uses */ ["sign", "verify"],
-  );
-  return keyPair;
+
+  // Add the total length of the prefix and suffix
+  const keypairGrindComplexity = (prefix?.length || 0) + (suffix?.length || 0);
+  // Throw a warning if keypairGrindComplexity is greater than 10
+  if (keypairGrindComplexity > 5) {
+    console.warn(
+      `Generating a keyPair with a prefix and suffix of ${keypairGrindComplexity} characters, this may take some time.`,
+    );
+  }
+
+  // Run a loop until we that starts with the prefix and ends with the suffix
+  let counter = 0;
+  while (true) {
+    const keyPair = await crypto.subtle.generateKey(
+      /* algorithm */ "Ed25519", // Native implementation status: https://github.com/WICG/webcrypto-secure-curves/issues/20
+      /* extractable */ true, //  Allows the private key to be exported (eg for saving it to a file)
+      /* allowed uses */ ["sign", "verify"],
+    );
+    // Restart the loop if the keyPair doesn't start with the prefix
+    if (prefix && !keyPair.publicKey.toString().startsWith(prefix)) {
+      continue;
+    }
+    // Restart the loop if the keyPair doesn't end with the suffix
+    if (suffix && !keyPair.publicKey.toString().endsWith(suffix)) {
+      continue;
+    }
+    // Return the keyPair if it starts with the prefix and ends with the suffix
+    return keyPair;
+  }
 };
 
 // Take a webcrypto keyPair and convert it to the same format Anza CLI uses
