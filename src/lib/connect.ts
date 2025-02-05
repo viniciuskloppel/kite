@@ -245,6 +245,8 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
     const {
       keyPairPath,
       envFileName,
+      prefix = null,
+      suffix = null,
       envVariableName = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
       airdropAmount = DEFAULT_AIRDROP_AMOUNT,
       minimumBalance = DEFAULT_MINIMUM_BALANCE,
@@ -259,7 +261,7 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
     } else {
       // Important: we make a temporary keyPair and write it to the environment file
       // This is because the keyPair is extractable, and we want to keep it secret
-      const temporaryExtractableKeyPair = await generateExtractableKeyPair();
+      const temporaryExtractableKeyPair = await generateExtractableKeyPair(prefix, suffix);
       let temporaryExtractableKeyPairSigner = await createSignerFromKeyPair(temporaryExtractableKeyPair);
       await addKeyPairSignerToEnvFile(temporaryExtractableKeyPairSigner, envVariableName, envFileName);
 

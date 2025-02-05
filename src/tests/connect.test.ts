@@ -142,6 +142,53 @@ describe("createWallet", () => {
 
     await deleteFile(envFileName);
   });
+
+  describe("with prefix and suffix", () => {
+    test("creates a wallet with a prefix", async () => {
+      const prefix = "BEGINNING";
+      const wallet = await connection.createWallet({ prefix });
+
+      assert.match(wallet.address, new RegExp(`^${prefix}`));
+      assert.ok(wallet.keyPair.privateKey);
+      assert.ok(wallet.keyPair.privateKey);
+    });
+
+    test("creates a wallet with a suffix", async () => {
+      const suffix = "END";
+      const wallet = await connection.createWallet({ suffix });
+
+      assert.match(wallet.address, new RegExp(`${suffix}$`));
+      assert.ok(wallet.keyPair.privateKey);
+      assert.ok(wallet.address);
+    });
+
+    test("creates a wallet with both prefix and suffix", async () => {
+      // See https://open.spotify.com/track/6kV5VZhLN5yVUXs1Qq40Lw?si=a73e329c7cb24404
+      const prefix = "BEGINNING";
+      const suffix = "END";
+      const wallet = await connection.createWallet({ prefix, suffix });
+
+      assert.match(wallet.address, new RegExp(`^${prefix}`));
+      assert.match(wallet.address, new RegExp(`${suffix}$`));
+      assert.ok(wallet.keyPair.privateKey);
+    });
+
+    test("throws error for invalid prefix characters", async () => {
+      const prefix = "TEST!";
+
+      await assert.rejects(async () => await connection.createWallet({ prefix }), {
+        message: "Invalid prefix characters",
+      });
+    });
+
+    test("throws error for invalid suffix characters", async () => {
+      const suffix = "@END";
+
+      await assert.rejects(async () => await connection.createWallet({ suffix }), {
+        message: "Invalid suffix characters",
+      });
+    });
+  });
 });
 
 describe("airdropIfRequired", () => {

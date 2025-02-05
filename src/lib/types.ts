@@ -6,4 +6,6 @@ export interface createWalletOptions {
   airdropAmount?: Lamports | null;
   minimumBalance?: Lamports;
   keyPairPath?: string;
+  prefix?: string | null;
+  suffix?: string | null;
 }
