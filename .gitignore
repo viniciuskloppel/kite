@@ -5,3 +5,4 @@ test-ledger
 .env*
 coverage
 src/temp
+.DS_Store
