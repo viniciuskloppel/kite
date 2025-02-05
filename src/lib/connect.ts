@@ -30,7 +30,7 @@ import {
   TransactionMessageWithBlockhashLifetime,
 } from "@solana/web3.js";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
-
+import dotenv from "dotenv";
 import { getCreateAccountInstruction } from "@solana-program/system";
 import {
   // This is badly named. It's a function that returns an object.
@@ -257,11 +257,15 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
     } else if (process.env[envVariableName]) {
       keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
     } else {
-      // TODO: we should make a temporary keyPair and write it to the environment file
-      // then reload the one from the environment as non-extractable
-      const keyPair = await generateExtractableKeyPair();
-      keyPairSigner = await createSignerFromKeyPair(keyPair);
-      await addKeyPairSignerToEnvFile(keyPairSigner, envVariableName, envFileName);
+      // Important: we make a temporary keyPair and write it to the environment file
+      // This is because the keyPair is extractable, and we want to keep it secret
+      const temporaryExtractableKeyPair = await generateExtractableKeyPair();
+      let temporaryExtractableKeyPairSigner = await createSignerFromKeyPair(temporaryExtractableKeyPair);
+      await addKeyPairSignerToEnvFile(temporaryExtractableKeyPairSigner, envVariableName, envFileName);
+
+      // We then reload the one from the environment as non-extractable
+      dotenv.config({ path: envFileName });
+      keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
     }
 
     if (airdropAmount) {
