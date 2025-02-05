@@ -64,40 +64,72 @@ export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
 export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
 // Make an object with a map of solana cluster names to subobjects, with the subobjects containing the URL and websocket URL
-const CLUSTER_NAME_TO_URLS: Record<string, { httpURL: string; webSocketURL: string }> = {
-  // Postel's law: be liberal in what you accept
-  mainnet: {
-    httpURL: "https://api.mainnet-beta.solana.com",
-    webSocketURL: "wss://api.mainnet-beta.solana.com",
-  },
-  "mainnet-beta": {
-    httpURL: "https://api.mainnet-beta.solana.com",
-    webSocketURL: "wss://api.mainnet-beta.solana.com",
-  },
-  testnet: {
-    httpURL: "https://api.testnet.solana.com",
-    webSocketURL: "wss://api.testnet.solana.com",
-  },
-  devnet: {
-    httpURL: "https://api.devnet.solana.com",
-    webSocketURL: "wss://api.devnet.solana.com",
-  },
-  localnet: {
-    httpURL: "http://localhost:8899",
-    webSocketURL: "ws://localhost:8900",
-  },
-};
+const CLUSTERS: Record<string, { httpURL: string; webSocketURL: string; requiredEnvironmentVariable: string | null }> =
+  {
+    // Solana Labs RPCs
+    // Postel's law: be liberal in what you accept - so include 'mainnet' as well as 'mainnet-beta'
+    mainnet: {
+      httpURL: "https://api.mainnet-beta.solana.com",
+      webSocketURL: "wss://api.mainnet-beta.solana.com",
+      requiredEnvironmentVariable: null,
+    },
+    "mainnet-beta": {
+      httpURL: "https://api.mainnet-beta.solana.com",
+      webSocketURL: "wss://api.mainnet-beta.solana.com",
+      requiredEnvironmentVariable: null,
+    },
+    testnet: {
+      httpURL: "https://api.testnet.solana.com",
+      webSocketURL: "wss://api.testnet.solana.com",
+      requiredEnvironmentVariable: null,
+    },
+    devnet: {
+      httpURL: "https://api.devnet.solana.com",
+      webSocketURL: "wss://api.devnet.solana.com",
+      requiredEnvironmentVariable: null,
+    },
+    // Helius RPCs
+    "helius-mainnet-beta": {
+      httpURL: "https://mainnet.helius-rpc.com/",
+      webSocketURL: "wss://mainnet.helius-rpc.com/",
+      requiredEnvironmentVariable: "HELIUS_API_KEY",
+    },
+    "helius-mainnet": {
+      httpURL: "https://mainnet.helius-rpc.com/",
+      webSocketURL: "wss://mainnet.helius-rpc.com/",
+      requiredEnvironmentVariable: "HELIUS_API_KEY",
+    },
+    "helius-testnet": {
+      httpURL: "https://testnet.helius-rpc.com/",
+      webSocketURL: "wss://testnet.helius-rpc.com/",
+      requiredEnvironmentVariable: "HELIUS_API_KEY",
+    },
+    "helius-devnet": {
+      httpURL: "https://devnet.helius-rpc.com/",
+      webSocketURL: "wss://devnet.helius-rpc.com/",
+      requiredEnvironmentVariable: "HELIUS_API_KEY",
+    },
+    localnet: {
+      httpURL: "http://localhost:8899",
+      webSocketURL: "ws://localhost:8900",
+      requiredEnvironmentVariable: null,
+    },
+  };
 
-const KNOWN_CLUSTER_NAMES = Object.keys(CLUSTER_NAME_TO_URLS);
+const KNOWN_CLUSTER_NAMES = Object.keys(CLUSTERS);
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
     const searchParams: Record<string, string> = {};
     // Technically it's officially 'mainnet-beta' till Solana gets Firedancer + 1 year 100% availability but we'll accept 'mainnet' too
     if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
-      // If they're using mainnet-beta, we don't need to include the cluster name in the Explorer URL
+      // If they're using Solana Labs mainnet-beta, we don't need to include the cluster name in the Solana Explorer URL
       // because it's the default
-      if (["testnet", "devnet"].includes(clusterNameOrURL)) {
+      if (
+        ["testnet", "devnet", "helius-testnet", "helius-devnet", "helius-mainnet-beta", "helius-mainnet"].includes(
+          clusterNameOrURL,
+        )
+      ) {
         searchParams["cluster"] = clusterNameOrURL;
       }
       // localnet technically isn't a cluster, so requires special handling
@@ -476,13 +508,29 @@ export const connect = (
 ): Connection => {
   let httpURL: string | null = null;
   let webSocketURL: string | null = null;
+
   if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
-    const clusterURLS = CLUSTER_NAME_TO_URLS[clusterNameOrURL];
-    httpURL = clusterURLS.httpURL;
-    webSocketURL = clusterURLS.webSocketURL;
+    const clusterDetails = CLUSTERS[clusterNameOrURL];
+
+    if (clusterDetails.requiredEnvironmentVariable) {
+      const requiredEnvironmentVariable = process.env[clusterDetails.requiredEnvironmentVariable];
+      if (!requiredEnvironmentVariable) {
+        throw new Error(`Environment variable ${clusterDetails.requiredEnvironmentVariable} is not set.`);
+      }
+      // Add the URL param 'api-key' with the value of the environment variable
+      // using a URLSearchParams object
+      const queryParamsString = new URLSearchParams({
+        "api-key": requiredEnvironmentVariable,
+      });
+      httpURL = `${clusterDetails.httpURL}?${queryParamsString}`;
+      webSocketURL = `${clusterDetails.webSocketURL}?${queryParamsString}`;
+    } else {
+      httpURL = clusterDetails.httpURL;
+      webSocketURL = clusterDetails.webSocketURL;
+    }
   } else {
     if (!clusterWebSocketURL) {
-      throw new Error(`Either provide a valid cluster name or two valid URLs.`);
+      throw new Error(`Missing clusterWebSocketURL.Either provide a valid cluster name or two valid URLs.`);
     }
     if (checkIsValidURL(clusterNameOrURL) && checkIsValidURL(clusterWebSocketURL)) {
       httpURL = clusterNameOrURL;
