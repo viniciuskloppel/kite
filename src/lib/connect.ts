@@ -108,7 +108,6 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
     } else {
       if (checkIsValidURL(clusterNameOrURL)) {
         searchParams["cluster"] = "custom";
-        // searchParams["customUrl"] = encodeURIComponent(clusterNameOrURL);
         searchParams["customUrl"] = clusterNameOrURL;
       } else {
         throw new Error(`Unsupported cluster name: ${clusterNameOrURL}`);
