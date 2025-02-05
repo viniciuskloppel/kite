@@ -257,7 +257,7 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
     } else if (process.env[envVariableName]) {
       keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
     } else {
-      // TODO: we should make a temporary keyPair and write it to the environment
+      // TODO: we should make a temporary keyPair and write it to the environment file
       // then reload the one from the environment as non-extractable
       const keyPair = await generateExtractableKeyPair();
       keyPairSigner = await createSignerFromKeyPair(keyPair);
@@ -530,13 +530,19 @@ export const connect = (
     }
   } else {
     if (!clusterWebSocketURL) {
-      throw new Error(`Missing clusterWebSocketURL.Either provide a valid cluster name or two valid URLs.`);
+      throw new Error(
+        `Missing clusterWebSocketURL.Either provide a valid cluster name (${KNOWN_CLUSTER_NAMES.join(
+          ", ",
+        )}) or two valid URLs.`,
+      );
     }
     if (checkIsValidURL(clusterNameOrURL) && checkIsValidURL(clusterWebSocketURL)) {
       httpURL = clusterNameOrURL;
       webSocketURL = clusterWebSocketURL;
     } else {
-      throw new Error(`Unsupported cluster name or URL: ${clusterNameOrURL}`);
+      throw new Error(
+        `Unsupported cluster name (valid options are ${KNOWN_CLUSTER_NAMES.join(", ")}) or URL: ${clusterNameOrURL}. `,
+      );
     }
   }
 
