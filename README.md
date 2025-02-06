@@ -1,5 +1,3 @@
-
-
 # Introducing Kite, a modern Solana framework for the browser and node.js 🪁
 
 ## A modern Solana framework for the browser and node.js
@@ -22,7 +20,7 @@ npm i @helius/kite
 
 ## Starting Kite
 
-web3.js v2 with Kite
+Using the local cluster (ie, `solana-test-validator` running on your machine):
 
 ```typescript
 import { connect } from "@helius/kite";
@@ -44,77 +42,180 @@ You can also specify an arbitrary RPC URL and RPC subscription URL:
 const connection = connect("https://mainnet.example.com/", "wss://mainnet.example.com/");
 ```
 
+
 After you've made a connection Kite is ready to use. **You don't need to set up any factories, they're already configured.** Connection has the following functions ready out of the box:
 
-```
-createWallet
-sendAndConfirmTransaction
-signSendAndConfirmTransaction
-getBalance
-getExplorerLink
-getRecentSignatureConfirmation
-airdropIfRequired
-getLogs
-transferLamports
-makeTokenMint
+## createWallet - Create a new Solana wallet with a SOL balance ready to use
+
+Creates a new Solana wallet (keypair) with optional airdrop of SOL
+
+Returns: `Promise<KeyPairSigner>`
+
+```typescript
+const wallet = await connection.createWallet();
 ```
 
-REGENERATE DOCS HERE
+### Options
 
+- `keyPairPath`: `string` (optional) - Path to load keypair from file
+- `envFileName`: `string` (optional) - Path to .env file to save/load keypair
+- `prefix`: `string` (optional) - Prefix for generated keypair name
+- `suffix`: `string` (optional) - Suffix for generated keypair name
+- `envVariableName`: `string` (optional) - Name of environment variable to store keypair (default: "PRIVATE_KEY")
+- `airdropAmount`: `Lamports` (optional) - Amount of SOL to airdrop (default: 1 SOL)
+- `minimumBalance`: `Lamports` (optional) - Minimum balance threshold (default: 0.5 SOL)
+
+## sendAndConfirmTransaction - Send and confirm a transaction
+
+Sends a transaction and waits for confirmation
+
+Returns: `Promise<void>`
+
+```typescript
+const signature = await connection.sendAndConfirmTransaction(transaction, options);
+```
+
+### Options
+
+- `commitment`: `Commitment` (optional) - Desired confirmation level
+- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks
+
+## signSendAndConfirmTransaction - Sign, send and confirm a transaction
+
+Signs a transaction with the provided signer, sends it, and waits for confirmation
+
+Returns: `Promise<Signature>`
+
+```typescript
+const signature = await connection.signSendAndConfirmTransaction(transaction, signer, options);
+```
+
+### Options
+
+- `commitment`: `Commitment` (optional) - Desired confirmation level
+- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks
+
+## getBalance - Get wallet balance
+
+Gets the SOL balance of a wallet
+
+Returns: `Promise<Lamports>`
+
+```typescript
+const balance = await connection.getBalance(publicKey, commitment);
+```
+
+### Options
+
+- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "finalized")
+
+## getExplorerLink - Get Solana Explorer link
+
+Generates a link to view an address, transaction, or token on Solana Explorer. The link will automatically use your RPC.
+
+Returns: `string` - Explorer URL
+
+```typescript
+const link = connection.getExplorerLink(addressOrSignature, type);
+```
+
+### Options
+
+- `addressOrSignature`: `string` - The address, signature, or token to link to
+- `type`: `"address" | "tx" | "token" | "block"` - Type of entity to link to
+- `searchParams`: `Record<string, string>` (optional) - Additional URL search parameters
+
+## getRecentSignatureConfirmation - Get transaction confirmation status
+
+Checks if a recent transaction signature has been confirmed
+
+Returns: `Promise<boolean>`
+
+```typescript
+const isConfirmed = await connection.getRecentSignatureConfirmation(signature, options);
+```
+
+### Options
+
+- `commitment`: `Commitment` (optional) - Desired confirmation level
+- `timeout`: `number` (optional) - How long to wait for confirmation in milliseconds
+
+## airdropIfRequired - Airdrop SOL if balance is low
+
+Airdrops SOL to a wallet if its balance is below the specified threshold
+
+Returns: `Promise<Lamports>` - New balance in lamports
+
+```typescript
+await connection.airdropIfRequired(address, airdropAmount, minimumBalance);
+```
+
+### Options
+
+- `address`: `Address` - Address to check balance and potentially airdrop to
+- `airdropAmount`: `Lamports` - Amount of lamports to airdrop if needed
+- `minimumBalance`: `Lamports` - Minimum balance threshold that triggers airdrop
+
+## getLogs - Get transaction logs
+
+Retrieves logs for a transaction
+
+Returns: `Promise<Array<string>>`
+
+```typescript
+const logs = await connection.getLogs(signature);
+```
+
+### Options
+
+- `maxSupportedTransactionVersion`: `number` (optional) - Maximum supported transaction version (default: 0)
+- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "confirmed")
+
+## transferLamports - Transfer SOL between wallets
+
+Transfers SOL from one wallet to another
+
+Returns: `Promise<Signature>`
+
+```typescript
+const signature = await connection.transferLamports(source, destination, amount);
+```
+
+### Options
+
+- `source`: `KeyPairSigner` - The wallet to send SOL from
+- `destination`: `Address` - The wallet to send SOL to
+- `amount`: `Lamports` - Amount of lamports to send
+
+## makeTokenMint - Create a new token
+
+Creates a new SPL token with specified parameters
+
+Returns: `Promise<Address>`
+
+```typescript
+const mintAddress = await connection.makeTokenMint(
+  mintAuthority,
+  decimals,
+  name,
+  symbol,
+  uri,
+  additionalMetadata
+);
+```
+
+### Options
+
+- `mintAuthority`: `KeyPairSigner` - Authority that can mint new tokens
+- `decimals`: `number` - Number of decimal places for the token
+- `name`: `string` - Name of the token
+- `symbol`: `string` - Symbol of the token
+- `uri`: `string` - URI for token metadata
+- `additionalMetadata`: `Record<string, string> | Map<string, string>` (optional) - Additional metadata fields
 
 ## Contributing
 
 PRs are very much welcome! Read the [CONTRIBUTING guidelines](CONTRIBUTING.md) then send a PR!
-
-## Connect to your RPC provider
-
-Using the local cluster (ie, `solana-test-validator` running on your machine):
-
-```typescript
-const connection = connect();
-```
-
-Using Helius:
-
-```typescript
-const connection = connect(
-  `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
-  `wss://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
-);
-```
-
-Using mainnet-beta:
-
-```typescript
-const connection = connect("mainnet-beta");
-```
-
-## Loading keypairs from a file
-
-```typescript
-const keyPairSigner = await getKeyPairSignerFromFile('key-pair.json');
-```
-
-## Make multiple keypairs at once
-
-```typescript
-const keyPairs = await makeKeyPairSigners(3);
-```
-
-## Create a wallet with some SOL in it
-
-```typescript
-const keyPairSigner = await connection.createWallet('key-pair.json', 1 * SOL);
-```
-
-## Transfer SOL
-
-```typescript
-const signature = await connection.transferLamports(keyPairSigner, recipient, amount);
-```
-
-## Transfer tokens
-
 
 ## Development and testing
 
@@ -140,23 +241,8 @@ esrun --node-no-warnings tests/src/keypair.test.ts
 
 We use `--node-no-warnings` to avoid ...
 
-```
-(node:27923) ExperimentalWarning: The Ed25519 Web Crypto API algorithm is an experimental feature and might change at any time
-(Use `node --trace-warnings ...` to show where the warning was created)
-```
-
-...which is pretty boring once you've read it for the 50th time.
-
 ```bash
 esrun --node-no-warnings --node-test-name-pattern="getCustomErrorMessage" tests/src/keypair.test.ts
 ```
 
 To just run tests matching the name `getCustomErrorMessage`.
-## See also 
-
-SEE
-https://github.com/mcintyre94/helius-smart-transactions-web3js2
-
- https://solana.com/developers/cookbook/transactions/send-sol
-https://blog.triton.one/ping-thing-solanaweb3js-2x-walkthrough
-Also quicknode helpers
