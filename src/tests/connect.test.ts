@@ -1,6 +1,5 @@
 import { describe, test } from "node:test";
 import { generateKeyPairSigner, lamports } from "@solana/web3.js";
-import { type createWalletOptions } from "../lib/types";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
@@ -107,7 +106,7 @@ describe("createWallet", () => {
     // Use a specific file name to avoid conflicts with other tests
     const envFileName = "../.env-unittest-create-wallet";
 
-    const userBefore = await connection.createWallet(
+    const walletBefore = await connection.createWallet(
       null, // prefix
       null, // suffix
       envFileName,
@@ -116,7 +115,7 @@ describe("createWallet", () => {
     );
 
     // Check balance
-    const balanceBefore = await connection.getBalance(userBefore.address);
+    const balanceBefore = await connection.getBalance(walletBefore.address);
 
     assert.equal(balanceBefore, DEFAULT_AIRDROP_AMOUNT);
 
@@ -128,24 +127,18 @@ describe("createWallet", () => {
     }
 
     // Now reload the environment and check it matches our test keyPair
-    const userAfter = await connection.createWallet(
-      null, // prefix
-      null, // suffix
-      envFileName,
-      keyPairVariableName,
-      DEFAULT_AIRDROP_AMOUNT,
-    );
+    const walletAfter = await connection.getKeyPairSignerFromEnvironment(keyPairVariableName);
 
     // Check the keyPair is the same
-    assert(userBefore.address === userAfter.address);
+    assert(walletBefore.address === walletAfter.address);
 
     // Check balance has not changed
-    const balanceAfter = await connection.getBalance(userAfter.address);
+    const balanceAfter = await connection.getBalance(walletAfter.address);
 
     assert.equal(balanceBefore, balanceAfter);
 
     // Check there is a private key
-    assert.ok(userAfter.keyPair.privateKey);
+    assert.ok(walletAfter.keyPair.privateKey);
 
     await deleteFile(envFileName);
   });

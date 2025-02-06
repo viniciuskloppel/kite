@@ -1,14 +1,6 @@
-import base58 from "bs58";
-import {
-  createKeyPairSignerFromBytes,
-  generateKeyPair,
-  generateKeyPairSigner,
-  KeyPairSigner,
-  signBytes,
-  verifySignature,
-} from "@solana/web3.js";
+import { createKeyPairSignerFromBytes, generateKeyPairSigner, KeyPairSigner } from "@solana/web3.js";
 import { assertKeyGenerationIsAvailable } from "@solana/assertions";
-import { exportRawPrivateKeyBytes, exportRawPublicKeyBytes } from "./crypto-utils";
+import { exportRawPrivateKeyBytes, exportRawPublicKeyBytes } from "./crypto";
 
 // Anza keys concatenate the 32 bytes raw private key and the 32 bytes raw public key.
 // This format was commonly used in NaCl / libsodium when they were popular.

@@ -7,7 +7,6 @@ export const PKCS_8_PREFIX_LENGTH = PKCS_8_PREFIX.length;
 
 // Fixes "Value of "this" must be of type SubtleCrypto" errors
 const exportKey = crypto.subtle.exportKey.bind(crypto.subtle);
-const importKey = crypto.subtle.importKey.bind(crypto.subtle);
 
 // Annoyingly we can't directly output the "raw" value of a private key
 // (we have to use another format)

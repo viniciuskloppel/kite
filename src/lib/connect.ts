@@ -160,8 +160,6 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   return getExplorerLink;
 };
 
-// TODO: work out whetehr we want this
-// Inspired by Quicknode's https://github.com/quiknode-labs/qn-guide-examples/blob/main/solana/web3.js-2.0/helpers/index.ts
 export const signSendAndConfirmTransactionFactory = (
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
@@ -193,13 +191,13 @@ const airdropIfRequiredFactory = (
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>,
 ) => {
   const getBalance = getBalanceFactory(rpc);
-  // Plain 'airdrop' is exported as we don't want to encourage people to
+  // Plain 'airdrop' is not exported as we don't want to encourage people to
   // request airdrops when they don't need them, ie - don't bother
   // the faucet unless you really need to!
   //
-  // Note rpc.requestAirdrop is broken, the finalized paramater doesn't do anything
+  // Note rpc.requestAirdrop is broken, the commitment paramater doesn't do anything
   // despite the docs repeatedly referring to rpc.requestAirdrop
-  // https://github.com/solana-labs/solana-web3.js/issues/3683
+  // See https://github.com/solana-labs/solana-web3.js/issues/3683
   //
   // @ts-expect-error TODO need to work out devnet/mainnet typing issue re: airdrops
   const airdrop = airdropFactory({ rpc, rpcSubscriptions });
