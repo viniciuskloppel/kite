@@ -265,11 +265,14 @@ describe("getExplorerLink", () => {
 
   test("getExplorerLink works for an address using helius-mainnet", () => {
     // This is a fake API key, don't use it
-    // But I did test with a real one, and it worked
+    // But I did test with a real one, and it worked, and you can test it yourself
+    // by visiting the URL and replacing the API key with your own
+
     const FAKE_API_KEY = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
     process.env.HELIUS_API_KEY = FAKE_API_KEY;
     const { getExplorerLink } = connect("helius-mainnet");
     const link = getExplorerLink("address", "11111111111111111111111111111111");
+
     assert.equal(
       link,
       `https://explorer.solana.com/address/11111111111111111111111111111111?cluster=custom&customUrl=https%3A%2F%2Fmainnet.helius-rpc.com%2F%3Fapi-key%3D${FAKE_API_KEY}`,

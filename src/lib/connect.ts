@@ -107,7 +107,7 @@ const CLUSTERS: Record<
     httpURL: "https://mainnet.helius-rpc.com/",
     webSocketURL: "wss://mainnet.helius-rpc.com/",
     isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: true,
+    isNameKnownToSolanaExplorer: false,
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
   },
@@ -115,7 +115,7 @@ const CLUSTERS: Record<
     httpURL: "https://testnet.helius-rpc.com/",
     webSocketURL: "wss://testnet.helius-rpc.com/",
     isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: true,
+    isNameKnownToSolanaExplorer: false,
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
   },
@@ -123,10 +123,11 @@ const CLUSTERS: Record<
     httpURL: "https://devnet.helius-rpc.com/",
     webSocketURL: "wss://devnet.helius-rpc.com/",
     isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: true,
+    isNameKnownToSolanaExplorer: false,
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
   },
+  // Localnet
   localnet: {
     httpURL: "http://localhost:8899",
     webSocketURL: "ws://localhost:8900",
@@ -156,18 +157,26 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
         }
         // We don't have to set searchParams["customUrl"] for localnet - Explorer will connect to localnet by default
         if (clusterNameOrURL !== "localnet") {
-          searchParams["customUrl"] = clusterDetails.httpURL;
-        }
-        if (clusterDetails.requiredParam) {
-          // Add the params for the API key
-          const requiredParamEnvironmentVariable = clusterDetails.requiredParamEnvironmentVariable;
-          if (!requiredParamEnvironmentVariable) {
-            throw new Error(`Required param environment variable is not set for cluster ${clusterNameOrURL}`);
+          if (clusterDetails.requiredParam) {
+            const requiredParamEnvironmentVariable = clusterDetails.requiredParamEnvironmentVariable;
+            if (!requiredParamEnvironmentVariable) {
+              throw new Error(`Required param environment variable is not set for cluster ${clusterNameOrURL}`);
+            }
+            if (!process.env[requiredParamEnvironmentVariable]) {
+              throw new Error(`Environment variable '${requiredParamEnvironmentVariable}' is not set.`);
+            }
+            const apiKey = process.env[requiredParamEnvironmentVariable];
+
+            const params = new URLSearchParams({
+              [clusterDetails.requiredParam]: apiKey,
+            });
+            const urlWithParams = `${clusterDetails.httpURL}?${params.toString()}`;
+            searchParams["customUrl"] = urlWithParams;
+          } else {
+            if (!clusterDetails.isNameKnownToSolanaExplorer) {
+              searchParams["customUrl"] = clusterDetails.httpURL;
+            }
           }
-          if (!process.env[requiredParamEnvironmentVariable]) {
-            throw new Error(`Environment variable '${requiredParamEnvironmentVariable}' is not set.`);
-          }
-          searchParams[clusterDetails.requiredParam] = process.env[requiredParamEnvironmentVariable];
         }
       }
     } else {
