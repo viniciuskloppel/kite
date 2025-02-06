@@ -12,8 +12,8 @@ describe("connect", () => {
     assert.ok(connection);
   });
 
-  test("connect throws an error connecting to a cluster that requires an API key", () => {
-    assert.throws(() => connect("helius-mainnet-beta"), Error);
+  test("connect throws an error connecting to a cluster that requires an API key when the API key is not set", () => {
+    assert.throws(() => connect("helius-mainnet"), Error);
   });
 
   test("connect returns a connection object with the correct URLs when two custom URLs are provided", () => {
@@ -21,9 +21,9 @@ describe("connect", () => {
     assert.ok(connection);
   });
 
-  test("connect throws an error connecting to a cluster that requires an API key", () => {
+  test("connect returns a connection object when connecting to a cluster that requires an API key when the API key is set", () => {
     process.env.HELIUS_API_KEY = "fake-api-key";
-    const connection = connect("helius-mainnet-beta");
+    const connection = connect("helius-mainnet");
     assert.ok(connection);
   });
 
@@ -262,14 +262,12 @@ describe("getExplorerLink", () => {
     assert.equal(link, "https://explorer.solana.com/block/242233124");
   });
 
-  test("getExplorerLink works for an address using Helius as an RPC", () => {
+  test("getExplorerLink works for an address using helius-mainnet", () => {
     // This is a fake API key, don't use it
     // But I did test with a real one, and it worked
     const FAKE_API_KEY = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
-    const { getExplorerLink } = connect(
-      `https://mainnet.helius-rpc.com/?api-key=${FAKE_API_KEY}`,
-      `wss://mainnet.helius-rpc.com/?api-key=${FAKE_API_KEY}`,
-    );
+    process.env.HELIUS_API_KEY = FAKE_API_KEY;
+    const { getExplorerLink } = connect("helius-mainnet");
     const link = getExplorerLink("address", "11111111111111111111111111111111");
     assert.equal(
       link,
@@ -283,7 +281,7 @@ describe("getExplorerLink", () => {
     assert.equal(link, "https://explorer.solana.com/address/11111111111111111111111111111111?cluster=custom");
   });
 
-  test("getExplorerLink works for an address on mainnet", () => {
+  test("getExplorerLink works for an address on mainnet-beta", () => {
     const { getExplorerLink } = connect("mainnet-beta");
     const link = getExplorerLink("address", "dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8");
     assert.equal(link, "https://explorer.solana.com/address/dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8");
@@ -298,7 +296,7 @@ describe("getExplorerLink", () => {
     );
   });
 
-  test("getExplorerLink works for a transaction on mainnet", () => {
+  test("getExplorerLink works for a transaction on mainnet-beta", () => {
     const { getExplorerLink } = connect("mainnet-beta");
     const link = getExplorerLink(
       "transaction",
@@ -310,7 +308,7 @@ describe("getExplorerLink", () => {
     );
   });
 
-  test("getExplorerLink works for a block on mainnet", () => {
+  test("getExplorerLink works for a block on mainnet-beta", () => {
     const { getExplorerLink } = connect("mainnet-beta");
     const link = getExplorerLink("block", "241889720");
     assert.equal(link, "https://explorer.solana.com/block/241889720");

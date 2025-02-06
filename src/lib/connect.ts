@@ -62,78 +62,113 @@ export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
 export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
 // Make an object with a map of solana cluster names to subobjects, with the subobjects containing the URL and websocket URL
-const CLUSTERS: Record<string, { httpURL: string; webSocketURL: string; requiredEnvironmentVariable: string | null }> =
+const CLUSTERS: Record<
+  string,
   {
-    // Solana Labs RPCs
-    // Postel's law: be liberal in what you accept - so include 'mainnet' as well as 'mainnet-beta'
-    mainnet: {
-      httpURL: "https://api.mainnet-beta.solana.com",
-      webSocketURL: "wss://api.mainnet-beta.solana.com",
-      requiredEnvironmentVariable: null,
-    },
-    "mainnet-beta": {
-      httpURL: "https://api.mainnet-beta.solana.com",
-      webSocketURL: "wss://api.mainnet-beta.solana.com",
-      requiredEnvironmentVariable: null,
-    },
-    testnet: {
-      httpURL: "https://api.testnet.solana.com",
-      webSocketURL: "wss://api.testnet.solana.com",
-      requiredEnvironmentVariable: null,
-    },
-    devnet: {
-      httpURL: "https://api.devnet.solana.com",
-      webSocketURL: "wss://api.devnet.solana.com",
-      requiredEnvironmentVariable: null,
-    },
-    // Helius RPCs
-    "helius-mainnet-beta": {
-      httpURL: "https://mainnet.helius-rpc.com/",
-      webSocketURL: "wss://mainnet.helius-rpc.com/",
-      requiredEnvironmentVariable: "HELIUS_API_KEY",
-    },
-    "helius-mainnet": {
-      httpURL: "https://mainnet.helius-rpc.com/",
-      webSocketURL: "wss://mainnet.helius-rpc.com/",
-      requiredEnvironmentVariable: "HELIUS_API_KEY",
-    },
-    "helius-testnet": {
-      httpURL: "https://testnet.helius-rpc.com/",
-      webSocketURL: "wss://testnet.helius-rpc.com/",
-      requiredEnvironmentVariable: "HELIUS_API_KEY",
-    },
-    "helius-devnet": {
-      httpURL: "https://devnet.helius-rpc.com/",
-      webSocketURL: "wss://devnet.helius-rpc.com/",
-      requiredEnvironmentVariable: "HELIUS_API_KEY",
-    },
-    localnet: {
-      httpURL: "http://localhost:8899",
-      webSocketURL: "ws://localhost:8900",
-      requiredEnvironmentVariable: null,
-    },
-  };
+    httpURL: string;
+    webSocketURL: string;
+    // Whether this is the default cluster for the Solana Explorer
+    isExplorerDefault: boolean;
+    // Whether this cluster name is known to the Solana Explorer
+    isNameKnownToSolanaExplorer: boolean;
+    // The URL param name required for this cluster (eg for API keys)
+    requiredParam: string | null;
+    // The environment variable name used for requiredParam above.
+    requiredParamEnvironmentVariable: string | null;
+  }
+> = {
+  // Solana Labs RPCs
+  "mainnet-beta": {
+    httpURL: "https://api.mainnet-beta.solana.com",
+    webSocketURL: "wss://api.mainnet-beta.solana.com",
+    isExplorerDefault: true,
+    isNameKnownToSolanaExplorer: true,
+    requiredParam: null,
+    requiredParamEnvironmentVariable: null,
+  },
+  testnet: {
+    httpURL: "https://api.testnet.solana.com",
+    webSocketURL: "wss://api.testnet.solana.com",
+    isExplorerDefault: false,
+    isNameKnownToSolanaExplorer: true,
+    requiredParam: null,
+    requiredParamEnvironmentVariable: null,
+  },
+  devnet: {
+    httpURL: "https://api.devnet.solana.com",
+    webSocketURL: "wss://api.devnet.solana.com",
+    isExplorerDefault: false,
+    isNameKnownToSolanaExplorer: true,
+    requiredParam: null,
+    requiredParamEnvironmentVariable: null,
+  },
+  // Helius RPCs
+  "helius-mainnet": {
+    httpURL: "https://mainnet.helius-rpc.com/",
+    webSocketURL: "wss://mainnet.helius-rpc.com/",
+    isExplorerDefault: false,
+    isNameKnownToSolanaExplorer: true,
+    requiredParam: "api-key",
+    requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+  },
+  "helius-testnet": {
+    httpURL: "https://testnet.helius-rpc.com/",
+    webSocketURL: "wss://testnet.helius-rpc.com/",
+    isExplorerDefault: false,
+    isNameKnownToSolanaExplorer: true,
+    requiredParam: "api-key",
+    requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+  },
+  "helius-devnet": {
+    httpURL: "https://devnet.helius-rpc.com/",
+    webSocketURL: "wss://devnet.helius-rpc.com/",
+    isExplorerDefault: false,
+    isNameKnownToSolanaExplorer: true,
+    requiredParam: "api-key",
+    requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+  },
+  localnet: {
+    httpURL: "http://localhost:8899",
+    webSocketURL: "ws://localhost:8900",
+    isExplorerDefault: false,
+    isNameKnownToSolanaExplorer: false,
+    requiredParam: null,
+    requiredParamEnvironmentVariable: null,
+  },
+};
 
 const KNOWN_CLUSTER_NAMES = Object.keys(CLUSTERS);
+// For error messages
+const KNOWN_CLUSTER_NAMES_STRING = KNOWN_CLUSTER_NAMES.join(", ");
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
     const searchParams: Record<string, string> = {};
-    // Technically it's officially 'mainnet-beta' till Solana gets Firedancer + 1 year 100% availability but we'll accept 'mainnet' too
     if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
+      const clusterDetails = CLUSTERS[clusterNameOrURL];
       // If they're using Solana Labs mainnet-beta, we don't need to include the cluster name in the Solana Explorer URL
       // because it's the default
-      if (
-        ["testnet", "devnet", "helius-testnet", "helius-devnet", "helius-mainnet-beta", "helius-mainnet"].includes(
-          clusterNameOrURL,
-        )
-      ) {
-        searchParams["cluster"] = clusterNameOrURL;
-      }
-      // localnet technically isn't a cluster, so requires special handling
-      if (clusterNameOrURL === "localnet") {
-        searchParams["cluster"] = "custom";
-        // We don't have to set searchParams["customUrl"] - Explorer will connect to localhost by default in this case
+      if (!clusterDetails.isExplorerDefault) {
+        if (clusterDetails.isNameKnownToSolanaExplorer) {
+          searchParams["cluster"] = clusterNameOrURL;
+        } else {
+          searchParams["cluster"] = "custom";
+        }
+        // We don't have to set searchParams["customUrl"] for localnet - Explorer will connect to localnet by default
+        if (clusterNameOrURL !== "localnet") {
+          searchParams["customUrl"] = clusterDetails.httpURL;
+        }
+        if (clusterDetails.requiredParam) {
+          // Add the params for the API key
+          const requiredParamEnvironmentVariable = clusterDetails.requiredParamEnvironmentVariable;
+          if (!requiredParamEnvironmentVariable) {
+            throw new Error(`Required param environment variable is not set for cluster ${clusterNameOrURL}`);
+          }
+          if (!process.env[requiredParamEnvironmentVariable]) {
+            throw new Error(`Environment variable '${requiredParamEnvironmentVariable}' is not set.`);
+          }
+          searchParams[clusterDetails.requiredParam] = process.env[requiredParamEnvironmentVariable];
+        }
       }
     } else {
       if (checkIsValidURL(clusterNameOrURL)) {
@@ -506,18 +541,23 @@ export const connect = (
   let httpURL: string | null = null;
   let webSocketURL: string | null = null;
 
+  // Postel's law: be liberal in what you accept - so include 'mainnet' as well as 'mainnet-beta'
+  if (clusterNameOrURL === "mainnet") {
+    clusterNameOrURL = "mainnet-beta";
+  }
+
   if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
     const clusterDetails = CLUSTERS[clusterNameOrURL];
 
-    if (clusterDetails.requiredEnvironmentVariable) {
-      const requiredEnvironmentVariable = process.env[clusterDetails.requiredEnvironmentVariable];
-      if (!requiredEnvironmentVariable) {
-        throw new Error(`Environment variable ${clusterDetails.requiredEnvironmentVariable} is not set.`);
+    if (clusterDetails.requiredParamEnvironmentVariable) {
+      const requiredParamEnvironmentVariable = process.env[clusterDetails.requiredParamEnvironmentVariable];
+      if (!requiredParamEnvironmentVariable) {
+        throw new Error(`Environment variable ${clusterDetails.requiredParamEnvironmentVariable} is not set.`);
       }
       // Add the URL param 'api-key' with the value of the environment variable
       // using a URLSearchParams object
       const queryParamsString = new URLSearchParams({
-        "api-key": requiredEnvironmentVariable,
+        "api-key": requiredParamEnvironmentVariable,
       });
       httpURL = `${clusterDetails.httpURL}?${queryParamsString}`;
       webSocketURL = `${clusterDetails.webSocketURL}?${queryParamsString}`;
@@ -528,9 +568,7 @@ export const connect = (
   } else {
     if (!clusterWebSocketURL) {
       throw new Error(
-        `Missing clusterWebSocketURL.Either provide a valid cluster name (${KNOWN_CLUSTER_NAMES.join(
-          ", ",
-        )}) or two valid URLs.`,
+        `Missing clusterWebSocketURL. Either provide a valid cluster name (${KNOWN_CLUSTER_NAMES_STRING}) or two valid URLs.`,
       );
     }
     if (checkIsValidURL(clusterNameOrURL) && checkIsValidURL(clusterWebSocketURL)) {
@@ -538,7 +576,7 @@ export const connect = (
       webSocketURL = clusterWebSocketURL;
     } else {
       throw new Error(
-        `Unsupported cluster name (valid options are ${KNOWN_CLUSTER_NAMES.join(", ")}) or URL: ${clusterNameOrURL}. `,
+        `Unsupported cluster name (valid options are ${KNOWN_CLUSTER_NAMES_STRING}) or URL: ${clusterNameOrURL}. `,
       );
     }
   }

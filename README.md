@@ -28,7 +28,7 @@ import { connect } from "@helius/kite";
 const connection = connect();
 ```
 
-The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta", "testnet", "devnet", "helius-mainnet-beta", "helius-testnet," "helius-devnet".
+The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta", "testnet", "devnet", "helius-mainnet", "helius-testnet," "helius-devnet".
 
 ```typescript
 const connection = connect("helius-devnet");
@@ -231,10 +231,10 @@ If you'd like to run a single test, use:
 esrun --node-no-warnings tests/src/keypair.test.ts
 ```
 
-We use `--node-no-warnings` to avoid ...
+We use `--node-no-warnings` to avoid `ExperimentalWarning: The Ed25519 Web Crypto API algorithm is an experimental feature` which is pretty boring once you've read it for the 50th time.
 
 ```bash
-esrun --node-no-warnings --node-test-name-pattern="getCustomErrorMessage" tests/src/keypair.test.ts
+esrun --node-no-warnings --node-test-name-pattern='connect' src/tests/connect.test.ts
 ```
 
 To just run tests matching the name `getCustomErrorMessage`.
