@@ -51,7 +51,7 @@ import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import {
   addKeyPairSignerToEnvFile,
-  generateExtractableKeyPair,
+  grindKeyPair,
   getKeyPairSignerFromEnvironment,
   getKeyPairSignerFromFile,
 } from "./keypair";
@@ -282,17 +282,23 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
     let keyPairSigner: KeyPairSigner;
 
     if (envFileName) {
-      // Important: we make a temporary keyPair and write it to the environment file
-      // We then reload the one from the environment as non-extractable
-      // This is because the keyPair is extractable, and we want to keep it secret
-      const temporaryExtractableKeyPair = await generateExtractableKeyPair(prefix, suffix);
+      // Important: we make a temporary extractable keyPair and write it to the environment file
+      // We then reload the keypair from the environment as non-extractable
+      // This is because the temporaryExtractableKeyPair's private key is extractable, and we want to keep it secret
+      const temporaryExtractableKeyPair = await grindKeyPair(
+        prefix,
+        suffix,
+        false,
+        "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
+      );
       const temporaryExtractableKeyPairSigner = await createSignerFromKeyPair(temporaryExtractableKeyPair);
       await addKeyPairSignerToEnvFile(temporaryExtractableKeyPairSigner, envVariableName, envFileName);
       dotenv.config({ path: envFileName });
       keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
-      // Once the block is exited, the variable will be dereferenced and no longer accessible. This means the memory used by the variable can be reclaimed by the garbage collector, assuming there are no other references to it outside the block. Goodbye temporaryExtractableKeyPair and temporaryExtractableKeyPairSigner!
+      // Once the block is exited, the variable will be dereferenced and no longer accessible. This means the memory used by the variable can be reclaimed by the garbage collector, as there are no other references to it outside the block. Goodbye temporaryExtractableKeyPair and temporaryExtractableKeyPairSigner!
     } else {
-      keyPairSigner = await generateKeyPairSigner();
+      const keyPair = await grindKeyPair(prefix, suffix);
+      keyPairSigner = await createSignerFromKeyPair(keyPair);
     }
 
     if (airdropAmount) {
@@ -516,11 +522,6 @@ const makeTokenMintFactory = (
 
     // Sign transaction message with required signers (fee payer and mint keypair)
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
-
-    // Get transaction signature for creating mint and associated token account
-    const transactionSignature = getSignatureFromTransaction(signedTransaction);
-
-    console.log("Transaction Signature:", `https://explorer.solana.com/tx/${transactionSignature}?cluster=custom`);
 
     // Send and confirm transaction
     await sendAndConfirmTransaction(signedTransaction, {

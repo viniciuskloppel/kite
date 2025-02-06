@@ -3,7 +3,7 @@ import assert from "node:assert";
 import {
   addKeyPairSignerToEnvFile,
   createJSONFromKeyPairSigner,
-  generateExtractableKeyPair,
+  grindKeyPair,
   getKeyPairSignerFromEnvironment,
   getKeyPairSignerFromFile,
   makeKeyPairSigners,
@@ -40,7 +40,7 @@ describe("addCryptoKeyPairToEnvFile", () => {
   let testKeyPairSigner: KeyPairSigner;
 
   before(async () => {
-    const testCryptoKeyPair = await generateExtractableKeyPair();
+    const testCryptoKeyPair = await grindKeyPair();
     testKeyPairSigner = await createSignerFromKeyPair(testCryptoKeyPair);
 
     const testCryptoKeyPairString = await createJSONFromKeyPairSigner(testKeyPairSigner);
@@ -128,7 +128,7 @@ describe("getKeyPairSignerFromEnvironment", () => {
   const TEST_ENV_VAR_WITH_BAD_VALUE = "TEST_ENV_VAR_WITH_BAD_VALUE";
 
   before(async () => {
-    const randomCryptoKeyPair = await generateExtractableKeyPair();
+    const randomCryptoKeyPair = await grindKeyPair();
     const randomKeyPairSigner = await createSignerFromKeyPair(randomCryptoKeyPair);
 
     process.env[TEST_ENV_VAR_ARRAY_OF_NUMBERS] = await createJSONFromKeyPairSigner(randomKeyPairSigner);

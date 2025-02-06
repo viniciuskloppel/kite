@@ -145,15 +145,16 @@ describe("createWallet", () => {
 
   describe("with prefix and suffix", () => {
     test("creates a wallet with a prefix", async () => {
-      const prefix = "BEGINNING";
+      const prefix = "BE";
       const wallet = await connection.createWallet(prefix);
 
       assert.match(wallet.address, new RegExp(`^${prefix}`));
       assert.ok(wallet.keyPair.privateKey);
+      assert.ok(wallet.address);
     });
 
     test("creates a wallet with a suffix", async () => {
-      const suffix = "END";
+      const suffix = "EN";
       const wallet = await connection.createWallet(null, suffix);
 
       assert.match(wallet.address, new RegExp(`${suffix}$`));
@@ -163,8 +164,8 @@ describe("createWallet", () => {
 
     test("creates a wallet with both prefix and suffix", async () => {
       // See https://open.spotify.com/track/6kV5VZhLN5yVUXs1Qq40Lw?si=a73e329c7cb24404
-      const prefix = "BEGINNING";
-      const suffix = "END";
+      const prefix = "B";
+      const suffix = "E";
       const wallet = await connection.createWallet(prefix, suffix);
 
       assert.match(wallet.address, new RegExp(`^${prefix}`));
@@ -176,7 +177,7 @@ describe("createWallet", () => {
       const prefix = "TEST!";
 
       await assert.rejects(async () => await connection.createWallet(prefix), {
-        message: "Invalid prefix characters",
+        message: "Prefix must contain only base58 characters.",
       });
     });
 
@@ -184,7 +185,7 @@ describe("createWallet", () => {
       const suffix = "@END";
 
       await assert.rejects(async () => await connection.createWallet(null, suffix), {
-        message: "Invalid suffix characters",
+        message: "Suffix must contain only base58 characters.",
       });
     });
   });

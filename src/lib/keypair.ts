@@ -1,25 +1,39 @@
 import { createKeyPairSignerFromBytes, generateKeyPairSigner, KeyPairSigner } from "@solana/web3.js";
 import { assertKeyGenerationIsAvailable } from "@solana/assertions";
-import { exportRawPrivateKeyBytes, exportRawPublicKeyBytes } from "./crypto";
+import { exportRawPrivateKeyBytes, exportRawPublicKeyBytes, getBase58AddressFromPublicKey } from "./crypto";
+import {
+  BASE58_CHARACTER_SET,
+  DEFAULT_FILEPATH,
+  GRIND_COMPLEXITY_THRESHOLD,
+  KEYPAIR_LENGTH,
+  KEYPAIR_PUBLIC_KEY_OFFSET,
+} from "./constants";
+const ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE =
+  "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file";
 
-// Anza keys concatenate the 32 bytes raw private key and the 32 bytes raw public key.
-// This format was commonly used in NaCl / libsodium when they were popular.
-export const KEYPAIR_LENGTH = 64;
-export const KEYPAIR_PUBLIC_KEY_OFFSET = 32;
-
-// Default value from Solana CLI
-const DEFAULT_FILEPATH = "~/.config/solana/id.json";
-
-export const generateExtractableKeyPair = async (
+export const grindKeyPair = async (
   prefix: string | null = null,
   suffix: string | null = null,
+  silenceGrindProgress: boolean = false,
+  isPrivateKeyExtractable: false | typeof ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE = false,
 ): Promise<CryptoKeyPair> => {
   await assertKeyGenerationIsAvailable();
 
+  // Do not allow extractable keyPairs unless the user has explicitly said they understand the risk
+  const allowExtractablePrivateKey = isPrivateKeyExtractable === ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE;
+
+  // Ensure the prefix and suffix are within the base58 character set
+  if (prefix && !BASE58_CHARACTER_SET.test(prefix)) {
+    throw new Error("Prefix must contain only base58 characters.");
+  }
+  if (suffix && !BASE58_CHARACTER_SET.test(suffix)) {
+    throw new Error("Suffix must contain only base58 characters.");
+  }
+
   // Add the total length of the prefix and suffix
   const keypairGrindComplexity = (prefix?.length || 0) + (suffix?.length || 0);
-  // Throw a warning if keypairGrindComplexity is greater than 10
-  if (keypairGrindComplexity > 5) {
+  // Throw a warning if keypairGrindComplexity is greater than GRIND_COMPLEXITY_THRESHOLD
+  if (keypairGrindComplexity > GRIND_COMPLEXITY_THRESHOLD) {
     console.warn(
       `Generating a keyPair with a prefix and suffix of ${keypairGrindComplexity} characters, this may take some time.`,
     );
@@ -28,21 +42,36 @@ export const generateExtractableKeyPair = async (
   // Run a loop until we that starts with the prefix and ends with the suffix
   let counter = 0;
   while (true) {
+    counter++;
+
+    // Log every 100,000 iterations
+    if (!silenceGrindProgress && counter % 100000 === 0) {
+      console.log(`Keypair grind tries: ${counter}`);
+    }
+
     const keyPair = await crypto.subtle.generateKey(
-      /* algorithm */ "Ed25519", // Native implementation status: https://github.com/WICG/webcrypto-secure-curves/issues/20
-      /* extractable */ true, //  Allows the private key to be exported (eg for saving it to a file)
-      /* allowed uses */ ["sign", "verify"],
+      "Ed25519", // Algorithm. Native implementation status: https://github.com/WICG/webcrypto-secure-curves/issues/20
+      allowExtractablePrivateKey, // Allows the private key to be exported (eg for saving it to a file) - public key is always extractable see https://wicg.github.io/webcrypto-secure-curves/#ed25519-operations
+      ["sign", "verify"], // Allowed uses
     );
-    // Restart the loop if the keyPair doesn't start with the prefix
-    if (prefix && !keyPair.publicKey.toString().startsWith(prefix)) {
-      continue;
+
+    const publicKeyString = await getBase58AddressFromPublicKey(keyPair.publicKey);
+
+    // If we don't have a prefix, we don't need to check if the keyPair starts with the prefix
+    if (!prefix && !suffix) {
+      return keyPair;
     }
-    // Restart the loop if the keyPair doesn't end with the suffix
-    if (suffix && !keyPair.publicKey.toString().endsWith(suffix)) {
-      continue;
+
+    const matchesPrefix = prefix ? publicKeyString.startsWith(prefix) : true;
+    const matchesSuffix = suffix ? publicKeyString.endsWith(suffix) : true;
+
+    // If the keyPair matches, return it
+    if (matchesPrefix && matchesSuffix) {
+      return keyPair;
     }
-    // Return the keyPair if it starts with the prefix and ends with the suffix
-    return keyPair;
+
+    // Restart the loop
+    continue;
   }
 };
 
