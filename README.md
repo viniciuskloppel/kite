@@ -6,7 +6,7 @@ Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.
 
 More specifically, Kite allows you to **do the most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
 
-Kite is a web3.js v2 version of  `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](), by the original author. The `kite` package includes updated versions of all the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
+Kite is a web3.js v2 version of `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](), by the original author. The `kite` package includes updated versions of all the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
 
 ## Why the name 'Kite'?
 
@@ -28,7 +28,7 @@ import { connect } from "@helius/kite";
 const connection = connect();
 ```
 
-The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta", "testnet", "devnet", "helius-mainnet-beta", "helius-testnet," "helius-devnet". 
+The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta", "testnet", "devnet", "helius-mainnet-beta", "helius-testnet," "helius-devnet".
 
 ```typescript
 const connection = connect("helius-devnet");
@@ -42,12 +42,11 @@ You can also specify an arbitrary RPC URL and RPC subscription URL:
 const connection = connect("https://mainnet.example.com/", "wss://mainnet.example.com/");
 ```
 
-
 After you've made a connection Kite is ready to use. **You don't need to set up any factories, they're already configured.** Connection has the following functions ready out of the box:
 
-## createWallet - Create a new Solana wallet with a SOL balance ready to use
+## createWallet - Create a new Solana wallet
 
-Creates a new Solana wallet (keypair) with optional airdrop of SOL
+Creates a new Solana wallet (more specifically a `KeyPairSigner`).
 
 Returns: `Promise<KeyPairSigner>`
 
@@ -194,14 +193,7 @@ Creates a new SPL token with specified parameters
 Returns: `Promise<Address>`
 
 ```typescript
-const mintAddress = await connection.makeTokenMint(
-  mintAuthority,
-  decimals,
-  name,
-  symbol,
-  uri,
-  additionalMetadata
-);
+const mintAddress = await connection.makeTokenMint(mintAuthority, decimals, name, symbol, uri, additionalMetadata);
 ```
 
 ### Options

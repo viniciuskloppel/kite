@@ -49,8 +49,6 @@ import {
 
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
-import { log, stringify } from "./utils";
-import { createWalletOptions } from "./types";
 import {
   addKeyPairSignerToEnvFile,
   generateExtractableKeyPair,
@@ -241,37 +239,32 @@ const airdropIfRequiredFactory = (
 // Formerly called initializeKeypair()
 // See https://assets.fengsi.io/pr:sharp/rs:fill:1600:1067:1:1/g:ce/q:80/L2FwaS9qZGxlYXRoZXJnb29kcy9vcmlnaW5hbHMvYjZmNmU2ODAtNzY3OC00MDFiLWE1MzctODg4MWQyMmMzZWIyLmpwZw.jpg
 const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
-  const createWallet = async (options?: createWalletOptions): Promise<KeyPairSigner> => {
-    const {
-      keyPairPath,
-      envFileName,
-      prefix = null,
-      suffix = null,
-      envVariableName = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
-      airdropAmount = DEFAULT_AIRDROP_AMOUNT,
-      minimumBalance = DEFAULT_MINIMUM_BALANCE,
-    } = options || {};
-
+  const createWallet = async (
+    prefix: string | null = null,
+    suffix: string | null = null,
+    envFileName: string | null = null,
+    envVariableName: string = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
+    airdropAmount: Lamports | null = DEFAULT_AIRDROP_AMOUNT,
+  ): Promise<KeyPairSigner> => {
     let keyPairSigner: KeyPairSigner;
 
-    if (keyPairPath) {
-      keyPairSigner = await getKeyPairSignerFromFile(keyPairPath);
-    } else if (process.env[envVariableName]) {
-      keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
-    } else {
+    if (envFileName) {
       // Important: we make a temporary keyPair and write it to the environment file
+      // We then reload the one from the environment as non-extractable
       // This is because the keyPair is extractable, and we want to keep it secret
       const temporaryExtractableKeyPair = await generateExtractableKeyPair(prefix, suffix);
-      let temporaryExtractableKeyPairSigner = await createSignerFromKeyPair(temporaryExtractableKeyPair);
+      const temporaryExtractableKeyPairSigner = await createSignerFromKeyPair(temporaryExtractableKeyPair);
       await addKeyPairSignerToEnvFile(temporaryExtractableKeyPairSigner, envVariableName, envFileName);
-
-      // We then reload the one from the environment as non-extractable
       dotenv.config({ path: envFileName });
       keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
+      // Once the block is exited, the variable will be dereferenced and no longer accessible. This means the memory used by the variable can be reclaimed by the garbage collector, assuming there are no other references to it outside the block. Goodbye temporaryExtractableKeyPair and temporaryExtractableKeyPairSigner!
+    } else {
+      keyPairSigner = await generateKeyPairSigner();
     }
 
     if (airdropAmount) {
-      await airdropIfRequired(keyPairSigner.address, airdropAmount, minimumBalance);
+      // Since this is a brand new wallet (and has no existing balance), we can just use the airdrop amount for the minimum balance
+      await airdropIfRequired(keyPairSigner.address, airdropAmount, airdropAmount);
     }
 
     return keyPairSigner;
@@ -595,6 +588,8 @@ export const connect = (
     getRecentSignatureConfirmation,
     transferLamports,
     makeTokenMint,
+    getKeyPairSignerFromFile,
+    getKeyPairSignerFromEnvironment,
   };
 };
 
@@ -615,4 +610,9 @@ export interface Connection {
   getLogs: ReturnType<typeof getLogsFactory>;
   transferLamports: ReturnType<typeof transferLamportsFactory>;
   makeTokenMint: ReturnType<typeof makeTokenMintFactory>;
+  // We expose these functions under Connection
+  // simply because it's borng trying to remember what's a property of connection and what isn't,
+  // They don't need to use 'ReturnType' because they're not factory functions
+  getKeyPairSignerFromFile: typeof getKeyPairSignerFromFile;
+  getKeyPairSignerFromEnvironment: typeof getKeyPairSignerFromEnvironment;
 }
