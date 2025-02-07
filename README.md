@@ -28,7 +28,7 @@ import { connect } from "@helius/kite";
 const connection = connect();
 ```
 
-The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta", "testnet", "devnet", "helius-mainnet", "helius-testnet," "helius-devnet".
+The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta" (or "mainnet"), "testnet", "devnet", "helius-mainnet", "helius-testnet," "helius-devnet".
 
 ```typescript
 const connection = connect("helius-devnet");
@@ -51,61 +51,91 @@ Creates a new Solana wallet (more specifically a `KeyPairSigner`).
 Returns: `Promise<KeyPairSigner>`
 
 ```typescript
-const wallet = await connection.createWallet();
+const wallet = await connection.createWallet(prefix, suffix, envFileName, envVariableName, airdropAmount);
 ```
 
 ### Options
 
-- `keyPairPath`: `string` (optional) - Path to load keypair from file
-- `envFileName`: `string` (optional) - Path to .env file to save/load keypair
-- `prefix`: `string` (optional) - Prefix for generated keypair name
-- `suffix`: `string` (optional) - Suffix for generated keypair name
+- `prefix`: `string | null` (optional) - Prefix for generated keypair name
+- `suffix`: `string | null` (optional) - Suffix for generated keypair name
+- `envFileName`: `string | null` (optional) - Path to .env file to save/load keypair
 - `envVariableName`: `string` (optional) - Name of environment variable to store keypair (default: "PRIVATE_KEY")
-- `airdropAmount`: `Lamports` (optional) - Amount of SOL to airdrop (default: 1 SOL)
-- `minimumBalance`: `Lamports` (optional) - Minimum balance threshold (default: 0.5 SOL)
+- `airdropAmount`: `Lamports | null` (optional) - Amount of SOL to airdrop (default: 1 SOL)
+
+## getKeyPairSignerFromFile - Load a keypair from file
+
+Loads a keypair from a file.
+
+Returns: `Promise<KeyPairSigner>`
+
+```typescript
+const wallet = await connection.getKeyPairSignerFromFile(keyPairPath);
+```
+
+### Options
+
+- `keyPairPath`: `string` - Path to load keypair from file
+
+## getKeyPairSignerFromEnvironment - Load a keypair from environment
+
+Loads a keypair from an environment variable.
+
+Returns: `Promise<KeyPairSigner>`
+
+```typescript
+const wallet = await connection.getKeyPairSignerFromEnvironment(envVariableName);
+```
+
+### Options
+
+- `envVariableName`: `string` - Name of environment variable containing the keypair (default: "PRIVATE_KEY")
 
 ## sendAndConfirmTransaction - Send and confirm a transaction
 
-Sends a transaction and waits for confirmation
+Sends a transaction and waits for confirmation.
 
 Returns: `Promise<void>`
 
 ```typescript
-const signature = await connection.sendAndConfirmTransaction(transaction, options);
+await connection.sendAndConfirmTransaction(transaction, options);
 ```
 
 ### Options
 
-- `commitment`: `Commitment` (optional) - Desired confirmation level
-- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks
+- `transaction`: `VersionedTransaction` - Transaction to send
+- `options`: `Object` (optional)
+  - `commitment`: `Commitment` - Desired confirmation level
+  - `skipPreflight`: `boolean` - Whether to skip preflight transaction checks
 
 ## signSendAndConfirmTransaction - Sign, send and confirm a transaction
 
-Signs a transaction with the provided signer, sends it, and waits for confirmation
+Signs a transaction with the provided signer, sends it, and waits for confirmation.
 
 Returns: `Promise<Signature>`
 
 ```typescript
-const signature = await connection.signSendAndConfirmTransaction(transaction, signer, options);
+const signature = await connection.signSendAndConfirmTransaction(transactionMessage, commitment, skipPreflight);
 ```
 
 ### Options
 
-- `commitment`: `Commitment` (optional) - Desired confirmation level
-- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks
+- `transactionMessage`: `CompilableTransactionMessage & TransactionMessageWithBlockhashLifetime` - Transaction message to sign and send
+- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "processed")
+- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: true)
 
 ## getBalance - Get wallet balance
 
-Gets the SOL balance of a wallet
+Gets the SOL balance of a wallet.
 
 Returns: `Promise<Lamports>`
 
 ```typescript
-const balance = await connection.getBalance(publicKey, commitment);
+const balance = await connection.getBalance(address, commitment);
 ```
 
 ### Options
 
+- `address`: `string` - Address to check balance for
 - `commitment`: `Commitment` (optional) - Desired confirmation level (default: "finalized")
 
 ## getExplorerLink - Get Solana Explorer link
@@ -115,18 +145,17 @@ Generates a link to view an address, transaction, or token on Solana Explorer. T
 Returns: `string` - Explorer URL
 
 ```typescript
-const link = connection.getExplorerLink(addressOrSignature, type);
+const link = connection.getExplorerLink(linkType, id);
 ```
 
 ### Options
 
-- `addressOrSignature`: `string` - The address, signature, or token to link to
-- `type`: `"address" | "tx" | "token" | "block"` - Type of entity to link to
-- `searchParams`: `Record<string, string>` (optional) - Additional URL search parameters
+- `linkType`: `"transaction" | "tx" | "address" | "block"` - Type of entity to link to
+- `id`: `string` - The address, signature, or block to link to
 
 ## getRecentSignatureConfirmation - Get transaction confirmation status
 
-Checks if a recent transaction signature has been confirmed
+Checks if a recent transaction signature has been confirmed.
 
 Returns: `Promise<boolean>`
 
@@ -136,17 +165,19 @@ const isConfirmed = await connection.getRecentSignatureConfirmation(signature, o
 
 ### Options
 
-- `commitment`: `Commitment` (optional) - Desired confirmation level
-- `timeout`: `number` (optional) - How long to wait for confirmation in milliseconds
+- `signature`: `string` - Transaction signature to check
+- `options`: `Object` (optional)
+  - `commitment`: `Commitment` - Desired confirmation level
+  - `timeout`: `number` - How long to wait for confirmation in milliseconds
 
 ## airdropIfRequired - Airdrop SOL if balance is low
 
-Airdrops SOL to a wallet if its balance is below the specified threshold
+Airdrops SOL to a wallet if its balance is below the specified threshold.
 
 Returns: `Promise<Lamports>` - New balance in lamports
 
 ```typescript
-await connection.airdropIfRequired(address, airdropAmount, minimumBalance);
+const newBalance = await connection.airdropIfRequired(address, airdropAmount, minimumBalance);
 ```
 
 ### Options
@@ -157,7 +188,7 @@ await connection.airdropIfRequired(address, airdropAmount, minimumBalance);
 
 ## getLogs - Get transaction logs
 
-Retrieves logs for a transaction
+Retrieves logs for a transaction.
 
 Returns: `Promise<Array<string>>`
 
@@ -167,12 +198,11 @@ const logs = await connection.getLogs(signature);
 
 ### Options
 
-- `maxSupportedTransactionVersion`: `number` (optional) - Maximum supported transaction version (default: 0)
-- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "confirmed")
+- `signature`: `string` - Transaction signature to get logs for
 
 ## transferLamports - Transfer SOL between wallets
 
-Transfers SOL from one wallet to another
+Transfers SOL from one wallet to another.
 
 Returns: `Promise<Signature>`
 
@@ -188,7 +218,7 @@ const signature = await connection.transferLamports(source, destination, amount)
 
 ## makeTokenMint - Create a new token
 
-Creates a new SPL token with specified parameters
+Creates a new SPL token with specified parameters.
 
 Returns: `Promise<Address>`
 
