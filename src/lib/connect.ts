@@ -50,92 +50,11 @@ import {
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
-import { SOL } from "./constants";
+import { SOL, KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./constants";
 
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
 export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
-
-// Make an object with a map of solana cluster names to subobjects, with the subobjects containing the URL and websocket URL
-const CLUSTERS: Record<
-  string,
-  {
-    httpURL: string;
-    webSocketURL: string;
-    // Whether this is the default cluster for the Solana Explorer
-    isExplorerDefault: boolean;
-    // Whether this cluster name is known to the Solana Explorer
-    isNameKnownToSolanaExplorer: boolean;
-    // The URL param name required for this cluster (eg for API keys)
-    requiredParam: string | null;
-    // The environment variable name used for requiredParam above.
-    requiredParamEnvironmentVariable: string | null;
-  }
-> = {
-  // Solana Labs RPCs
-  "mainnet-beta": {
-    httpURL: "https://api.mainnet-beta.solana.com",
-    webSocketURL: "wss://api.mainnet-beta.solana.com",
-    isExplorerDefault: true,
-    isNameKnownToSolanaExplorer: true,
-    requiredParam: null,
-    requiredParamEnvironmentVariable: null,
-  },
-  testnet: {
-    httpURL: "https://api.testnet.solana.com",
-    webSocketURL: "wss://api.testnet.solana.com",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: true,
-    requiredParam: null,
-    requiredParamEnvironmentVariable: null,
-  },
-  devnet: {
-    httpURL: "https://api.devnet.solana.com",
-    webSocketURL: "wss://api.devnet.solana.com",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: true,
-    requiredParam: null,
-    requiredParamEnvironmentVariable: null,
-  },
-  // Helius RPCs
-  "helius-mainnet": {
-    httpURL: "https://mainnet.helius-rpc.com/",
-    webSocketURL: "wss://mainnet.helius-rpc.com/",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
-    requiredParam: "api-key",
-    requiredParamEnvironmentVariable: "HELIUS_API_KEY",
-  },
-  "helius-testnet": {
-    httpURL: "https://testnet.helius-rpc.com/",
-    webSocketURL: "wss://testnet.helius-rpc.com/",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
-    requiredParam: "api-key",
-    requiredParamEnvironmentVariable: "HELIUS_API_KEY",
-  },
-  "helius-devnet": {
-    httpURL: "https://devnet.helius-rpc.com/",
-    webSocketURL: "wss://devnet.helius-rpc.com/",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
-    requiredParam: "api-key",
-    requiredParamEnvironmentVariable: "HELIUS_API_KEY",
-  },
-  // Localnet
-  localnet: {
-    httpURL: "http://localhost:8899",
-    webSocketURL: "ws://localhost:8900",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
-    requiredParam: null,
-    requiredParamEnvironmentVariable: null,
-  },
-};
-
-const KNOWN_CLUSTER_NAMES = Object.keys(CLUSTERS);
-// For error messages
-const KNOWN_CLUSTER_NAMES_STRING = KNOWN_CLUSTER_NAMES.join(", ");
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
