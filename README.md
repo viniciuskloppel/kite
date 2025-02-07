@@ -1,12 +1,12 @@
 # Introducing Kite, a modern Solana framework for the browser and node.js 🪁
 
-## A modern Solana framework for the browser and node.js
+## A modern Solana TypeScript framework
 
-Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but provides a simpler environment to get more done quickly.
+Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to **do the most common Solana tasks in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
 
-More specifically, Kite allows you to **do the most common Solana tasks in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
+Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of all the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
 
-Kite is a web3.js v2 version of `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](), by the original author. The `kite` package includes updated versions of all the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
+Kite works both in the browser and node.js and has [minimal dependencies](https://github.com/helius-dev/kite/blob/main/package.json).
 
 ## What can I do with this library?
 
@@ -17,17 +17,19 @@ Kite includes functions to:
 - [Load a wallet from an environment variable](#loadwalletfromenvironment---load-a-wallet-from-environment)
 - [Send and confirm a transaction](#sendandconfirmtransaction---send-and-confirm-a-transaction)
 - [Sign, send and confirm a transaction](#signsendandconfirmtransaction---sign-send-and-confirm-a-transaction)
-- [Get a wallet's balance](#getbalance---get-wallet-balance)
+- [Get an account balance](#getbalance---get-account-balance)
 - [Get a Solana Explorer link](#getexplorerlink---get-solana-explorer-link)
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
-- [Airdrop SOL to a wallet](#airdropifrequired---airdrop-sol-if-balance-is-low)
+- [Airdrop SOL if balance is low](#airdropifrequired---airdrop-sol-if-balance-is-low)
 - [Get transaction logs](#getlogs---get-transaction-logs)
 - [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
-- [Create a new token](#tokenmint---create-a-new-token)
+- [Create a new token](#maketokenmint---create-a-new-token)
+
+We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
 
 ## Why the name 'Kite'?
 
-Solan itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beach,_California). Kite is a high-level framework, so what is high above a beach? Kites! 🪁😃
+Solana itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beach,_California). Kite is a high-level framework, so what is high above a beach? Kites! 🪁😃
 
 ## Installation
 
@@ -37,7 +39,7 @@ npm i @helius/kite
 
 ## Starting Kite
 
-Using the local cluster (ie, `solana-test-validator` running on your machine):
+To use the local cluster (ie, `solana-test-validator` running on your machine):
 
 ```typescript
 import { connect } from "@helius/kite";
@@ -45,7 +47,7 @@ import { connect } from "@helius/kite";
 const connection = connect();
 ```
 
-The connection object defaults to "localnet" but any of the following cluster names are supported: "mainnet-beta" (or "mainnet"), "testnet", "devnet", "helius-mainnet", "helius-testnet," "helius-devnet".
+You can also specify a cluster name. The connection object defaults to `localnet` but any of the following cluster names are supported: `mainnet-beta` (or `mainnet`), `testnet`, `devnet`, `helius-mainnet`, `helius-testnet`, `helius-devnet`.
 
 ```typescript
 const connection = connect("helius-devnet");
@@ -142,9 +144,9 @@ const signature = await connection.signSendAndConfirmTransaction(transactionMess
 - `commitment`: `Commitment` (optional) - Desired confirmation level (default: "processed")
 - `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: true)
 
-## getBalance - Get wallet balance
+## getBalance - Get account balance
 
-Gets the SOL balance of a wallet.
+Gets the SOL balance of an account.
 
 Returns: `Promise<Lamports>`
 
@@ -163,8 +165,34 @@ Generates a link to view an address, transaction, or token on Solana Explorer. T
 
 Returns: `string` - Explorer URL
 
+Get a link to view an address:
+
 ```typescript
-const link = connection.getExplorerLink(linkType, id);
+const addressLink = connection.getExplorerLink("address", "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn");
+```
+
+Get a link to view a transaction:
+
+```typescript
+const transactionLink = connection.getExplorerLink(
+  "transaction",
+  "5rUQ2tX8bRzB2qJWnrBhHYgHsafpqVZwGwxVrtyYFZXJZs6yBVwerZHGbwsrDHKbRtKpxnWoHKmBgqYXVbU5TrHe",
+);
+```
+
+Or if you like abbrieviations:
+
+```typescript
+const transactionLink = connection.getExplorerLink(
+  "tx",
+  "5rUQ2tX8bRzB2qJWnrBhHYgHsafpqVZwGwxVrtyYFZXJZs6yBVwerZHGbwsrDHKbRtKpxnWoHKmBgqYXVbU5TrHe",
+);
+```
+
+Get a link to view a block:
+
+```typescript
+const blockLink = connection.getExplorerLink("block", "180392470");
 ```
 
 ### Options
@@ -174,24 +202,21 @@ const link = connection.getExplorerLink(linkType, id);
 
 ## getRecentSignatureConfirmation - Get transaction confirmation status
 
-Checks if a recent transaction signature has been confirmed.
+Checks the confirmation status of a recent transaction.
 
 Returns: `Promise<boolean>`
 
 ```typescript
-const isConfirmed = await connection.getRecentSignatureConfirmation(signature, options);
+const confirmed = await connection.getRecentSignatureConfirmation(signature);
 ```
 
 ### Options
 
-- `signature`: `string` - Transaction signature to check
-- `options`: `Object` (optional)
-  - `commitment`: `Commitment` - Desired confirmation level
-  - `timeout`: `number` - How long to wait for confirmation in milliseconds
+- `signature`: `string` - The signature of the transaction to check
 
 ## airdropIfRequired - Airdrop SOL if balance is low
 
-Airdrops SOL to a wallet if its balance is below the specified threshold.
+Airdrops SOL to an address if its balance is below the specified threshold.
 
 Returns: `Promise<Lamports>` - New balance in lamports
 
@@ -235,15 +260,11 @@ const signature = await connection.transferLamports(source, destination, amount)
 - `destination`: `Address` - The wallet to send SOL to
 - `amount`: `Lamports` - Amount of lamports to send
 
-## makeTokenMint - Create a new token
+## makeTokenMint - Create a new token with metadata
 
 Creates a new SPL token with specified parameters.
 
 Returns: `Promise<Address>`
-
-```typescript
-const mintAddress = await connection.makeTokenMint(mintAuthority, decimals, name, symbol, uri, additionalMetadata);
-```
 
 ### Options
 
@@ -251,12 +272,26 @@ const mintAddress = await connection.makeTokenMint(mintAuthority, decimals, name
 - `decimals`: `number` - Number of decimal places for the token
 - `name`: `string` - Name of the token
 - `symbol`: `string` - Symbol of the token
-- `uri`: `string` - URI for token metadata
+- `uri`: `string` - URI pointing to the token's metadata (eg: "https://arweave.net/abc123")
 - `additionalMetadata`: `Record<string, string> | Map<string, string>` (optional) - Additional metadata fields
 
-## Contributing
+### Examples
 
-PRs are very much welcome! Read the [CONTRIBUTING guidelines](CONTRIBUTING.md) then send a PR!
+Create a token with additional metadata:
+
+```typescript
+const mintAddress = await connection.makeTokenMint(
+  mintAuthority,
+  6,
+  "My token",
+  "MTKN",
+  "https://example.com/metadata.json",
+  {
+    description: "A stablecoin pegged to the US dollar",
+    website: "https://example.com",
+  },
+);
+```
 
 ## Development and testing
 
