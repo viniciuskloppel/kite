@@ -97,7 +97,7 @@ export const createJSONFromKeyPairSigner = async (keyPairSigner: KeyPairSigner):
 //  generated. Here, they are inlined into the source code, but you can also imagine them being
 //  loaded from disk or, better yet, read from an environment variable."
 // Oddly, Solana Foundation propose this be added to web3.js but were rejected.
-export const getKeyPairSignerFromFile = async (filepath?: string): Promise<KeyPairSigner> => {
+export const loadWalletFromFile = async (filepath?: string): Promise<KeyPairSigner> => {
   // Node-specific imports
   const path = await import("node:path");
   const { readFile } = await import("node:fs/promises");
@@ -142,7 +142,7 @@ export const getKeyPairSignerFromFile = async (filepath?: string): Promise<KeyPa
 //  generated. Here, they are inlined into the source code, but you can also imagine them being
 //  loaded from disk or, better yet, read from an environment variable."
 // Oddly, Solana Foundation propose this be added to web3.js but were rejected.
-export const getKeyPairSignerFromEnvironment = (variableName: string) => {
+export const loadWalletFromEnvironment = (variableName: string) => {
   const privateKeyString = process.env[variableName];
   if (!privateKeyString) {
     throw new Error(`Please set '${variableName}' in environment.`);

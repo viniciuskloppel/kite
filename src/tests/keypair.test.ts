@@ -4,8 +4,8 @@ import {
   addKeyPairSignerToEnvFile,
   createJSONFromKeyPairSigner,
   grindKeyPair,
-  getKeyPairSignerFromEnvironment,
-  getKeyPairSignerFromFile,
+  loadWalletFromEnvironment,
+  loadWalletFromFile,
   makeKeyPairSigners,
 } from "../lib/keypair";
 // See https://m.media-amazon.com/images/I/51TJeGHxyTL._SY445_SX342_.jpg
@@ -87,7 +87,7 @@ describe("makeKeyPairSigners", () => {
   });
 });
 
-describe("getKeyPairSignerFromFile", () => {
+describe("loadWalletFromFile", () => {
   const TEST_KEY_PAIR_FILE = `${TEMP_DIR}/test-key-pair-file-do-not-use.json`;
   const CORRUPT_TEST_KEY_PAIR = `${TEMP_DIR}/corrupt-key-pair-file-do-not-use.json`;
 
@@ -102,17 +102,17 @@ describe("getKeyPairSignerFromFile", () => {
   });
 
   test("getting a keyPair from a file", async () => {
-    await getKeyPairSignerFromFile(TEST_KEY_PAIR_FILE);
+    await loadWalletFromFile(TEST_KEY_PAIR_FILE);
   });
 
   test("throws a nice error if the file is missing", async () => {
-    assert.rejects(async () => await getKeyPairSignerFromFile(MISSING_KEY_PAIR_FILE), {
+    assert.rejects(async () => await loadWalletFromFile(MISSING_KEY_PAIR_FILE), {
       message: `Could not read keyPair from file at '${MISSING_KEY_PAIR_FILE}'`,
     });
   });
 
   test("throws a nice error if the file is corrupt", async () => {
-    assert.rejects(() => getKeyPairSignerFromFile(CORRUPT_TEST_KEY_PAIR), {
+    assert.rejects(() => loadWalletFromFile(CORRUPT_TEST_KEY_PAIR), {
       message: `Invalid secret key file at '${CORRUPT_TEST_KEY_PAIR}'!`,
     });
   });
@@ -123,7 +123,7 @@ describe("getKeyPairSignerFromFile", () => {
   });
 });
 
-describe("getKeyPairSignerFromEnvironment", () => {
+describe("loadWalletFromEnvironment", () => {
   const TEST_ENV_VAR_ARRAY_OF_NUMBERS = "TEST_ENV_VAR_ARRAY_OF_NUMBERS";
   const TEST_ENV_VAR_WITH_BAD_VALUE = "TEST_ENV_VAR_WITH_BAD_VALUE";
 
@@ -137,17 +137,17 @@ describe("getKeyPairSignerFromEnvironment", () => {
   });
 
   test("getting a keyPair from an environment variable (array of numbers format)", async () => {
-    const cryptoKeyPair = await getKeyPairSignerFromEnvironment(TEST_ENV_VAR_ARRAY_OF_NUMBERS);
+    const cryptoKeyPair = await loadWalletFromEnvironment(TEST_ENV_VAR_ARRAY_OF_NUMBERS);
   });
 
   test("throws a nice error if the env var doesn't exist", () => {
-    assert.throws(() => getKeyPairSignerFromEnvironment("MISSING_ENV_VAR"), {
+    assert.throws(() => loadWalletFromEnvironment("MISSING_ENV_VAR"), {
       message: `Please set 'MISSING_ENV_VAR' in environment.`,
     });
   });
 
   test("throws a nice error if the value of the env var isn't valid", () => {
-    assert.throws(() => getKeyPairSignerFromEnvironment("TEST_ENV_VAR_WITH_BAD_VALUE"), {
+    assert.throws(() => loadWalletFromEnvironment("TEST_ENV_VAR_WITH_BAD_VALUE"), {
       message: `Invalid private key in environment variable 'TEST_ENV_VAR_WITH_BAD_VALUE'!`,
     });
   });

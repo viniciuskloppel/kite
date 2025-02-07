@@ -49,12 +49,7 @@ import {
 
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
-import {
-  addKeyPairSignerToEnvFile,
-  grindKeyPair,
-  getKeyPairSignerFromEnvironment,
-  getKeyPairSignerFromFile,
-} from "./keypair";
+import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
 import { SOL } from "./constants";
 
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
@@ -303,7 +298,7 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
       const temporaryExtractableKeyPairSigner = await createSignerFromKeyPair(temporaryExtractableKeyPair);
       await addKeyPairSignerToEnvFile(temporaryExtractableKeyPairSigner, envVariableName, envFileName);
       dotenv.config({ path: envFileName });
-      keyPairSigner = await getKeyPairSignerFromEnvironment(envVariableName);
+      keyPairSigner = await loadWalletFromEnvironment(envVariableName);
       // Once the block is exited, the variable will be dereferenced and no longer accessible. This means the memory used by the variable can be reclaimed by the garbage collector, as there are no other references to it outside the block. Goodbye temporaryExtractableKeyPair and temporaryExtractableKeyPairSigner!
     } else {
       const keyPair = await grindKeyPair(prefix, suffix);
@@ -634,8 +629,8 @@ export const connect = (
     getRecentSignatureConfirmation,
     transferLamports,
     makeTokenMint,
-    getKeyPairSignerFromFile,
-    getKeyPairSignerFromEnvironment,
+    loadWalletFromFile,
+    loadWalletFromEnvironment,
   };
 };
 
@@ -659,6 +654,6 @@ export interface Connection {
   // We expose these functions under Connection
   // simply because it's borng trying to remember what's a property of connection and what isn't,
   // They don't need to use 'ReturnType' because they're not factory functions
-  getKeyPairSignerFromFile: typeof getKeyPairSignerFromFile;
-  getKeyPairSignerFromEnvironment: typeof getKeyPairSignerFromEnvironment;
+  loadWalletFromFile: typeof loadWalletFromFile;
+  loadWalletFromEnvironment: typeof loadWalletFromEnvironment;
 }

@@ -4,13 +4,30 @@
 
 Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but provides a simpler environment to get more done quickly.
 
-More specifically, Kite allows you to **do the most common Solana tasks - make a funded wallet, make a token, send SOL, send tokens, etc - in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
+More specifically, Kite allows you to **do the most common Solana tasks in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
 
 Kite is a web3.js v2 version of `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](), by the original author. The `kite` package includes updated versions of all the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation Developer Ecosystem team](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
 
+## What can I do with this library?
+
+Kite includes functions to:
+
+- [Create a new wallet](#createwallet---create-a-new-wallet)
+- [Load a wallet from a file](#loadwalletfromfile---load-a-wallet-from-file)
+- [Load a wallet from an environment variable](#loadwalletfromenvironment---load-a-wallet-from-environment)
+- [Send and confirm a transaction](#sendandconfirmtransaction---send-and-confirm-a-transaction)
+- [Sign, send and confirm a transaction](#signsendandconfirmtransaction---sign-send-and-confirm-a-transaction)
+- [Get a wallet's balance](#getbalance---get-wallet-balance)
+- [Get a Solana Explorer link](#getexplorerlink---get-solana-explorer-link)
+- [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
+- [Airdrop SOL to a wallet](#airdropifrequired---airdrop-sol-if-balance-is-low)
+- [Get transaction logs](#getlogs---get-transaction-logs)
+- [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
+- [Create a new token](#tokenmint---create-a-new-token)
+
 ## Why the name 'Kite'?
 
-Many Solana things - Solana itself, Sealevel, Anchor, Poseidon, etc. - are sea-themed. Kite is a high-level framework, so what is high above a beach? Kites! 🪁😃
+Solan itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beach,_California). Kite is a high-level framework, so what is high above a beach? Kites! 🪁😃
 
 ## Installation
 
@@ -42,11 +59,13 @@ You can also specify an arbitrary RPC URL and RPC subscription URL:
 const connection = connect("https://mainnet.example.com/", "wss://mainnet.example.com/");
 ```
 
-After you've made a connection Kite is ready to use. **You don't need to set up any factories, they're already configured.** Connection has the following functions ready out of the box:
+After you've made a connection Kite is ready to use. **You don't need to set up any factories, they're already configured.** A `connection` has the following functions ready out of the box:
 
-## createWallet - Create a new Solana wallet
+## createWallet - Create a new wallet
 
 Creates a new Solana wallet (more specifically a `KeyPairSigner`).
+
+If you like, the wallet will have a prefix/suffix of your choice, the wallet will have a SOL balance ready to spend, and the keypair will be saved to a file for you to use later.
 
 Returns: `Promise<KeyPairSigner>`
 
@@ -56,34 +75,34 @@ const wallet = await connection.createWallet(prefix, suffix, envFileName, envVar
 
 ### Options
 
-- `prefix`: `string | null` (optional) - Prefix for generated keypair name
-- `suffix`: `string | null` (optional) - Suffix for generated keypair name
-- `envFileName`: `string | null` (optional) - Path to .env file to save/load keypair
+- `prefix`: `string | null` (optional) - Prefix for wallet address
+- `suffix`: `string | null` (optional) - Suffix for wallet address
+- `envFileName`: `string | null` (optional) - Path to .env file to save keypair
 - `envVariableName`: `string` (optional) - Name of environment variable to store keypair (default: "PRIVATE_KEY")
 - `airdropAmount`: `Lamports | null` (optional) - Amount of SOL to airdrop (default: 1 SOL)
 
-## getKeyPairSignerFromFile - Load a keypair from file
+## loadWalletFromFile - Load a wallet from file
 
-Loads a keypair from a file.
+Loads a wallet (more specifically a `KeyPairSigner`) from a file. The file should be in the same format as files created by the `solana-keygen` command.
 
 Returns: `Promise<KeyPairSigner>`
 
 ```typescript
-const wallet = await connection.getKeyPairSignerFromFile(keyPairPath);
+const wallet = await connection.loadWalletFromFile(keyPairPath);
 ```
 
 ### Options
 
 - `keyPairPath`: `string` - Path to load keypair from file
 
-## getKeyPairSignerFromEnvironment - Load a keypair from environment
+## loadWalletFromEnvironment - Load a wallet from environment
 
-Loads a keypair from an environment variable.
+Loads a wallet (more specifically a `KeyPairSigner`) from an environment variable. The keypair should be in the same 'array of numbers' format as used by `solana-keygen`.
 
 Returns: `Promise<KeyPairSigner>`
 
 ```typescript
-const wallet = await connection.getKeyPairSignerFromEnvironment(envVariableName);
+const wallet = await connection.loadWalletFromEnvironment(envVariableName);
 ```
 
 ### Options

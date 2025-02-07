@@ -127,7 +127,7 @@ describe("createWallet", () => {
     }
 
     // Now reload the environment and check it matches our test keyPair
-    const walletAfter = await connection.getKeyPairSignerFromEnvironment(keyPairVariableName);
+    const walletAfter = await connection.loadWalletFromEnvironment(keyPairVariableName);
 
     // Check the keyPair is the same
     assert(walletBefore.address === walletAfter.address);
