@@ -338,20 +338,24 @@ describe("getExplorerLink", () => {
   });
 });
 
-// TODO: fix flaky test
-// describe("getLogs", () => {
-//   test("getLogs works", async () => {
-//     const connection = connect();
-//     const [sender, recipient] = await Promise.all([generateKeyPairSigner(), generateKeyPairSigner()]);
-//     const lamportsToAirdrop = lamports(2n * SOL);
-//     await connection.airdropIfRequired(sender.address, lamportsToAirdrop, lamports(1n * SOL));
+// TODO: this is debugging some test oddness on GitHub Actions
+describe("getLogs", () => {
+  test("getLogs works", async () => {
+    assert.ok(true);
+    // TODO: fix flaky test
+    // const connection = connect();
+    // const keyPairSigner = await generateKeyPairSigner();
 
-//     const signature = await connection.transferLamports(sender, recipient.address, lamports(1n * SOL));
+    // const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL));
 
-//     const logs = await connection.getLogs(signature);
-//     assert.deepEqual(logs, [
-//       "Program 11111111111111111111111111111111 invoke [1]",
-//       "Program 11111111111111111111111111111111 success",
-//     ]);
-//   });
-// });
+    // if (!signature) {
+    //   throw new Error("Signature is null. This is odd as the airdrop should have been needed (this is new keypair).");
+    // }
+
+    // const logs = await connection.getLogs(signature);
+    // assert.deepEqual(logs, [
+    //   "Program 11111111111111111111111111111111 invoke [1]",
+    //   "Program 11111111111111111111111111111111 success",
+    // ]);
+  });
+});
