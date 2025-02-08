@@ -1,7 +1,7 @@
 {
   "name": "@helius/kite",
   "version": "1.0.0",
-  "description": "A modern Solana TypeScript framework for the browser and node.js",
+  "description": "A modern Solana framework for TypeScript.",
   "type": "module",
   "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
@@ -25,7 +25,7 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:types": "tsc -p tsconfig.types.json",
     "clean": "rm -rf dist",
-    "test": "esrun --node-no-warnings src/tests/*"
+    "test": "npx esrun --node-no-warnings src/tests/*"
   },
   "keywords": [
     "solana",
