@@ -8,8 +8,8 @@ Prefer using arrow functions over function declarations.
 
 Prefer using const over let.
 
-Use async/await over callbacks or `.then()`
+Use async/await. Do not use callbacks or `.then()`.
 
-Use try/catch over `.then().catch()`
+Use try/catch, never use `.catch()`
 
 Assume thrown objects are Error objects. We will not throw non-Error objects.
