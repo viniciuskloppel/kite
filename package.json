@@ -3,14 +3,13 @@
   "version": "1.0.0",
   "description": "A modern Solana framework for TypeScript.",
   "type": "module",
-  "main": "./dist/esm/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/esm/index.js"
+        "default": "./dist/index.js"
       }
     }
   },
@@ -21,9 +20,7 @@
   ],
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "npm run build:esm && npm run build:types",
-    "build:esm": "tsc -p tsconfig.json",
-    "build:types": "tsc -p tsconfig.types.json",
+    "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
     "test": "npx esrun --node-no-warnings src/tests/*"
   },
