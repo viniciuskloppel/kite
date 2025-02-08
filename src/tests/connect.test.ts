@@ -346,15 +346,13 @@ describe("getLogs", () => {
 
     const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL));
 
-    if (!signature) {
-      throw new Error("Signature is null. This is odd as the airdrop should have been needed (this is new keypair).");
-    }
-    assert.ok(true);
+    // Signature should never be null as we always need an airdrop
+    assert.ok(signature);
 
-    // const logs = await connection.getLogs(signature);
-    // assert.deepEqual(logs, [
-    //   "Program 11111111111111111111111111111111 invoke [1]",
-    //   "Program 11111111111111111111111111111111 success",
-    // ]);
+    const logs = await connection.getLogs(signature);
+    assert.deepEqual(logs, [
+      "Program 11111111111111111111111111111111 invoke [1]",
+      "Program 11111111111111111111111111111111 success",
+    ]);
   });
 });
