@@ -341,16 +341,15 @@ describe("getExplorerLink", () => {
 // TODO: this is debugging some test oddness on GitHub Actions
 describe("getLogs", () => {
   test("getLogs works", async () => {
+    const connection = connect();
+    const keyPairSigner = await generateKeyPairSigner();
+
+    const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL));
+
+    if (!signature) {
+      throw new Error("Signature is null. This is odd as the airdrop should have been needed (this is new keypair).");
+    }
     assert.ok(true);
-    // TODO: fix flaky test
-    // const connection = connect();
-    // const keyPairSigner = await generateKeyPairSigner();
-
-    // const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL));
-
-    // if (!signature) {
-    //   throw new Error("Signature is null. This is odd as the airdrop should have been needed (this is new keypair).");
-    // }
 
     // const logs = await connection.getLogs(signature);
     // assert.deepEqual(logs, [
