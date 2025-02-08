@@ -203,7 +203,8 @@ describe("airdropIfRequired", () => {
 
     const minimumBalance = lamports(1n * SOL);
 
-    await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
+    const signature = await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
+    assert.ok(signature, "Expected airdrop signature when balance is 0");
 
     const newBalance = await connection.getBalance(user.address, "finalized");
 
@@ -212,9 +213,9 @@ describe("airdropIfRequired", () => {
     const recipient = await generateKeyPairSigner();
 
     // Spend our SOL now to ensure we can use the airdrop immediately
-    const signature = await connection.transferLamports(user, recipient.address, lamports(1_000_000n));
+    const transferSignature = await connection.transferLamports(user, recipient.address, lamports(1_000_000n));
 
-    assert.ok(signature);
+    assert.ok(transferSignature);
   });
 
   test("airdropIfRequired doesn't request unnecessary airdrops", async () => {
@@ -225,12 +226,16 @@ describe("airdropIfRequired", () => {
     const lamportsToAirdrop = lamports(1n * SOL);
 
     // First airdrop asks for 500_000 lamports
-    await connection.airdropIfRequired(user.address, lamportsToAirdrop, lamports(500_000n));
+    const firstSignature = await connection.airdropIfRequired(user.address, lamportsToAirdrop, lamports(500_000n));
+    assert.ok(firstSignature, "Expected signature from first airdrop");
 
     // Try a second airdrop if the balance is less than 1 SOL
     // Check second airdrop didn't happen (since we already had 1 SOL from first airdrop)
     const minimumBalance = lamports(1n * SOL);
-    const finalBalance = await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
+    const secondSignature = await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
+    assert.equal(secondSignature, null, "Expected no signature when balance is sufficient");
+
+    const finalBalance = await connection.getBalance(user.address);
     assert.equal(finalBalance, lamportsToAirdrop);
   });
 
@@ -242,16 +247,18 @@ describe("airdropIfRequired", () => {
     assert.equal(originalBalance, 0);
     // Get 999_999_999 lamports if we have less than 500_000 lamports
     const lamportsToAirdrop = lamports(1n * SOL - 1n);
-    const balanceAfterFirstAirdrop = await connection.airdropIfRequired(
-      user.address,
-      lamportsToAirdrop,
-      lamports(500_000n),
-    );
+    const firstSignature = await connection.airdropIfRequired(user.address, lamportsToAirdrop, lamports(500_000n));
+    assert.ok(firstSignature, "Expected signature from first airdrop");
+
+    const balanceAfterFirstAirdrop = await connection.getBalance(user.address);
     assert.equal(balanceAfterFirstAirdrop, lamportsToAirdrop);
 
     // We only have 999_999_999 lamports, so we should need another airdrop
     // Check second airdrop happened
-    const finalBalance = await connection.airdropIfRequired(user.address, lamports(1n * SOL), lamports(1n * SOL));
+    const secondSignature = await connection.airdropIfRequired(user.address, lamports(1n * SOL), lamports(1n * SOL));
+    assert.ok(secondSignature, "Expected signature from second airdrop");
+
+    const finalBalance = await connection.getBalance(user.address);
     assert.equal(finalBalance, lamports(2n * SOL - 1n));
   });
 });

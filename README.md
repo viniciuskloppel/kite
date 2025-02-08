@@ -221,10 +221,10 @@ const confirmed = await connection.getRecentSignatureConfirmation(signature);
 
 Airdrops SOL to an address if its balance is below the specified threshold.
 
-Returns: `Promise<Lamports>` - New balance in lamports
+Returns: `Promise<string | null>` - Transaction signature if airdrop occurred, null if no airdrop was needed
 
 ```typescript
-const newBalance = await connection.airdropIfRequired(address, airdropAmount, minimumBalance);
+const signature = await connection.airdropIfRequired(address, airdropAmount, minimumBalance);
 ```
 
 ### Options

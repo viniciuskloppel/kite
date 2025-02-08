@@ -3,7 +3,6 @@ import {
   airdropFactory,
   appendTransactionMessageInstruction,
   appendTransactionMessageInstructions,
-  assertIsSignature,
   Commitment,
   CompilableTransactionMessage,
   createDefaultRpcTransport,
@@ -164,30 +163,30 @@ const airdropIfRequiredFactory = (
     address: Address,
     airdropAmount: Lamports,
     minimumBalance: Lamports,
-  ): Promise<Lamports> => {
+  ): Promise<string | null> => {
     if (airdropAmount < 0n) {
       throw new Error(`Airdrop amount must be a positive number, not ${airdropAmount}`);
     }
     if (minimumBalance === 0n) {
-      await airdrop({
+      const signature = await airdrop({
         commitment: "finalized",
         recipientAddress: address,
         lamports: airdropAmount,
       });
-      return getBalance(address, "finalized");
+      return signature;
     }
     const balance = await getBalance(address, "finalized");
 
     if (balance >= minimumBalance) {
-      return balance;
+      return null;
     }
-    await airdrop({
+    const signature = await airdrop({
       commitment: "finalized",
       recipientAddress: address,
       lamports: airdropAmount,
     });
 
-    return getBalance(address, "finalized");
+    return signature;
   };
   return airdropIfRequired;
 };
@@ -236,17 +235,14 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
 };
 
 const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
-  const getLogs = async (signature: string): Promise<Array<string>> => {
-    assertIsSignature(signature);
-
+  const getLogs = async (signature: string): Promise<readonly string[]> => {
     const transaction = await rpc
       .getTransaction(signature, {
-        maxSupportedTransactionVersion: 0,
         commitment: "confirmed",
       })
       .send();
 
-    if (!transaction.meta) {
+    if (!transaction?.meta) {
       throw new Error(`Transaction not found: ${signature}`);
     }
 
