@@ -22,7 +22,7 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "npm run build:esm && npm run build:types",
-    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:esm": "tsc -p tsconfig.json",
     "build:types": "tsc -p tsconfig.types.json",
     "clean": "rm -rf dist",
     "test": "npx esrun --node-no-warnings src/tests/*"
