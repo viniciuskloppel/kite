@@ -149,6 +149,9 @@ export const loadWalletFromEnvironment = (variableName: string) => {
   }
 
   try {
+    // If we wanted to, we could also support base58 encoded private keys
+    // let decodedPrivateKey = getBase58Encoder().encode(solanaPrivateKeyBase58)
+    // but the array-of-numbers format is the Anza CLI's format
     let decodedPrivateKey = Uint8Array.from(JSON.parse(privateKeyString));
     return createKeyPairSignerFromBytes(decodedPrivateKey);
   } catch (error) {
