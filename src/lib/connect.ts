@@ -293,7 +293,14 @@ const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTrans
 const makeTokenMintFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
-) => {
+): ((
+  mintAuthority: KeyPairSigner,
+  decimals: number,
+  name: string,
+  symbol: string,
+  uri: string,
+  additionalMetadata?: Record<string, string> | Map<string, string>,
+) => Promise<Address>) => {
   const makeTokenMint = async (
     mintAuthority: KeyPairSigner,
     decimals: number,
