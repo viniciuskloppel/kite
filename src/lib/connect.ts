@@ -286,6 +286,8 @@ const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) =>
 const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   // Adapted from https://solana.com/developers/docs/transactions/examples/transfer-sol-with-web3-js/
   const transferLamports = async (source: KeyPairSigner, destination: Address, amount: Lamports) => {
+    // TODO: optimise this, we have a function to do most of this
+    // search for rpc.getLatestBlockhash
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
 
     // Step 1: create the transfer transaction
@@ -325,14 +327,27 @@ const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTrans
 const transferTokensFactory = (
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
-  const transferTokens = async (sender: KeyPairSigner, destination: Address, mintAddress: Address, amount: bigint) => {
+  const transferTokens = async (
+    sender: KeyPairSigner,
+    destination: Address,
+    mintAddress: Address,
+    amount: bigint,
+    decimals: number,
+  ) => {
+    // TODO: optimise this, we have a function to do most of this
+    const [associatedTokenAddress] = await findAssociatedTokenPda({
+      mint: mintAddress,
+      owner: destination,
+      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    });
+
     const transferInstruction = getTransferCheckedInstruction({
       source: sender.address,
       mint: mintAddress,
-      destination,
+      destination: associatedTokenAddress,
       authority: sender.address,
       amount,
-      decimals: 9,
+      decimals,
     });
 
     const signature = await sendTransactionFromInstructions(sender, [transferInstruction]);
@@ -500,6 +515,7 @@ const mintTokensFactory = (
 
     // Derive destination associated token address
     // Instruction to mint tokens to associated token account
+    // TODO: optimise this, we have a function to do most of this
     const [associatedTokenAddress] = await findAssociatedTokenPda({
       mint: mintAddress,
       owner: destination,

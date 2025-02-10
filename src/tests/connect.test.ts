@@ -1,10 +1,10 @@
-import { describe, test } from "node:test";
-import { address as toAddress, generateKeyPairSigner, lamports } from "@solana/web3.js";
+import { before, describe, test } from "node:test";
+import { address as toAddress, generateKeyPairSigner, lamports, KeyPairSigner, Address } from "@solana/web3.js";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
 import { SOL } from "../lib/constants";
-import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
+import { connect, Connection, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
 describe("connect", () => {
   test("connect returns a connection object", () => {
     const connection = connect();
@@ -71,99 +71,52 @@ describe("getTokenAccountAddress", () => {
   });
 });
 
-describe("makeTokenMint", () => {
-  test("We can make a new token mint", async () => {
-    const connection = connect();
-    const mintAuthority = await connection.createWallet({
+describe("tokens", () => {
+  let connection: Connection;
+  let sender: KeyPairSigner;
+  let mintAddress: Address;
+  let recipient: KeyPairSigner;
+  const decimals = 9;
+  before(async () => {
+    connection = connect();
+    sender = await connection.createWallet({
       airdropAmount: lamports(1n * SOL),
     });
+    recipient = await connection.createWallet({
+      airdropAmount: lamports(1n * SOL),
+    });
+  });
 
-    const mintAddress = await connection.makeTokenMint(
-      mintAuthority,
-      9,
-      "Unit test token",
-      "TEST",
-      "https://example.com",
-      {
-        keyOne: "valueOne",
-        keyTwo: "valueTwo",
-      },
-    );
+  test("We can make a new token mint", async () => {
+    mintAddress = await connection.makeTokenMint(sender, decimals, "Unit test token", "TEST", "https://example.com", {
+      keyOne: "valueOne",
+      keyTwo: "valueTwo",
+    });
 
     assert.ok(mintAddress);
   });
+
+  test("The mint authority can mintTokens", async () => {
+    // Have the mint authority mint to their own account
+    const mintTokensTransactionSignature = await connection.mintTokens(mintAddress, sender, 1n, sender.address);
+
+    assert.ok(mintTokensTransactionSignature);
+  });
+
+  // TODO: test is failing
+  // test("transferTokens transfers tokens from one account to another", async () => {
+  //   // Transfer 1 token from the mint authority to the recipient
+  //   const transferTokensTransactionSignature = await connection.transferTokens(
+  //     sender,
+  //     recipient.address,
+  //     mintAddress,
+  //     1n,
+  //     decimals,
+  //   );
+
+  //   assert.ok(transferTokensTransactionSignature);
+  // });
 });
-
-// describe("mintTokens", () => {
-//   test("The mint authority can mintTokens", async () => {
-//     const connection = connect();
-//     const mintAuthority = await connection.createWallet({
-//       airdropAmount: lamports(1n * SOL),
-//     });
-
-//     const mintAddress = await connection.makeTokenMint(
-//       mintAuthority,
-//       9,
-//       "Unit test token",
-//       "TEST",
-//       "https://example.com",
-//       {
-//         keyOne: "valueOne",
-//         keyTwo: "valueTwo",
-//       },
-//     );
-
-//     const mintTokensTransactionSignature = await connection.mintTokens(
-//       mintAddress,
-//       mintAuthority,
-//       1n,
-//       mintAuthority.address,
-//     );
-
-//     assert.ok(mintTokensTransactionSignature);
-//   });
-// });
-
-// describe("transferTokens", () => {
-//   test("transferTokens transfers tokens from one account to another", async () => {
-//     const connection = connect();
-//     const [sender, recipient] = await Promise.all([
-//       connection.createWallet({
-//         airdropAmount: lamports(1n * SOL),
-//       }),
-//       connection.createWallet({
-//         airdropAmount: lamports(1n * SOL),
-//       }),
-//     ]);
-
-//     const mintAuthority = sender;
-
-//     const mintAddress = await connection.makeTokenMint(
-//       mintAuthority,
-//       9,
-//       "Unit test token",
-//       "TEST",
-//       "https://example.com",
-//       {
-//         keyOne: "valueOne",
-//         keyTwo: "valueTwo",
-//       },
-//     );
-
-//     const mintTokensTransactionSignature = await connection.mintTokens(mintAddress, mintAuthority, 1n, sender.address);
-
-//     assert.ok(mintTokensTransactionSignature);
-
-//     const transferTokensTransactionSignature = await connection.transferTokens(
-//       sender,
-//       recipient.address,
-//       mintAddress,
-//       1n,
-//     );
-
-//     assert.ok(transferTokensTransactionSignature);
-//   });
-// });
 
 describe("makeTokenMint", () => {
   test("makeTokenMint makes a new mint with the specified metadata", async () => {
