@@ -1,25 +1,10 @@
 import { describe, test } from "node:test";
-import {
-  address as toAddress,
-  generateKeyPairSigner,
-  lamports,
-  setTransactionMessageLifetimeUsingBlockhash,
-  setTransactionMessageFeePayerSigner,
-  pipe,
-  createTransactionMessage,
-  appendTransactionMessageInstructions,
-  signTransactionMessageWithSigners,
-  getSignatureFromTransaction,
-  KeyPairSigner,
-  Address,
-} from "@solana/web3.js";
+import { address as toAddress, generateKeyPairSigner, lamports } from "@solana/web3.js";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
 import { SOL } from "../lib/constants";
 import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
-import { getMintToInstruction, getTransferCheckedInstruction } from "@solana-program/token-2022";
-
 describe("connect", () => {
   test("connect returns a connection object", () => {
     const connection = connect();

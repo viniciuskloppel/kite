@@ -3,7 +3,6 @@ import {
   Address,
   airdropFactory,
   appendTransactionMessageInstruction,
-  appendTransactionMessageInstructions,
   Commitment,
   CompilableTransactionMessage,
   createDefaultRpcTransport,
@@ -22,7 +21,6 @@ import {
   RpcTransport,
   sendAndConfirmTransactionFactory,
   setTransactionMessageFeePayer,
-  setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   Signature,
   signTransactionMessageWithSigners,
@@ -53,6 +51,7 @@ import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
 import { SOL, KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./constants";
+import { sendAndConfirmSimpleTransaction } from "./transaction";
 
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
@@ -318,25 +317,7 @@ const transferTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
       decimals: 9,
     });
 
-    const feePayer = sender;
-
-    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
-
-    const transactionMessage = pipe(
-      createTransactionMessage({ version: 0 }),
-      (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
-      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
-      (tx) => appendTransactionMessageInstructions([transferInstruction], tx),
-    );
-
-    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
-
-    // Step 3: send and confirm the transaction
-    await rpc.sendAndConfirmTransaction(signedTransaction, {
-      commitment: "confirmed",
-    });
-
-    const signature = getSignatureFromTransaction(signedTransaction);
+    const signature = await sendAndConfirmSimpleTransaction(rpc, sender, [transferInstruction]);
 
     return signature;
   };
@@ -500,25 +481,7 @@ const makeTokenMintFactory = (
       mintToInstruction,
     ];
 
-    // Get latest blockhash to include in transaction
-    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
-
-    // Create transaction message
-    const transactionMessage = pipe(
-      createTransactionMessage({ version: 0 }), // Create transaction message
-      (tx) => setTransactionMessageFeePayerSigner(mintAuthority, tx), // Set fee payer
-      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx), // Set transaction blockhash
-      (tx) => appendTransactionMessageInstructions(instructions, tx), // Append instructions
-    );
-
-    // Sign transaction message with required signers (fee payer and mint keypair)
-    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
-
-    // Send and confirm transaction
-    await sendAndConfirmTransaction(signedTransaction, {
-      commitment: "confirmed",
-      skipPreflight: true,
-    });
+    await sendAndConfirmSimpleTransaction(rpc, mintAuthority, instructions);
 
     return mint.address;
   };
@@ -542,20 +505,7 @@ const mintTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>)
       amount,
     });
 
-    const feePayer = mintAuthority;
-
-    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
-
-    const transactionMessage = pipe(
-      createTransactionMessage({ version: 0 }),
-      (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
-      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
-      (tx) => appendTransactionMessageInstructions([mintToInstruction], tx),
-    );
-
-    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
-
-    const transactionSignature = getSignatureFromTransaction(signedTransaction);
+    const transactionSignature = await sendAndConfirmSimpleTransaction(rpc, mintAuthority, [mintToInstruction]);
 
     return transactionSignature;
   };
