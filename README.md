@@ -1,11 +1,11 @@
-# Introducing Kite, a modern Solana framework for the browser and node.js 🪁
+# A modern Solana framework for web3.js version 2 🪁
 
 > [!NOTE]  
 > Kite is new, and should be considered experimental. Please [report any issues](https://github.com/helius-dev/kite/issues) you find.
 
-## A modern Solana TypeScript framework
+## A modern Solana TypeScript framework for the browser and node.js
 
-Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to **do the most common Solana tasks in a single function**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
+Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to **do most Solana tasks in a single step**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
 
 Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/). The ones we don't have should be added soon.
 
@@ -15,20 +15,34 @@ Kite works both in the browser and node.js and has [minimal dependencies](https:
 
 Kite includes functions to:
 
+### Wallets
+
 - [Create a new wallet](#createwallet---create-a-new-wallet)
 - [Load a wallet from a file](#loadwalletfromfile---load-a-wallet-from-file)
 - [Load a wallet from an environment variable](#loadwalletfromenvironment---load-a-wallet-from-environment)
-- [Send and confirm a transaction](#sendandconfirmtransaction---send-and-confirm-a-transaction)
-- [Sign, send and confirm a transaction](#signsendandconfirmtransaction---sign-send-and-confirm-a-transaction)
-- [Get an account balance](#getbalance---get-account-balance)
-- [Get a Solana Explorer link](#getexplorerlink---get-solana-explorer-link)
-- [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
+
+### SOL
+
 - [Airdrop SOL if balance is low](#airdropifrequired---airdrop-sol-if-balance-is-low)
-- [Get transaction logs](#getlogs---get-transaction-logs)
+- [Get an account balance](#getbalance---get-account-balance)
 - [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
+
+### Tokens
+
 - [Create a new token](#maketokenmint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Mint tokens to an account](#minttokens---mint-tokens-to-an-account)
+
+### Transactions
+
+- [Send and confirm a transaction](#sendandconfirmtransaction---send-and-confirm-a-transaction)
+- [Sign, send and confirm a transaction](#signsendandconfirmtransaction---sign-send-and-confirm-a-transaction)
+- [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
+- [Get transaction logs](#getlogs---get-transaction-logs)
+
+### Explorer
+
+- [Get a Solana Explorer link](#getexplorerlink---get-solana-explorer-link)
 
 We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
 
