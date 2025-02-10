@@ -76,16 +76,58 @@ If you like, the wallet will have a prefix/suffix of your choice, the wallet wil
 Returns: `Promise<KeyPairSigner>`
 
 ```typescript
-const wallet = await connection.createWallet(prefix, suffix, envFileName, envVariableName, airdropAmount);
+const wallet = await connection.createWallet({
+  prefix, // optional: prefix for wallet address
+  suffix, // optional: suffix for wallet address
+  envFileName, // optional: path to .env file to save keypair
+  envVariableName, // optional: name of environment variable to store keypair
+  airdropAmount, // optional: amount of SOL to airdrop
+});
 ```
 
 ### Options
 
-- `prefix`: `string | null` (optional) - Prefix for wallet address
-- `suffix`: `string | null` (optional) - Suffix for wallet address
-- `envFileName`: `string | null` (optional) - Path to .env file to save keypair
-- `envVariableName`: `string` (optional) - Name of environment variable to store keypair (default: "PRIVATE_KEY")
-- `airdropAmount`: `Lamports | null` (optional) - Amount of SOL to airdrop (default: 1 SOL)
+All options are optional:
+
+- `prefix`: `string | null` - Prefix for wallet address
+- `suffix`: `string | null` - Suffix for wallet address
+- `envFileName`: `string | null` - Path to .env file to save keypair
+- `envVariableName`: `string` - Name of environment variable to store keypair (default: "PRIVATE_KEY")
+- `airdropAmount`: `Lamports | null` - Amount of SOL to airdrop (default: 1 SOL)
+
+### Examples
+
+Create a basic wallet:
+
+```typescript
+const wallet = await connection.createWallet();
+```
+
+Create a wallet with a specific prefix and suffix:
+
+```typescript
+const wallet = await connection.createWallet({
+  prefix: "COOL",
+  suffix: "WALLET",
+});
+```
+
+Create a wallet and save it to an environment file:
+
+```typescript
+const wallet = await connection.createWallet({
+  envFileName: ".env",
+  envVariableName: "MY_WALLET_KEY",
+});
+```
+
+Create a wallet with a custom airdrop amount:
+
+```typescript
+const wallet = await connection.createWallet({
+  airdropAmount: lamports(2n * SOL),
+});
+```
 
 ## loadWalletFromFile - Load a wallet from file
 

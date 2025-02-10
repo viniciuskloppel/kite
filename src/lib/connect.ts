@@ -198,16 +198,25 @@ const airdropIfRequiredFactory = (
   return airdropIfRequired;
 };
 
-// Formerly called initializeKeypair()
+interface CreateWalletOptions {
+  prefix?: string | null;
+  suffix?: string | null;
+  envFileName?: string | null;
+  envVariableName?: string;
+  airdropAmount?: Lamports | null;
+}
+
 // See https://assets.fengsi.io/pr:sharp/rs:fill:1600:1067:1:1/g:ce/q:80/L2FwaS9qZGxlYXRoZXJnb29kcy9vcmlnaW5hbHMvYjZmNmU2ODAtNzY3OC00MDFiLWE1MzctODg4MWQyMmMzZWIyLmpwZw.jpg
 const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
-  const createWallet = async (
-    prefix: string | null = null,
-    suffix: string | null = null,
-    envFileName: string | null = null,
-    envVariableName: string = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
-    airdropAmount: Lamports | null = DEFAULT_AIRDROP_AMOUNT,
-  ): Promise<KeyPairSigner> => {
+  const createWallet = async (options: CreateWalletOptions = {}): Promise<KeyPairSigner> => {
+    const {
+      prefix = null,
+      suffix = null,
+      envFileName = null,
+      envVariableName = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
+      airdropAmount = DEFAULT_AIRDROP_AMOUNT,
+    } = options;
+
     let keyPairSigner: KeyPairSigner;
 
     if (envFileName) {

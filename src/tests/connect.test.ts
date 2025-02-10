@@ -123,20 +123,16 @@ describe("createWallet", () => {
   const keyPairVariableName = "INITIALIZE_KEYPAIR_TEST";
 
   test("createWallet generates a new keyPair with a SOL balance", async () => {
-    // Use a specific file name to avoid conflicts with other tests
     const envFileName = "../.env-unittest-create-wallet";
 
-    const walletBefore = await connection.createWallet(
-      null, // prefix
-      null, // suffix
+    const walletBefore = await connection.createWallet({
       envFileName,
-      keyPairVariableName,
-      DEFAULT_AIRDROP_AMOUNT,
-    );
+      envVariableName: keyPairVariableName,
+      airdropAmount: DEFAULT_AIRDROP_AMOUNT,
+    });
 
     // Check balance
     const balanceBefore = await connection.getBalance(walletBefore.address);
-
     assert.equal(balanceBefore, DEFAULT_AIRDROP_AMOUNT);
 
     // Check that the environment variable was created
@@ -166,7 +162,7 @@ describe("createWallet", () => {
   describe("with prefix and suffix", () => {
     test("creates a wallet with a prefix", async () => {
       const prefix = "BE";
-      const wallet = await connection.createWallet(prefix);
+      const wallet = await connection.createWallet({ prefix });
 
       assert.match(wallet.address, new RegExp(`^${prefix}`));
       assert.ok(wallet.keyPair.privateKey);
@@ -175,7 +171,7 @@ describe("createWallet", () => {
 
     test("creates a wallet with a suffix", async () => {
       const suffix = "EN";
-      const wallet = await connection.createWallet(null, suffix);
+      const wallet = await connection.createWallet({ suffix });
 
       assert.match(wallet.address, new RegExp(`${suffix}$`));
       assert.ok(wallet.keyPair.privateKey);
@@ -183,10 +179,9 @@ describe("createWallet", () => {
     });
 
     test("creates a wallet with both prefix and suffix", async () => {
-      // See https://open.spotify.com/track/6kV5VZhLN5yVUXs1Qq40Lw?si=a73e329c7cb24404
       const prefix = "B";
       const suffix = "E";
-      const wallet = await connection.createWallet(prefix, suffix);
+      const wallet = await connection.createWallet({ prefix, suffix });
 
       assert.match(wallet.address, new RegExp(`^${prefix}`));
       assert.match(wallet.address, new RegExp(`${suffix}$`));
@@ -196,7 +191,7 @@ describe("createWallet", () => {
     test("throws error for invalid prefix characters", async () => {
       const prefix = "TEST!";
 
-      await assert.rejects(async () => await connection.createWallet(prefix), {
+      await assert.rejects(async () => await connection.createWallet({ prefix }), {
         message: "Prefix must contain only base58 characters.",
       });
     });
@@ -204,7 +199,7 @@ describe("createWallet", () => {
     test("throws error for invalid suffix characters", async () => {
       const suffix = "@END";
 
-      await assert.rejects(async () => await connection.createWallet(null, suffix), {
+      await assert.rejects(async () => await connection.createWallet({ suffix }), {
         message: "Suffix must contain only base58 characters.",
       });
     });
