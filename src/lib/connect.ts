@@ -283,41 +283,19 @@ const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) =>
   return getLogs;
 };
 
-const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+const transferLamportsFactory = (
+  rpc: ReturnType<typeof createSolanaRpcFromTransport>,
+  sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
+) => {
   // Adapted from https://solana.com/developers/docs/transactions/examples/transfer-sol-with-web3-js/
   const transferLamports = async (source: KeyPairSigner, destination: Address, amount: Lamports) => {
-    // TODO: optimise this, we have a function to do most of this
-    // search for rpc.getLatestBlockhash
-    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
-
-    // Step 1: create the transfer transaction
-    const transactionMessage = pipe(
-      createTransactionMessage({ version: 0 }),
-      (transaction) => {
-        return setTransactionMessageFeePayer(source.address, transaction);
-      },
-      (transaction) => {
-        return setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, transaction);
-      },
-      (transaction) => {
-        const instruction = getTransferSolInstruction({
-          amount,
-          destination: destination,
-          source: source,
-        });
-        return appendTransactionMessageInstruction(instruction, transaction);
-      },
-    );
-
-    // Step 2: sign the transaction
-    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
-
-    // Step 3: send and confirm the transaction
-    await rpc.sendAndConfirmTransaction(signedTransaction, {
-      commitment: "confirmed",
+    const instruction = getTransferSolInstruction({
+      amount,
+      destination: destination,
+      source: source,
     });
 
-    const signature = getSignatureFromTransaction(signedTransaction);
+    const signature = await sendTransactionFromInstructions(source, [instruction]);
 
     return signature;
   };
@@ -612,9 +590,9 @@ export const connect = (
 
   const getLogs = getLogsFactory(rpc);
 
-  const transferLamports = transferLamportsFactory(rpc);
-
   const sendTransactionFromInstructions = sendTransactionFromInstructionsFactory(rpc, sendAndConfirmTransaction);
+
+  const transferLamports = transferLamportsFactory(rpc, sendTransactionFromInstructions);
 
   const makeTokenMint = makeTokenMintFactory(rpc, sendTransactionFromInstructions);
 
