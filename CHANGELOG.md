@@ -2,30 +2,22 @@
 
 ## Kite version 1.0
 
+- New name: `@helius/kite`
 - Use @solana/web3.js version 2
-- Remove CommonJS support
-
-`initializeKeypair` is now `createWallet`
-
-### Additions
-
 - A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()` (to confirm transactions using your RPC) and `getExplorerLink()` (to get Explorer links using your RPC).
-- Better support for third party RPCs
+- Most functions are now a property of `connection`. For example, `connection.getBalance()` instead of `getBalance()`.
+- Added support for Helius RPCs - just specify the name and as long as the Helius API key is set in the environment, it will be used.
 - A new value `SOL` is exported, to match the previous convenience value `LAMPORTS_PER_SOL`. For example, use `10n * SOL` for 10 SOL.
-
-### Changes
-
-- WEe've tried to match the coding style of web3.js v2
-  - `xToY()` becomes `createXFromY`
+- We've tried to match the coding style of web3.js v2
+  - `xToY()` becomes `createXFromY`. `create` is now the preferred nomenclature, so `initializeKeypair` is now `createWallet`,
   - Functions that return a `doThing()` function are called `doThingFactory()`
-  - We do not use web3.js Hungarian notation - this library uses `getFoo()` rathert than `getFooPromise()` since TS rarely uses Hungarian.
+  - We do not use web3.js Hungarian notation - this library uses `getFoo()` rather than `getFooPromise()` since TS rarely uses Hungarian.
 - `initializeKeypair` is now `createKeyPairSigner`
 - Since web3.js uses Promises in more places, nearly every helper function returns a `Promise<>` now, so you'll use `await` more often.
-- `getExplorerLink()` is now a prooperty of `connection` now defaults to localnet rather than mainnet-beta
 - localhost links on `getExplorerLink()` no longer add an unnecessary customUrl parameter
 - `confirmTransaction` is now `getRecentSignatureConfirmation`
 - We no longer support base58 encoded private keys - instead we use the 'Array of numbers' format exclusively. If you have base58 encoded private keys you can convert them with the previous version of this library.
-- Replace @solana/spl-token and @solana/spl-token-metadata with their new replacements '@solana-program/token'
+- Remove CommonJS support
 
 ## 2.5
 
