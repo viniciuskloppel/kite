@@ -355,9 +355,7 @@ const makeTokenMintFactory = (
     uri: string,
     additionalMetadata: Record<string, string> | Map<string, string> = {},
   ) => {
-    // See https://github.com/solana-program/token-2022/tree/main/clients/js/test/_setup.ts
-    // See https://github.com/solana-program/token-2022/tree/main/clients/js/test/extensions/tokenMetadata/updateTokenMetadataField.test.ts
-    // See https://solana.stackexchange.com/questions/19747/how-do-i-make-a-token-with-metadata-using-web3-js-version-2/19792#19792
+    // See https://solana.stackexchange.com/questions/19747/how-do-i-make-a-token-with-metadata-using-web3-js-version-2/19792#19792 - big thanks to John for helping me turn the unit tests into a working example
 
     // Generate keypairs for and mint
     const mint = await generateKeyPairSigner();

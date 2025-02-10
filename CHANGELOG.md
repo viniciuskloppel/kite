@@ -17,7 +17,7 @@
 - localhost links on `getExplorerLink()` no longer add an unnecessary customUrl parameter
 - `confirmTransaction` is now `getRecentSignatureConfirmation`
 - We no longer support base58 encoded private keys - instead we use the 'Array of numbers' format exclusively. If you have base58 encoded private keys you can convert them with the previous version of this library.
-- Remove CommonJS support
+- Remove CommonJS support.
 
 ## 2.5
 

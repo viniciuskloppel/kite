@@ -357,6 +357,16 @@ const mintAddress = await connection.makeTokenMint(
 );
 ```
 
+A `metadata.json` file, and any images inside, should be hosted at an [decentralized storage service](https://solana.com/developers/guides/getstarted/how-to-create-a-token#create-and-upload-image-and-offchain-metadata). The file itself is at minimum:
+
+```json
+{
+  "image": "https://raw.githubusercontent.com/solana-developers/opos-asset/main/assets/CompressedCoil/image.png"
+}
+```
+
+Images should be square, and either 512x512 or 1024x1024 pixels, and less than 100kb if possible.
+
 ## getTokenAccountAddress - Get token account address
 
 Gets the associated token account address for a given wallet and token mint.
