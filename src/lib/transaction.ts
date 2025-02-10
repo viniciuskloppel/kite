@@ -15,6 +15,8 @@ export const sendAndConfirmSimpleTransaction = async (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   feePayer: KeyPairSigner,
   instructions: Array<IInstruction>,
+  commitment: "confirmed" | "finalized" = "confirmed",
+  skipPreflight: boolean = false,
 ) => {
   const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
 
@@ -28,8 +30,8 @@ export const sendAndConfirmSimpleTransaction = async (
   const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
 
   await rpc.sendAndConfirmTransaction(signedTransaction, {
-    commitment: "confirmed",
-    skipPreflight: true,
+    commitment,
+    skipPreflight,
   });
 
   const signature = getSignatureFromTransaction(signedTransaction);
