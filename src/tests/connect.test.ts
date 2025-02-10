@@ -1,11 +1,24 @@
 import { describe, test } from "node:test";
-import { address, address as toAddress, generateKeyPairSigner, lamports } from "@solana/web3.js";
+import {
+  address as toAddress,
+  generateKeyPairSigner,
+  lamports,
+  setTransactionMessageLifetimeUsingBlockhash,
+  setTransactionMessageFeePayerSigner,
+  pipe,
+  createTransactionMessage,
+  appendTransactionMessageInstructions,
+  signTransactionMessageWithSigners,
+  getSignatureFromTransaction,
+  KeyPairSigner,
+  Address,
+} from "@solana/web3.js";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
 import { SOL } from "../lib/constants";
 import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
-import { Address, getAddressEncoder, getProgramDerivedAddress } from "@solana/addresses";
+import { getMintToInstruction } from "@solana-program/token-2022";
 
 describe("connect", () => {
   test("connect returns a connection object", () => {
@@ -70,6 +83,31 @@ describe("getTokenAccountAddress", () => {
   test("getTokenAccountAddress returns the correct token account address for a Token Extensions token", async () => {
     const pyusdTokenAccountAddress = await connection.getTokenAccountAddress(MIKEMACCANA_DOT_SOL, PYUSD_MINT, true);
     assert.equal(pyusdTokenAccountAddress, MIKEMACCANA_DOT_SOL_PYUSD_ACCOUNT);
+  });
+});
+
+describe("mintTokens", () => {
+  test("The mint authority can mintTokens", async () => {
+    const connection = connect();
+    const mintAuthority = await connection.createWallet({
+      airdropAmount: lamports(1n * SOL),
+    });
+
+    const mintAddress = await connection.makeTokenMint(
+      mintAuthority,
+      9,
+      "Unit test token",
+      "TEST",
+      "https://example.com",
+      {
+        keyOne: "valueOne",
+        keyTwo: "valueTwo",
+      },
+    );
+
+    const transactionSignature = await connection.mintTokens(mintAddress, mintAuthority, 1n, mintAuthority.address);
+
+    assert.ok(transactionSignature);
   });
 });
 

@@ -489,6 +489,42 @@ const makeTokenMintFactory = (
   return makeTokenMint;
 };
 
+const mintTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  const mintTokens = async (
+    mintAddress: Address,
+    mintAuthority: KeyPairSigner,
+    amount: bigint,
+    destination: Address,
+  ) => {
+    // Mint some tokens to the mintAuthority's own account using a mintTo instruction
+    const mintToInstruction = getMintToInstruction({
+      mint: mintAddress,
+      // 'token' is bizarrely named - quoting the docs - 'The account to mint tokens to.
+      token: destination,
+      mintAuthority: mintAuthority,
+      amount,
+    });
+
+    const feePayer = mintAuthority;
+
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
+      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
+      (tx) => appendTransactionMessageInstructions([mintToInstruction], tx),
+    );
+
+    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+
+    const transactionSignature = getSignatureFromTransaction(signedTransaction);
+
+    return transactionSignature;
+  };
+  return mintTokens;
+};
+
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
@@ -566,6 +602,8 @@ export const connect = (
 
   const makeTokenMint = makeTokenMintFactory(rpc, sendAndConfirmTransaction);
 
+  const mintTokens = mintTokensFactory(rpc);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -579,6 +617,7 @@ export const connect = (
     getRecentSignatureConfirmation,
     transferLamports,
     makeTokenMint,
+    mintTokens,
     getTokenAccountAddress,
     loadWalletFromFile,
     loadWalletFromEnvironment,
@@ -602,6 +641,7 @@ export interface Connection {
   getLogs: ReturnType<typeof getLogsFactory>;
   transferLamports: ReturnType<typeof transferLamportsFactory>;
   makeTokenMint: ReturnType<typeof makeTokenMintFactory>;
+  mintTokens: ReturnType<typeof mintTokensFactory>;
   // We expose these functions under Connection
   // simply because it's borng trying to remember what's a property of connection and what isn't,
   // They don't need to use 'ReturnType' because they're not factory functions

@@ -28,6 +28,7 @@ Kite includes functions to:
 - [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
 - [Create a new token](#maketokenmint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
+- [Mint tokens to an account](#minttokens---mint-tokens-to-an-account)
 
 We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
 
@@ -374,6 +375,48 @@ const tokenAccountAddress = await connection.getTokenAccountAddress(
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
   true,
 );
+```
+
+## mintTokens - Mint tokens to an account
+
+Mints tokens from a token mint to a destination account. The mint authority must sign the transaction.
+
+Returns: `Promise<Signature>`
+
+```typescript
+const signature = await connection.mintTokens(
+  mintAddress, // address of the token mint
+  mintAuthority, // signer with authority to mint tokens
+  amount, // amount of tokens to mint
+  destination, // address to receive the tokens
+);
+```
+
+### Options
+
+- `mintAddress`: `Address` - Address of the token mint
+- `mintAuthority`: `KeyPairSigner` - Signer with authority to mint tokens
+- `amount`: `bigint` - Amount of tokens to mint (in base units)
+- `destination`: `Address` - Address to receive the minted tokens
+
+### Example
+
+```typescript
+// Create a new token mint
+const mintAuthority = await connection.createWallet({
+  airdropAmount: lamports(1n * SOL),
+});
+
+const mintAddress = await connection.makeTokenMint(
+  mintAuthority,
+  9, // decimals
+  "My Token",
+  "TKN",
+  "https://example.com/token.json",
+);
+
+// Mint 100 tokens to the mint authority's account
+const signature = await connection.mintTokens(mintAddress, mintAuthority, 100n, mintAuthority.address);
 ```
 
 ## Development and testing
