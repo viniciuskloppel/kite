@@ -465,37 +465,13 @@ const makeTokenMintFactory = (
       value: "Only Possible On Solana",
     });
 
-    // Instruction to create Associated Token Account
-    const createAtaInstruction = await getCreateAssociatedTokenInstructionAsync({
-      payer: mintAuthority,
-      mint: mint.address,
-      owner: mintAuthority.address,
-    });
-
-    // Derive associated token address
-    const [associatedTokenAddress] = await findAssociatedTokenPda({
-      mint: mint.address,
-      owner: mintAuthority.address,
-      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-    });
-
-    // Instruction to mint tokens to associated token account
-    const mintToInstruction = getMintToInstruction({
-      mint: mint.address,
-      token: associatedTokenAddress,
-      mintAuthority: mintAuthority.address,
-      amount: 100n,
-    });
-
     // Order of instructions to add to transaction
     const instructions = [
       createAccountInstruction,
-      initializeMetadataPointerInstruction, // MUST come before initialize mint instruction
+      initializeMetadataPointerInstruction,
       initializeMintInstruction,
-      initializeTokenMetadataInstruction, // MUST come after initialize mint instruction
-      updateTokenMetadataInstruction, // MUST come after initialize token metadata instruction
-      createAtaInstruction,
-      mintToInstruction,
+      initializeTokenMetadataInstruction,
+      updateTokenMetadataInstruction,
     ];
 
     await sendTransactionFromInstructions(mintAuthority, instructions);
@@ -515,16 +491,32 @@ const mintTokensFactory = (
     amount: bigint,
     destination: Address,
   ) => {
-    // Mint some tokens to the mintAuthority's own account using a mintTo instruction
-    const mintToInstruction = getMintToInstruction({
+    // Create Associated Token Account
+    const createAtaInstruction = await getCreateAssociatedTokenInstructionAsync({
+      payer: mintAuthority,
       mint: mintAddress,
-      // 'token' is bizarrely named - quoting the docs - 'The account to mint tokens to.
-      token: destination,
-      mintAuthority: mintAuthority,
-      amount,
+      owner: mintAuthority.address,
     });
 
-    const transactionSignature = await sendTransactionFromInstructions(mintAuthority, [mintToInstruction]);
+    // Derive destination associated token address
+    // Instruction to mint tokens to associated token account
+    const [associatedTokenAddress] = await findAssociatedTokenPda({
+      mint: mintAddress,
+      owner: destination,
+      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    });
+
+    const mintToInstruction = getMintToInstruction({
+      mint: mintAddress,
+      token: associatedTokenAddress,
+      mintAuthority: mintAuthority.address,
+      amount: amount,
+    });
+
+    const transactionSignature = await sendTransactionFromInstructions(mintAuthority, [
+      createAtaInstruction,
+      mintToInstruction,
+    ]);
 
     return transactionSignature;
   };
