@@ -89,16 +89,9 @@ describe("makeTokenMint", () => {
       keyOne: "valueOne",
       keyTwo: "valueTwo",
     };
-    const transactionSignature = await connection.makeTokenMint(
-      mintAuthority,
-      decimals,
-      name,
-      symbol,
-      uri,
-      additionalMetadata,
-    );
+    const mintAddress = await connection.makeTokenMint(mintAuthority, decimals, name, symbol, uri, additionalMetadata);
 
-    assert.ok(transactionSignature);
+    assert.ok(mintAddress);
 
     // TODO: get the token metadata for the mint at transactionSignature
     // this code is web3.js version 1
