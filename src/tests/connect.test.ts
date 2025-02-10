@@ -77,11 +77,9 @@ describe("makeTokenMint", () => {
   test("makeTokenMint makes a new mint with the specified metadata", async () => {
     const connection = connect();
 
-    const oneSol = lamports(1n * SOL);
-
-    const mintAuthority = await connection.createWallet();
-
-    await connection.airdropIfRequired(mintAuthority.address, oneSol, oneSol);
+    const mintAuthority = await connection.createWallet({
+      airdropAmount: lamports(1n * SOL),
+    });
 
     const name = "Unit test token";
     const symbol = "TEST";
