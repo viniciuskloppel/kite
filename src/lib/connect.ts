@@ -4,7 +4,6 @@ import {
   airdropFactory,
   appendTransactionMessageInstruction,
   Commitment,
-  CompilableTransactionMessage,
   createDefaultRpcTransport,
   createSignerFromKeyPair,
   createSolanaRpcFromTransport,
@@ -22,12 +21,13 @@ import {
   sendAndConfirmTransactionFactory,
   setTransactionMessageFeePayer,
   setTransactionMessageLifetimeUsingBlockhash,
-  Signature,
   signTransactionMessageWithSigners,
   SolanaRpcApiFromTransport,
   some,
-  TransactionMessageWithBlockhashLifetime,
   getAddressEncoder,
+  IInstruction,
+  setTransactionMessageFeePayerSigner,
+  appendTransactionMessageInstructions,
 } from "@solana/web3.js";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 import dotenv from "dotenv";
@@ -51,7 +51,6 @@ import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
 import { SOL, KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./constants";
-import { sendAndConfirmSimpleTransaction } from "./transaction";
 
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
@@ -124,22 +123,39 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   return getExplorerLink;
 };
 
-export const signSendAndConfirmTransactionFactory = (
+// TODO: add all Helius smart transaction logic here
+// Check log post and also my fixed github repo
+const sendTransactionFromInstructionsFactory = (
+  rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
-  const signSendAndConfirmTransaction = async (
-    transactionMessage: CompilableTransactionMessage & TransactionMessageWithBlockhashLifetime,
-    commitment: Commitment = "processed",
-    skipPreflight: boolean = true,
-  ): Promise<Signature> => {
+  const sendTransactionFromInstructions = async (
+    feePayer: KeyPairSigner,
+    instructions: Array<IInstruction>,
+    commitment: "confirmed" | "finalized" = "confirmed",
+    skipPreflight: boolean = false,
+  ) => {
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
+      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
+      (tx) => appendTransactionMessageInstructions(instructions, tx),
+    );
+
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+
     await sendAndConfirmTransaction(signedTransaction, {
       commitment,
       skipPreflight,
     });
-    return getSignatureFromTransaction(signedTransaction);
+
+    const signature = getSignatureFromTransaction(signedTransaction);
+
+    return signature;
   };
-  return signSendAndConfirmTransaction;
+  return sendTransactionFromInstructions;
 };
 
 const getBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
@@ -306,7 +322,9 @@ const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTrans
   return transferLamports;
 };
 
-const transferTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+const transferTokensFactory = (
+  sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
+) => {
   const transferTokens = async (sender: KeyPairSigner, destination: Address, mintAddress: Address, amount: bigint) => {
     const transferInstruction = getTransferCheckedInstruction({
       source: sender.address,
@@ -317,7 +335,7 @@ const transferTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
       decimals: 9,
     });
 
-    const signature = await sendAndConfirmSimpleTransaction(rpc, sender, [transferInstruction]);
+    const signature = await sendTransactionFromInstructions(sender, [transferInstruction]);
 
     return signature;
   };
@@ -338,7 +356,7 @@ const getTokenAccountAddress = async (wallet: Address, mint: Address, useTokenEx
 
 const makeTokenMintFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
-  sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
+  sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ): ((
   mintAuthority: KeyPairSigner,
   decimals: number,
@@ -479,7 +497,7 @@ const makeTokenMintFactory = (
       mintToInstruction,
     ];
 
-    await sendAndConfirmSimpleTransaction(rpc, mintAuthority, instructions);
+    await sendTransactionFromInstructions(mintAuthority, instructions);
 
     return mint.address;
   };
@@ -487,7 +505,9 @@ const makeTokenMintFactory = (
   return makeTokenMint;
 };
 
-const mintTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+const mintTokensFactory = (
+  sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
+) => {
   const mintTokens = async (
     mintAddress: Address,
     mintAuthority: KeyPairSigner,
@@ -503,7 +523,7 @@ const mintTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>)
       amount,
     });
 
-    const transactionSignature = await sendAndConfirmSimpleTransaction(rpc, mintAuthority, [mintToInstruction]);
+    const transactionSignature = await sendTransactionFromInstructions(mintAuthority, [mintToInstruction]);
 
     return transactionSignature;
   };
@@ -585,17 +605,19 @@ export const connect = (
 
   const transferLamports = transferLamportsFactory(rpc);
 
-  const makeTokenMint = makeTokenMintFactory(rpc, sendAndConfirmTransaction);
+  const sendTransactionFromInstructions = sendTransactionFromInstructionsFactory(rpc, sendAndConfirmTransaction);
 
-  const transferTokens = transferTokensFactory(rpc);
+  const makeTokenMint = makeTokenMintFactory(rpc, sendTransactionFromInstructions);
 
-  const mintTokens = mintTokensFactory(rpc);
+  const transferTokens = transferTokensFactory(sendTransactionFromInstructions);
+
+  const mintTokens = mintTokensFactory(sendTransactionFromInstructions);
 
   return {
     rpc,
     rpcSubscriptions,
     sendAndConfirmTransaction,
-    signSendAndConfirmTransaction: signSendAndConfirmTransactionFactory(sendAndConfirmTransaction),
+    sendTransactionFromInstructions,
     getBalance: getBalanceFactory(rpc),
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
     airdropIfRequired,
@@ -620,7 +642,7 @@ export interface Connection {
   rpc: RpcFromTransport<SolanaRpcApiFromTransport<RpcTransport>, RpcTransport>;
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>;
-  signSendAndConfirmTransaction: ReturnType<typeof signSendAndConfirmTransactionFactory>;
+  sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>;
   getBalance: ReturnType<typeof getBalanceFactory>;
   getExplorerLink: ReturnType<typeof getExplorerLinkFactory>;
   getRecentSignatureConfirmation: ReturnType<typeof createRecentSignatureConfirmationPromiseFactory>;

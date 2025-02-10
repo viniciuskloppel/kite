@@ -37,7 +37,7 @@ Kite includes functions to:
 ### Transactions
 
 - [Send and confirm a transaction](#sendandconfirmtransaction---send-and-confirm-a-transaction)
-- [Sign, send and confirm a transaction](#signsendandconfirmtransaction---sign-send-and-confirm-a-transaction)
+- [Send a transaction with multiple instructions](#sendtransactionfrominstructions---send-a-transaction-with-multiple-instructions)
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
 - [Get transaction logs](#getlogs---get-transaction-logs)
 
@@ -191,22 +191,6 @@ await connection.sendAndConfirmTransaction(transaction, options);
 - `options`: `Object` (optional)
   - `commitment`: `Commitment` - Desired confirmation level
   - `skipPreflight`: `boolean` - Whether to skip preflight transaction checks
-
-## signSendAndConfirmTransaction - Sign, send and confirm a transaction
-
-Signs a transaction with the provided signer, sends it, and waits for confirmation.
-
-Returns: `Promise<Signature>`
-
-```typescript
-const signature = await connection.signSendAndConfirmTransaction(transactionMessage, commitment, skipPreflight);
-```
-
-### Options
-
-- `transactionMessage`: `CompilableTransactionMessage & TransactionMessageWithBlockhashLifetime` - Transaction message to sign and send
-- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "processed")
-- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: true)
 
 ## getBalance - Get account balance
 
@@ -495,6 +479,46 @@ await connection.mintTokens(mintAddress, sender, 100n, sender.address);
 
 // Transfer 50 tokens from sender to recipient
 const signature = await connection.transferTokens(sender, recipient.address, mintAddress, 50n);
+```
+
+## sendTransactionFromInstructions - Send a transaction with multiple instructions
+
+Sends a transaction containing one or more instructions. The transaction will be signed by the fee payer and any other required signers.
+
+Returns: `Promise<Signature>`
+
+```typescript
+const signature = await connection.sendTransactionFromInstructions(feePayer, instructions, commitment, skipPreflight);
+```
+
+### Options
+
+- `feePayer`: `KeyPairSigner` - The account that will pay for the transaction
+- `instructions`: `Array<IInstruction>` - Array of instructions to include in the transaction
+- `commitment`: `"confirmed" | "finalized"` (optional) - Desired confirmation level (default: "confirmed")
+- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: false)
+
+### Example
+
+```typescript
+const feePayer = await connection.createWallet({
+  airdropAmount: lamports(1n * SOL)
+});
+
+const recipient = await generateKeyPairSigner();
+
+// Create an instruction to transfer SOL
+const transferInstruction = getTransferSolInstruction({
+  amount: lamports(0.1n * SOL),
+  destination: recipient.address,
+  source: feePayer
+});
+
+// Send the transaction with the transfer instruction
+const signature = await connection.sendTransactionFromInstructions(
+  feePayer,
+  [transferInstruction]
+);
 ```
 
 ## Development and testing
