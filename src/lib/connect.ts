@@ -310,17 +310,6 @@ const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTrans
 const transferTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   const transferTokens = async (sender: KeyPairSigner, destination: Address, mintAddress: Address, amount: bigint) => {
     const transferInstruction = getTransferCheckedInstruction({
-      // /** The source account. */
-      // source: Address<TAccountSource>;
-      // /** The token mint. */
-      // mint: Address<TAccountMint>;
-      // /** The destination account. */
-      // destination: Address<TAccountDestination>;
-      // /** The source account's owner/delegate or its multisignature account. */
-      // authority: Address<TAccountAuthority> | TransactionSigner<TAccountAuthority>;
-      // amount: TransferCheckedInstructionDataArgs['amount'];
-      // decimals: TransferCheckedInstructionDataArgs['decimals'];
-      // multiSigners?: Array<TransactionSigner>;
       source: sender.address,
       mint: mintAddress,
       destination,
