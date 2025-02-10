@@ -105,9 +105,14 @@ describe("mintTokens", () => {
       },
     );
 
-    const transactionSignature = await connection.mintTokens(mintAddress, mintAuthority, 1n, mintAuthority.address);
+    const mintTokensTransactionSignature = await connection.mintTokens(
+      mintAddress,
+      mintAuthority,
+      1n,
+      mintAuthority.address,
+    );
 
-    assert.ok(transactionSignature);
+    assert.ok(mintTokensTransactionSignature);
   });
 });
 
