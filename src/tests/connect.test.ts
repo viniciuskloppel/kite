@@ -1,10 +1,11 @@
 import { describe, test } from "node:test";
-import { generateKeyPairSigner, lamports } from "@solana/web3.js";
+import { address, address as toAddress, generateKeyPairSigner, lamports } from "@solana/web3.js";
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
 import { SOL } from "../lib/constants";
 import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
+import { Address, getAddressEncoder, getProgramDerivedAddress } from "@solana/addresses";
 
 describe("connect", () => {
   test("connect returns a connection object", () => {
@@ -50,6 +51,25 @@ describe("getBalance", () => {
     await connection.airdropIfRequired(keypairSigner.address, lamports(1n * SOL), lamports(1n * SOL));
     const balance = await connection.getBalance(keypairSigner.address, "finalized");
     assert.equal(balance, lamports(1n * SOL));
+  });
+});
+
+describe("getTokenAccountAddress", () => {
+  const connection = connect();
+  const USDC_MINT = toAddress("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+  const MIKEMACCANA_DOT_SOL_USDC_ACCOUNT = toAddress("4MD31b2GFAWVDYQT8KG7E5GcZiFyy4MpDUt4BcyEdJRP");
+  const MIKEMACCANA_DOT_SOL = toAddress("dDCQNnDmNbFVi8cQhKAgXhyhXeJ625tvwsunRyRc7c8");
+  const MIKEMACCANA_DOT_SOL_PYUSD_ACCOUNT = toAddress("ENGDgkjc6Pr8ceS2z4KiKnZU68LoLhHGbQoW6tRARsNk");
+  const PYUSD_MINT = toAddress("2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo");
+
+  test("getTokenAccountAddress returns the correct token account address for a classic Token program token", async () => {
+    const usdcTokenAccountAddress = await connection.getTokenAccountAddress(MIKEMACCANA_DOT_SOL, USDC_MINT);
+    assert.equal(usdcTokenAccountAddress, MIKEMACCANA_DOT_SOL_USDC_ACCOUNT);
+  });
+
+  test("getTokenAccountAddress returns the correct token account address for a Token Extensions token", async () => {
+    const pyusdTokenAccountAddress = await connection.getTokenAccountAddress(MIKEMACCANA_DOT_SOL, PYUSD_MINT, true);
+    assert.equal(pyusdTokenAccountAddress, MIKEMACCANA_DOT_SOL_PYUSD_ACCOUNT);
   });
 });
 

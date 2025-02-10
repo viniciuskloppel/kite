@@ -27,6 +27,7 @@ Kite includes functions to:
 - [Get transaction logs](#getlogs---get-transaction-logs)
 - [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
 - [Create a new token](#maketokenmint---create-a-new-token)
+- [Get token account address](#gettokenaccountaddress---get-token-account-address)
 
 We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
 
@@ -293,6 +294,43 @@ const mintAddress = await connection.makeTokenMint(
     description: "A stablecoin pegged to the US dollar",
     website: "https://example.com",
   },
+);
+```
+
+## getTokenAccountAddress - Get token account address
+
+Gets the associated token account address for a given wallet and token mint.
+
+Returns: `Promise<Address>`
+
+```typescript
+const tokenAccountAddress = await connection.getTokenAccountAddress(wallet, mint, useTokenExtensions);
+```
+
+### Options
+
+- `wallet`: `Address` - The wallet address to get the token account for
+- `mint`: `Address` - The token mint address
+- `useTokenExtensions`: `boolean` (optional) - Whether to use Token Extensions program (default: false)
+
+### Example
+
+Get a token account address for a token made with the classic token program:
+
+```typescript
+const tokenAccountAddress = await connection.getTokenAccountAddress(
+  "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn",
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+);
+```
+
+Get a token account address for a Token Extensions token:
+
+```typescript
+const tokenAccountAddress = await connection.getTokenAccountAddress(
+  "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn",
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  true,
 );
 ```
 

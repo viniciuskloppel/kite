@@ -1,4 +1,5 @@
 import {
+  address as toAddress,
   Address,
   airdropFactory,
   appendTransactionMessageInstruction,
@@ -11,6 +12,7 @@ import {
   createSolanaRpcSubscriptions,
   createTransactionMessage,
   generateKeyPairSigner,
+  getProgramDerivedAddress,
   getSignatureFromTransaction,
   KeyPairSigner,
   lamports,
@@ -27,6 +29,7 @@ import {
   SolanaRpcApiFromTransport,
   some,
   TransactionMessageWithBlockhashLifetime,
+  getAddressEncoder,
 } from "@solana/web3.js";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 import dotenv from "dotenv";
@@ -45,7 +48,6 @@ import {
   TOKEN_2022_PROGRAM_ADDRESS,
   tokenMetadataField,
 } from "@solana-program/token-2022";
-
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
@@ -54,6 +56,11 @@ import { SOL, KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
 export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
+
+const TOKEN_PROGRAM = toAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const TOKEN_EXTENSIONS_PROGRAM = toAddress("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+const ASSOCIATED_TOKEN_PROGRAM = toAddress("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+const addressEncoder = getAddressEncoder();
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
@@ -288,6 +295,18 @@ const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTrans
     return signature;
   };
   return transferLamports;
+};
+
+const getTokenAccountAddress = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
+  // See https://github.com/anza-xyz/solana-web3.js/blob/963be00b26fb2c61efec1878c44184acad78b1f7/packages/addresses/README.md#getprogramderivedaddress
+  const tokenProgram = useTokenExtensions ? TOKEN_EXTENSIONS_PROGRAM : TOKEN_PROGRAM;
+  const seeds = [wallet, tokenProgram ?? TOKEN_PROGRAM, mint].map(addressEncoder.encode);
+  // Slightly misnamed, it returns an address and a seed
+  const [address] = await getProgramDerivedAddress({
+    programAddress: ASSOCIATED_TOKEN_PROGRAM,
+    seeds,
+  });
+  return address;
 };
 
 const makeTokenMintFactory = (
@@ -551,6 +570,7 @@ export const connect = (
     getRecentSignatureConfirmation,
     transferLamports,
     makeTokenMint,
+    getTokenAccountAddress,
     loadWalletFromFile,
     loadWalletFromEnvironment,
   };
@@ -576,6 +596,7 @@ export interface Connection {
   // We expose these functions under Connection
   // simply because it's borng trying to remember what's a property of connection and what isn't,
   // They don't need to use 'ReturnType' because they're not factory functions
+  getTokenAccountAddress: typeof getTokenAccountAddress;
   loadWalletFromFile: typeof loadWalletFromFile;
   loadWalletFromEnvironment: typeof loadWalletFromEnvironment;
 }
