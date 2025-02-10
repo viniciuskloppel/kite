@@ -18,7 +18,7 @@ import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
 import { SOL } from "../lib/constants";
 import { connect, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
-import { getMintToInstruction } from "@solana-program/token-2022";
+import { getMintToInstruction, getTransferCheckedInstruction } from "@solana-program/token-2022";
 
 describe("connect", () => {
   test("connect returns a connection object", () => {
@@ -113,6 +113,47 @@ describe("mintTokens", () => {
     );
 
     assert.ok(mintTokensTransactionSignature);
+  });
+});
+
+describe("transferTokens", () => {
+  test("transferTokens transfers tokens from one account to another", async () => {
+    const connection = connect();
+    const [sender, recipient] = await Promise.all([
+      connection.createWallet({
+        airdropAmount: lamports(1n * SOL),
+      }),
+      connection.createWallet({
+        airdropAmount: lamports(1n * SOL),
+      }),
+    ]);
+
+    const mintAuthority = sender;
+
+    const mintAddress = await connection.makeTokenMint(
+      mintAuthority,
+      9,
+      "Unit test token",
+      "TEST",
+      "https://example.com",
+      {
+        keyOne: "valueOne",
+        keyTwo: "valueTwo",
+      },
+    );
+
+    const mintTokensTransactionSignature = await connection.mintTokens(mintAddress, mintAuthority, 1n, sender.address);
+
+    assert.ok(mintTokensTransactionSignature);
+
+    const transferTokensTransactionSignature = await connection.transferTokens(
+      sender,
+      recipient.address,
+      mintAddress,
+      1n,
+    );
+
+    assert.ok(transferTokensTransactionSignature);
   });
 });
 

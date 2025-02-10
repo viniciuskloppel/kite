@@ -47,6 +47,7 @@ import {
   getUpdateTokenMetadataFieldInstruction,
   TOKEN_2022_PROGRAM_ADDRESS,
   tokenMetadataField,
+  getTransferCheckedInstruction,
 } from "@solana-program/token-2022";
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
@@ -304,6 +305,53 @@ const transferLamportsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTrans
     return signature;
   };
   return transferLamports;
+};
+
+const transferTokensFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  const transferTokens = async (sender: KeyPairSigner, destination: Address, mintAddress: Address, amount: bigint) => {
+    const transferInstruction = getTransferCheckedInstruction({
+      // /** The source account. */
+      // source: Address<TAccountSource>;
+      // /** The token mint. */
+      // mint: Address<TAccountMint>;
+      // /** The destination account. */
+      // destination: Address<TAccountDestination>;
+      // /** The source account's owner/delegate or its multisignature account. */
+      // authority: Address<TAccountAuthority> | TransactionSigner<TAccountAuthority>;
+      // amount: TransferCheckedInstructionDataArgs['amount'];
+      // decimals: TransferCheckedInstructionDataArgs['decimals'];
+      // multiSigners?: Array<TransactionSigner>;
+      source: sender.address,
+      mint: mintAddress,
+      destination,
+      authority: sender.address,
+      amount,
+      decimals: 9,
+    });
+
+    const feePayer = sender;
+
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
+      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
+      (tx) => appendTransactionMessageInstructions([transferInstruction], tx),
+    );
+
+    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+
+    // Step 3: send and confirm the transaction
+    await rpc.sendAndConfirmTransaction(signedTransaction, {
+      commitment: "confirmed",
+    });
+
+    const signature = getSignatureFromTransaction(signedTransaction);
+
+    return signature;
+  };
+  return transferTokens;
 };
 
 const getTokenAccountAddress = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
@@ -602,6 +650,8 @@ export const connect = (
 
   const makeTokenMint = makeTokenMintFactory(rpc, sendAndConfirmTransaction);
 
+  const transferTokens = transferTokensFactory(rpc);
+
   const mintTokens = mintTokensFactory(rpc);
 
   return {
@@ -616,6 +666,7 @@ export const connect = (
     getLogs,
     getRecentSignatureConfirmation,
     transferLamports,
+    transferTokens,
     makeTokenMint,
     mintTokens,
     getTokenAccountAddress,
@@ -642,6 +693,7 @@ export interface Connection {
   transferLamports: ReturnType<typeof transferLamportsFactory>;
   makeTokenMint: ReturnType<typeof makeTokenMintFactory>;
   mintTokens: ReturnType<typeof mintTokensFactory>;
+  transferTokens: ReturnType<typeof transferTokensFactory>;
   // We expose these functions under Connection
   // simply because it's borng trying to remember what's a property of connection and what isn't,
   // They don't need to use 'ReturnType' because they're not factory functions

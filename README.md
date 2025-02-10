@@ -32,6 +32,7 @@ Kite includes functions to:
 - [Create a new token](#maketokenmint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Mint tokens to an account](#minttokens---mint-tokens-to-an-account)
+- [Transfer tokens between accounts](#transfertokens---transfer-tokens-between-accounts)
 
 ### Transactions
 
@@ -431,6 +432,57 @@ const mintAddress = await connection.makeTokenMint(
 
 // Mint 100 tokens to the mint authority's account
 const signature = await connection.mintTokens(mintAddress, mintAuthority, 100n, mintAuthority.address);
+```
+
+## transferTokens - Transfer tokens between accounts
+
+Transfers tokens from one account to another. The sender must sign the transaction.
+
+Returns: `Promise<Signature>`
+
+```typescript
+const signature = await connection.transferTokens(
+  sender, // signer that owns the tokens
+  destination, // address to receive the tokens
+  mintAddress, // address of the token mint
+  amount, // amount of tokens to transfer
+);
+```
+
+### Options
+
+- `sender`: `KeyPairSigner` - Signer that owns the tokens and will sign the transaction
+- `destination`: `Address` - Address to receive the tokens
+- `mintAddress`: `Address` - Address of the token mint
+- `amount`: `bigint` - Amount of tokens to transfer (in base units)
+
+### Example
+
+```typescript
+// Create wallets for sender and recipient
+const [sender, recipient] = await Promise.all([
+  connection.createWallet({
+    airdropAmount: lamports(1n * SOL),
+  }),
+  connection.createWallet({
+    airdropAmount: lamports(1n * SOL),
+  }),
+]);
+
+// Create a new token mint
+const mintAddress = await connection.makeTokenMint(
+  sender, // sender will be the mint authority
+  9, // decimals
+  "My Token",
+  "TKN",
+  "https://example.com/token.json",
+);
+
+// Mint some tokens to the sender's account
+await connection.mintTokens(mintAddress, sender, 100n, sender.address);
+
+// Transfer 50 tokens from sender to recipient
+const signature = await connection.transferTokens(sender, recipient.address, mintAddress, 50n);
 ```
 
 ## Development and testing
