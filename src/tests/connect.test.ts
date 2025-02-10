@@ -71,7 +71,7 @@ describe("getTokenAccountAddress", () => {
   });
 });
 
-describe("mintTokens", () => {
+describe("makeTokenMint", () => {
   test("The mint authority can mintTokens", async () => {
     const connection = connect();
     const mintAuthority = await connection.createWallet({
@@ -347,9 +347,8 @@ describe("getExplorerLink", () => {
 
   test("getExplorerLink works for an address using helius-mainnet", () => {
     // This is a fake API key, don't use it
-    // But I did test with a real one, and it worked, and you can test it yourself
-    // by visiting the URL and replacing the API key with your own
-
+    // But this works, and you can test it yourself
+    // by visiting the URL and replacing the API key with a real one
     const FAKE_API_KEY = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
     process.env.HELIUS_API_KEY = FAKE_API_KEY;
     const { getExplorerLink } = connect("helius-mainnet");
