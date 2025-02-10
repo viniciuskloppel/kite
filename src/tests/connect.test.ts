@@ -353,21 +353,20 @@ describe("getExplorerLink", () => {
   });
 });
 
-// TODO: this is causing some test oddness (spawn E2BIG) on GitHub Actions (though it works locally)
-// describe("getLogs", () => {
-//   test("getLogs works", async () => {
-//     const connection = connect();
-//     const keyPairSigner = await generateKeyPairSigner();
+describe("getLogs", () => {
+  test("getLogs works", async () => {
+    const connection = connect();
+    const keyPairSigner = await generateKeyPairSigner();
 
-//     const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL));
+    const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL));
 
-//     // Signature should never be null as we always need an airdrop
-//     assert.ok(signature);
+    // Signature should never be null as we always need an airdrop
+    assert.ok(signature);
 
-//     const logs = await connection.getLogs(signature);
-//     assert.deepEqual(logs, [
-//       "Program 11111111111111111111111111111111 invoke [1]",
-//       "Program 11111111111111111111111111111111 success",
-//     ]);
-//   });
-// });
+    const logs = await connection.getLogs(signature);
+    assert.deepEqual(logs, [
+      "Program 11111111111111111111111111111111 invoke [1]",
+      "Program 11111111111111111111111111111111 success",
+    ]);
+  });
+});
