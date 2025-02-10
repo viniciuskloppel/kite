@@ -343,14 +343,15 @@ const transferTokensFactory = (
 };
 
 const getTokenAccountAddress = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
-  // See https://github.com/anza-xyz/solana-web3.js/blob/963be00b26fb2c61efec1878c44184acad78b1f7/packages/addresses/README.md#getprogramderivedaddress
   const tokenProgram = useTokenExtensions ? TOKEN_EXTENSIONS_PROGRAM : TOKEN_PROGRAM;
-  const seeds = [wallet, tokenProgram ?? TOKEN_PROGRAM, mint].map(addressEncoder.encode);
+
   // Slightly misnamed, it returns an address and a seed
-  const [address] = await getProgramDerivedAddress({
-    programAddress: ASSOCIATED_TOKEN_PROGRAM,
-    seeds,
+  const [address] = await findAssociatedTokenPda({
+    mint: mint,
+    owner: wallet,
+    tokenProgram,
   });
+
   return address;
 };
 
