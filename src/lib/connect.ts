@@ -47,6 +47,7 @@ import {
   tokenMetadataField,
   getTransferCheckedInstruction,
   fetchMint,
+  getCreateAssociatedTokenInstruction,
 } from "@solana-program/token-2022";
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
@@ -316,30 +317,43 @@ const transferTokensFactory = (
 
     const decimals = mint.data.decimals;
 
-    // TODO: optimise this, we have a function to do most of this
-    const [sourceAssociatedTokenAddress] = await findAssociatedTokenPda({
-      mint: mintAddress,
-      owner: sender.address,
-      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-    });
+    const sourceAssociatedTokenAddress = await getTokenAccountAddress(sender.address, mintAddress, true);
 
-    // TODO: optimise this, we have a function to do most of this
-    const [destinationAssociatedTokenAddress] = await findAssociatedTokenPda({
-      mint: mintAddress,
-      owner: destination,
-      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-    });
+    const destinationAssociatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, true);
 
-    const transferInstruction = getTransferCheckedInstruction({
-      source: sourceAssociatedTokenAddress,
-      mint: mintAddress,
-      destination: destinationAssociatedTokenAddress,
-      authority: sender.address,
-      amount,
-      decimals,
-    });
+    // TODO: check if the destination associated token account exists before sending
 
-    const signature = await sendTransactionFromInstructions(sender, [transferInstruction]);
+    // Create an associated token account for the receiver
+    const createAssociatedTokenInstruction = getCreateAssociatedTokenInstruction(
+      {
+        ata: destinationAssociatedTokenAddress,
+        mint: mintAddress,
+        owner: destination,
+        payer: sender,
+      },
+      {
+        programAddress: TOKEN_2022_PROGRAM_ADDRESS,
+      },
+    );
+
+    const transferInstruction = getTransferCheckedInstruction(
+      {
+        source: sourceAssociatedTokenAddress,
+        mint: mintAddress,
+        destination: destinationAssociatedTokenAddress,
+        authority: sender.address,
+        amount,
+        decimals,
+      },
+      {
+        programAddress: TOKEN_2022_PROGRAM_ADDRESS,
+      },
+    );
+
+    const signature = await sendTransactionFromInstructions(sender, [
+      createAssociatedTokenInstruction,
+      transferInstruction,
+    ]);
 
     return signature;
   };
@@ -504,12 +518,7 @@ const mintTokensFactory = (
 
     // Derive destination associated token address
     // Instruction to mint tokens to associated token account
-    // TODO: optimise this, we have a function to do most of this
-    const [associatedTokenAddress] = await findAssociatedTokenPda({
-      mint: mintAddress,
-      owner: destination,
-      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-    });
+    const associatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, true);
 
     const mintToInstruction = getMintToInstruction({
       mint: mintAddress,
