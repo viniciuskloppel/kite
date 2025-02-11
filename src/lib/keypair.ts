@@ -176,9 +176,3 @@ export const addKeyPairSignerToEnvFile = async (
   const privateKeyString = await createJSONFromKeyPairSigner(keyPairSigner);
   await appendFile(envFileName, `\n# Solana Address: ${keyPairSigner.address}\n${variableName}=${privateKeyString}`);
 };
-
-// Shout out to Dean from WBA for this technique
-export const makeKeyPairSigners = (amount: number): Promise<Array<KeyPairSigner>> => {
-  // TODO: this should use initializeKeypairSigner()
-  return Promise.all(Array.from({ length: amount }, () => generateKeyPairSigner()));
-};

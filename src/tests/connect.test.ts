@@ -151,7 +151,6 @@ describe("makeTokenMint", () => {
     //   throw new Error(`Token metadata not found for mint address ${mintAddress}`);
     // }
     // assert.equal(tokenMetadata.mint.toBase58(), mintAddress.toBase58());
-    // // TODO was toBase58 but that doesn't exist on addresses
     // assert.equal(tokenMetadata.updateAuthority?.toBase58(), mintAuthority.address.toString());
     // assert.equal(tokenMetadata.name, name);
     // assert.equal(tokenMetadata.symbol, symbol);
