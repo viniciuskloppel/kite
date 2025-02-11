@@ -143,19 +143,6 @@ describe("makeTokenMint", () => {
     const mintAddress = await connection.makeTokenMint(mintAuthority, decimals, name, symbol, uri, additionalMetadata);
 
     assert.ok(mintAddress);
-
-    // TODO: get the token metadata for the mint at transactionSignature
-    // this code is web3.js version 1
-    // const tokenMetadata = await getTokenMetadata(rpc, mintAddress);
-    // if (!tokenMetadata) {
-    //   throw new Error(`Token metadata not found for mint address ${mintAddress}`);
-    // }
-    // assert.equal(tokenMetadata.mint.toBase58(), mintAddress.toBase58());
-    // assert.equal(tokenMetadata.updateAuthority?.toBase58(), mintAuthority.address.toString());
-    // assert.equal(tokenMetadata.name, name);
-    // assert.equal(tokenMetadata.symbol, symbol);
-    // assert.equal(tokenMetadata.uri, uri);
-    // assert.deepEqual(tokenMetadata.additionalMetadata, Object.entries(additionalMetadata));
   });
 });
 
