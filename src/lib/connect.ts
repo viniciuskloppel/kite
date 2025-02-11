@@ -141,9 +141,9 @@ const sendTransactionFromInstructionsFactory = (
 
     const transactionMessage = pipe(
       createTransactionMessage({ version: 0 }),
-      (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
-      (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
-      (tx) => appendTransactionMessageInstructions(instructions, tx),
+      (message) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, message),
+      (message) => setTransactionMessageFeePayerSigner(feePayer, message),
+      (message) => appendTransactionMessageInstructions(instructions, message),
     );
 
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
@@ -654,11 +654,7 @@ export const connect = (
 };
 
 export interface Connection {
-  // ReturnType<typeof createSolanaRpcFromTransport> doesn't work here - it will be 'any'
-  // So I've copied the return type of createSolanaRpcFromTransport manually.
-  // See https://stackoverflow.com/questions/79276895/why-does-my-interface-using-returntype-have-any-as-a-type
-  // TODO: work out why ReturnType<typeof createSolanaRpcFromTransport> doesn't work here and fix it
-  rpc: RpcFromTransport<SolanaRpcApiFromTransport<RpcTransport>, RpcTransport>;
+  rpc: ReturnType<typeof createSolanaRpcFromTransport>;
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>;
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>;
@@ -673,7 +669,7 @@ export interface Connection {
   mintTokens: ReturnType<typeof mintTokensFactory>;
   transferTokens: ReturnType<typeof transferTokensFactory>;
   // We expose these functions under Connection
-  // simply because it's borng trying to remember what's a property of connection and what isn't,
+  // simply because it's boring trying to remember what's a property of connection and what isn't,
   // They don't need to use 'ReturnType' because they're not factory functions
   getTokenAccountAddress: typeof getTokenAccountAddress;
   loadWalletFromFile: typeof loadWalletFromFile;
