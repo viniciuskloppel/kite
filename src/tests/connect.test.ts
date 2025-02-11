@@ -103,7 +103,13 @@ describe("tokens", () => {
     assert.ok(mintTokensTransactionSignature);
   });
 
+  test("We can get the mint", async () => {
+    const mint = await connection.getMint(mintAddress);
+    assert.ok(mint);
+  });
+
   // TODO: test is failing
+  // Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: incorrect program id for instruction
   // test("transferTokens transfers tokens from one account to another", async () => {
   //   // Transfer 1 token from the mint authority to the recipient
   //   const transferTokensTransactionSignature = await connection.transferTokens(
@@ -111,7 +117,6 @@ describe("tokens", () => {
   //     recipient.address,
   //     mintAddress,
   //     1n,
-  //     decimals,
   //   );
 
   //   assert.ok(transferTokensTransactionSignature);

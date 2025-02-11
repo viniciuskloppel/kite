@@ -46,6 +46,7 @@ import {
   TOKEN_2022_PROGRAM_ADDRESS,
   tokenMetadataField,
   getTransferCheckedInstruction,
+  fetchMint,
 } from "@solana-program/token-2022";
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
@@ -303,26 +304,36 @@ const transferLamportsFactory = (
 };
 
 const transferTokensFactory = (
+  getMint: ReturnType<typeof getMintFactory>,
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
-  const transferTokens = async (
-    sender: KeyPairSigner,
-    destination: Address,
-    mintAddress: Address,
-    amount: bigint,
-    decimals: number,
-  ) => {
+  const transferTokens = async (sender: KeyPairSigner, destination: Address, mintAddress: Address, amount: bigint) => {
+    const mint = await getMint(mintAddress);
+
+    if (!mint) {
+      throw new Error(`Mint not found: ${mintAddress}`);
+    }
+
+    const decimals = mint.data.decimals;
+
     // TODO: optimise this, we have a function to do most of this
-    const [associatedTokenAddress] = await findAssociatedTokenPda({
+    const [sourceAssociatedTokenAddress] = await findAssociatedTokenPda({
+      mint: mintAddress,
+      owner: sender.address,
+      tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    });
+
+    // TODO: optimise this, we have a function to do most of this
+    const [destinationAssociatedTokenAddress] = await findAssociatedTokenPda({
       mint: mintAddress,
       owner: destination,
       tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
     });
 
     const transferInstruction = getTransferCheckedInstruction({
-      source: sender.address,
+      source: sourceAssociatedTokenAddress,
       mint: mintAddress,
-      destination: associatedTokenAddress,
+      destination: destinationAssociatedTokenAddress,
       authority: sender.address,
       amount,
       decimals,
@@ -517,6 +528,15 @@ const mintTokensFactory = (
   return mintTokens;
 };
 
+const getMintFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  const getMint = async (mintAddress: Address, commitment: Commitment = "confirmed") => {
+    const mint = await fetchMint(rpc, mintAddress, { commitment });
+    return mint;
+  };
+
+  return getMint;
+};
+
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
@@ -596,7 +616,9 @@ export const connect = (
 
   const makeTokenMint = makeTokenMintFactory(rpc, sendTransactionFromInstructions);
 
-  const transferTokens = transferTokensFactory(sendTransactionFromInstructions);
+  const getMint = getMintFactory(rpc);
+
+  const transferTokens = transferTokensFactory(getMint, sendTransactionFromInstructions);
 
   const mintTokens = mintTokensFactory(sendTransactionFromInstructions);
 
@@ -618,6 +640,7 @@ export const connect = (
     getTokenAccountAddress,
     loadWalletFromFile,
     loadWalletFromEnvironment,
+    getMint,
   };
 };
 
@@ -646,4 +669,5 @@ export interface Connection {
   getTokenAccountAddress: typeof getTokenAccountAddress;
   loadWalletFromFile: typeof loadWalletFromFile;
   loadWalletFromEnvironment: typeof loadWalletFromEnvironment;
+  getMint: ReturnType<typeof getMintFactory>;
 }
