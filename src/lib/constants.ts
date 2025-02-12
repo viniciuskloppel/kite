@@ -36,6 +36,7 @@ export const CLUSTERS: Record<
       // Whether this cluster name is known to the Solana Explorer
       isNameKnownToSolanaExplorer: boolean;
       // Whether this cluster supports Helius priority fee estimate instruction
+      // See https://docs.helius.dev/solana-apis/priority-fee-api
       supportsGetPriorityFeeEstimate: boolean;
       // Whether this cluster needs priority fees
       needsPriorityFees: boolean;
