@@ -17,6 +17,10 @@ Kite works both in the browser and node.js and has [minimal dependencies](https:
 
 Kite includes functions to:
 
+### Connecting
+
+- [Connect to a Solana cluster](#connect---connect-to-a-solana-cluster) - in one shot, either by name or using URLs, loading API keys if necessary.
+
 ### Wallets
 
 - [Create a new wallet](#createwallet---create-a-new-wallet)
@@ -33,6 +37,7 @@ Kite includes functions to:
 
 - [Create a new token](#maketokenmint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
+- [Get token mint information](#getmint---get-token-mint-information)
 - [Mint tokens to an account](#minttokens---mint-tokens-to-an-account)
 - [Transfer tokens between accounts](#transfertokens---transfer-tokens-between-accounts)
 
@@ -88,6 +93,8 @@ const connection = connect("https://mainnet.example.com/", "wss://mainnet.exampl
 After you've made a connection Kite is ready to use. **You don't need to set up any factories, they're already configured.** A `connection` has the following functions ready out of the box:
 
 ## createWallet - Create a new wallet
+
+> Like `initializeKeypair` from `@solana/helpers`
 
 Creates a new Solana wallet (more specifically a `KeyPairSigner`).
 
@@ -149,7 +156,22 @@ const wallet = await connection.createWallet({
 });
 ```
 
+Create multiple wallets at once (like `makeWallets` from `@solana/helpers`):
+
+```typescript
+const [sender, recipient] = await Promise.all([
+  connection.createWallet({
+    airdropAmount: lamports(1n * SOL),
+  }),
+  connection.createWallet({
+    airdropAmount: lamports(1n * SOL),
+  }),
+]);
+```
+
 ## loadWalletFromFile - Load a wallet from file
+
+> Like `getKeypairFromFile` from `@solana/helpers`
 
 Loads a wallet (more specifically a `KeyPairSigner`) from a file. The file should be in the same format as files created by the `solana-keygen` command.
 
@@ -165,6 +187,8 @@ const wallet = await connection.loadWalletFromFile(keyPairPath);
 
 ## loadWalletFromEnvironment - Load a wallet from environment
 
+> Like `getKeypairFromEnvironment` from `@solana/helpers`
+
 Loads a wallet (more specifically a `KeyPairSigner`) from an environment variable. The keypair should be in the same 'array of numbers' format as used by `solana-keygen`.
 
 Returns: `Promise<KeyPairSigner>`
@@ -178,6 +202,8 @@ const wallet = await connection.loadWalletFromEnvironment(envVariableName);
 - `envVariableName`: `string` - Name of environment variable containing the keypair (default: "PRIVATE_KEY")
 
 ## sendAndConfirmTransaction - Send and confirm a transaction
+
+> Like `sendTransaction` from `@solana/helpers`
 
 Sends a transaction and waits for confirmation.
 
@@ -265,6 +291,8 @@ const confirmed = await connection.getRecentSignatureConfirmation(signature);
 - `signature`: `string` - The signature of the transaction to check
 
 ## airdropIfRequired - Airdrop SOL if balance is low
+
+> Like `airdropIfRequired` from `@solana/helpers`
 
 Airdrops SOL to an address if its balance is below the specified threshold.
 
@@ -485,6 +513,8 @@ const signature = await connection.transferTokens(sender, recipient.address, min
 
 ## sendTransactionFromInstructions - Send a transaction with multiple instructions
 
+> Like `sendTransactionWithSigners` from `@solana/helpers`
+
 Sends a transaction containing one or more instructions. The transaction will be signed by the fee payer and any other required signers.
 
 Returns: `Promise<Signature>`
@@ -501,6 +531,8 @@ const signature = await connection.sendTransactionFromInstructions(feePayer, ins
 - `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: false)
 
 ### Example
+
+Here's an example of sending a transaction with a SOL transfer instruction:
 
 ```typescript
 const feePayer = await connection.createWallet({
@@ -522,6 +554,68 @@ const signature = await connection.sendTransactionFromInstructions(
   [transferInstruction]
 );
 ```
+
+You can also send multiple instructions in a single transaction:
+
+```typescript
+// Create instructions to transfer SOL to multiple recipients
+const transferInstructions = recipients.map(recipient =>
+  getTransferSolInstruction({
+    amount: lamports(0.1n * SOL),
+    destination: recipient.address,
+    source: feePayer
+  })
+);
+
+// Send all transfers in one transaction
+const signature = await connection.sendTransactionFromInstructions(
+  feePayer,
+  transferInstructions
+);
+```
+
+The function will automatically:
+
+- Get a recent blockhash
+- Set the fee payer
+- Add compute budget instructions if needed
+- Sign the transaction with the fee payer
+- Send and confirm the transaction
+
+## getMint - Get token mint information
+
+Gets information about a token mint, including its decimals, authority, and supply.
+
+Returns: `Promise<Mint | null>`
+
+```typescript
+const mint = await connection.getMint(mintAddress, commitment);
+```
+
+### Options
+
+- `mintAddress`: `Address` - Address of the token mint to get information for
+- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "confirmed")
+
+### Example
+
+```typescript
+// Get information about the USDC mint
+const usdcMint = await connection.getMint("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+
+if (usdcMint) {
+  console.log(`Decimals: ${usdcMint.data.decimals}`);
+  console.log(`Mint authority: ${usdcMint.data.mintAuthority}`);
+  console.log(`Supply: ${usdcMint.data.supply}`);
+}
+```
+
+The mint information includes:
+
+- `decimals`: Number of decimal places for the token
+- `mintAuthority`: Public key of the account allowed to mint new tokens
+- `supply`: Current total supply of the token
+- Other metadata if the token uses Token Extensions
 
 ## Development and testing
 
