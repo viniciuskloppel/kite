@@ -1,17 +1,19 @@
-# A modern Solana framework for web3.js version 2 🪁
+# The Solana framework for web3.js version 2 🪁
+
+![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)
 
 > [!NOTE]  
-> Kite is new, and should be considered experimental. Please [report any issues](https://github.com/helius-dev/kite/issues) you find.
+> Kite has undergone extensive testing, but it's also newly released, so you may discover some bugs. Please [report any issues](https://github.com/helius-dev/kite/issues) you find.
 
-## A modern Solana TypeScript framework for the browser and node.js
+## A modern Solana TypeScript framework
 
-Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to **do most Solana tasks in a single step**. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available, and if you decide you don't need Kite anymore, you can easily remove it and use plain web3.js version 2 if you wish.
+Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to complete most Solana tasks in a single step. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available. If you decide you no longer need Kite, you can easily remove it and use plain web3.js version 2.
 
-Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular high level library for web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/). The ones we haven't added yet should be there soon.
+Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular high-level library for web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
 
 Kite works both in the browser and node.js and has [minimal dependencies](https://github.com/helius-dev/kite/blob/main/package.json).
 
-## What can I do with this library?
+## What can I do with Kite?
 
 Kite includes functions to:
 
@@ -69,7 +71,7 @@ import { connect } from "@helius/kite";
 const connection = connect();
 ```
 
-You can also specify a cluster name. The connection object defaults to `localnet` but any of the following cluster names are supported: `mainnet-beta` (or `mainnet`), `testnet`, `devnet`, `helius-mainnet`, `helius-testnet`, `helius-devnet`.
+You can also specify a cluster name. The connection object defaults to `localnet` but any of the following cluster names are supported: `mainnet-beta` (or `mainnet`), `testnet`, `devnet`, `helius-mainnet`, `helius-testnet`, or `helius-devnet`.
 
 ```typescript
 const connection = connect("helius-devnet");
@@ -209,7 +211,7 @@ const balance = await connection.getBalance(address, commitment);
 
 ## getExplorerLink - Get Solana Explorer link
 
-Generates a link to view an address, transaction, or token on Solana Explorer. The link will automatically use your RPC.
+Get a link to view an address, transaction, or token on Solana Explorer. The link will automatically use your RPC.
 
 Returns: `string` - Explorer URL
 
@@ -545,8 +547,8 @@ esrun --node-no-warnings tests/src/keypair.test.ts
 
 We use `--node-no-warnings` to avoid `ExperimentalWarning: The Ed25519 Web Crypto API algorithm is an experimental feature` which is pretty boring once you've read it for the 50th time.
 
+To just run tests matching the name `connect`.
+
 ```bash
 esrun --node-no-warnings --node-test-name-pattern='connect' src/tests/connect.test.ts
 ```
-
-To just run tests matching the name `getCustomErrorMessage`.
