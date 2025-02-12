@@ -3,9 +3,7 @@
 ![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)
 
 > [!NOTE]  
-> Kite has undergone extensive testing, but it's also newly released, so you may discover some bugs. Please [report any issues](https://github.com/helius-dev/kite/issues) you find.
-
-## A modern Solana TypeScript framework
+> This is the first public release of Kite - it has extensive tests, but you should consider it a preview and it may have some bugs. Please [report any issues](https://github.com/helius-dev/kite/issues) you find.
 
 Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to complete most Solana tasks in a single step. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available. If you decide you no longer need Kite, you can easily remove it and use plain web3.js version 2.
 
@@ -515,7 +513,7 @@ const signature = await connection.transferTokens(sender, recipient.address, min
 
 > Like `sendTransactionWithSigners` from `@solana/helpers`
 
-Sends a transaction containing one or more instructions. The transaction will be signed by the fee payer and any other required signers.
+Sends a transaction containing one or more instructions. The transaction will be signed by the fee payer.
 
 Returns: `Promise<Signature>`
 
