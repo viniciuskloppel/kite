@@ -24,74 +24,110 @@ export const CLUSTERS: Record<
   {
     httpURL: string;
     webSocketURL: string;
-    // Whether this is the default cluster for the Solana Explorer
-    isExplorerDefault: boolean;
-    // Whether this cluster name is known to the Solana Explorer
-    isNameKnownToSolanaExplorer: boolean;
+
     // The URL param name required for this cluster (eg for API keys)
     requiredParam: string | null;
     // The environment variable name used for requiredParam above.
     requiredParamEnvironmentVariable: string | null;
+
+    features: {
+      // Whether this is the default cluster for the Solana Explorer
+      isExplorerDefault: boolean;
+      // Whether this cluster name is known to the Solana Explorer
+      isNameKnownToSolanaExplorer: boolean;
+      // Whether this cluster supports Helius priority fee estimate instruction
+      supportsGetPriorityFeeEstimate: boolean;
+      // Whether this cluster needs priority fees
+      needsPriorityFees: boolean;
+    };
   }
 > = {
   // Solana Labs RPCs
   "mainnet-beta": {
     httpURL: "https://api.mainnet-beta.solana.com",
     webSocketURL: "wss://api.mainnet-beta.solana.com",
-    isExplorerDefault: true,
-    isNameKnownToSolanaExplorer: true,
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    features: {
+      isExplorerDefault: true,
+      isNameKnownToSolanaExplorer: true,
+      supportsGetPriorityFeeEstimate: false,
+      needsPriorityFees: true,
+    },
   },
   testnet: {
     httpURL: "https://api.testnet.solana.com",
     webSocketURL: "wss://api.testnet.solana.com",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: true,
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: true,
+      supportsGetPriorityFeeEstimate: false,
+      needsPriorityFees: true,
+    },
   },
   devnet: {
     httpURL: "https://api.devnet.solana.com",
     webSocketURL: "wss://api.devnet.solana.com",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: true,
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: true,
+      supportsGetPriorityFeeEstimate: false,
+      needsPriorityFees: true,
+    },
   },
   // Helius RPCs
   "helius-mainnet": {
     httpURL: "https://mainnet.helius-rpc.com/",
     webSocketURL: "wss://mainnet.helius-rpc.com/",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: false,
+      supportsGetPriorityFeeEstimate: true,
+      needsPriorityFees: true,
+    },
   },
   "helius-testnet": {
     httpURL: "https://testnet.helius-rpc.com/",
     webSocketURL: "wss://testnet.helius-rpc.com/",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: false,
+      supportsGetPriorityFeeEstimate: false,
+      needsPriorityFees: true,
+    },
   },
   "helius-devnet": {
     httpURL: "https://devnet.helius-rpc.com/",
     webSocketURL: "wss://devnet.helius-rpc.com/",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: false,
+      supportsGetPriorityFeeEstimate: false,
+      needsPriorityFees: true,
+    },
   },
   // Localnet
   localnet: {
     httpURL: "http://localhost:8899",
     webSocketURL: "ws://localhost:8900",
-    isExplorerDefault: false,
-    isNameKnownToSolanaExplorer: false,
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: false,
+      supportsGetPriorityFeeEstimate: false,
+      needsPriorityFees: false,
+    },
   },
 };
 

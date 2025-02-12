@@ -53,6 +53,8 @@ import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
 import { SOL, KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./constants";
+import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
+import { getComputeUnitEstimate, getPriorityFeeEstimate } from "./smart-transactions";
 
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
@@ -61,7 +63,6 @@ export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 const TOKEN_PROGRAM = toAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 const TOKEN_EXTENSIONS_PROGRAM = toAddress("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
 const ASSOCIATED_TOKEN_PROGRAM = toAddress("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
-const addressEncoder = getAddressEncoder();
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
@@ -70,8 +71,8 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
       const clusterDetails = CLUSTERS[clusterNameOrURL];
       // If they're using Solana Labs mainnet-beta, we don't need to include the cluster name in the Solana Explorer URL
       // because it's the default
-      if (!clusterDetails.isExplorerDefault) {
-        if (clusterDetails.isNameKnownToSolanaExplorer) {
+      if (!clusterDetails.features.isExplorerDefault) {
+        if (clusterDetails.features.isNameKnownToSolanaExplorer) {
           searchParams["cluster"] = clusterNameOrURL;
         } else {
           searchParams["cluster"] = "custom";
@@ -94,7 +95,7 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
             const urlWithParams = `${clusterDetails.httpURL}?${params.toString()}`;
             searchParams["customUrl"] = urlWithParams;
           } else {
-            if (!clusterDetails.isNameKnownToSolanaExplorer) {
+            if (!clusterDetails.features.isNameKnownToSolanaExplorer) {
               searchParams["customUrl"] = clusterDetails.httpURL;
             }
           }
@@ -125,10 +126,10 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   return getExplorerLink;
 };
 
-// TODO: add all Helius smart transaction logic here
-// Check log post and also my fixed github repo
 const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
+  needsPriorityFees: boolean,
+  supportsSmartTransactions: boolean,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
   const sendTransactionFromInstructions = async (
@@ -136,15 +137,37 @@ const sendTransactionFromInstructionsFactory = (
     instructions: Array<IInstruction>,
     commitment: "confirmed" | "finalized" = "confirmed",
     skipPreflight: boolean = false,
+    abortSignal: AbortSignal | null = null,
+    supportsGetPriorityFeeEstimate: boolean = false,
   ) => {
-    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send({ abortSignal });
 
-    const transactionMessage = pipe(
+    let transactionMessage = pipe(
       createTransactionMessage({ version: 0 }),
       (message) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, message),
       (message) => setTransactionMessageFeePayerSigner(feePayer, message),
       (message) => appendTransactionMessageInstructions(instructions, message),
     );
+
+    if (needsPriorityFees) {
+      const [priorityFeeEstimate, computeUnitEstimate] = await Promise.all([
+        getPriorityFeeEstimate(rpc, supportsGetPriorityFeeEstimate, transactionMessage, abortSignal),
+        getComputeUnitEstimate(rpc, transactionMessage, abortSignal),
+      ]);
+
+      const setComputeUnitPriceInstruction = getSetComputeUnitPriceInstruction({
+        microLamports: BigInt(priorityFeeEstimate),
+      });
+
+      const setComputeUnitLimitInstruction = getSetComputeUnitLimitInstruction({
+        units: Math.ceil(computeUnitEstimate * 1.1),
+      });
+
+      transactionMessage = appendTransactionMessageInstructions(
+        [setComputeUnitPriceInstruction, setComputeUnitLimitInstruction],
+        transactionMessage,
+      );
+    }
 
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
 
@@ -552,7 +575,8 @@ export const connect = (
 ): Connection => {
   let httpURL: string | null = null;
   let webSocketURL: string | null = null;
-
+  let supportsGetPriorityFeeEstimate: boolean = false;
+  let needsPriorityFees: boolean = false;
   // Postel's law: be liberal in what you accept - so include 'mainnet' as well as 'mainnet-beta'
   if (clusterNameOrURL === "mainnet") {
     clusterNameOrURL = "mainnet-beta";
@@ -560,6 +584,14 @@ export const connect = (
 
   if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
     const clusterDetails = CLUSTERS[clusterNameOrURL];
+
+    if (clusterDetails.features.supportsGetPriorityFeeEstimate) {
+      supportsGetPriorityFeeEstimate = true;
+    }
+
+    if (clusterDetails.features.needsPriorityFees) {
+      needsPriorityFees = true;
+    }
 
     if (clusterDetails.requiredParamEnvironmentVariable) {
       const requiredParamEnvironmentVariable = process.env[clusterDetails.requiredParamEnvironmentVariable];
@@ -619,7 +651,12 @@ export const connect = (
 
   const getLogs = getLogsFactory(rpc);
 
-  const sendTransactionFromInstructions = sendTransactionFromInstructionsFactory(rpc, sendAndConfirmTransaction);
+  const sendTransactionFromInstructions = sendTransactionFromInstructionsFactory(
+    rpc,
+    needsPriorityFees,
+    supportsGetPriorityFeeEstimate,
+    sendAndConfirmTransaction,
+  );
 
   const transferLamports = transferLamportsFactory(rpc, sendTransactionFromInstructions);
 
