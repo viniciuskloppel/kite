@@ -3,8 +3,8 @@ import { address as toAddress, generateKeyPairSigner, lamports, KeyPairSigner, A
 import assert from "node:assert";
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
-import { SOL } from "../lib/constants";
-import { connect, Connection, DEFAULT_AIRDROP_AMOUNT } from "../lib/connect";
+import { DEFAULT_AIRDROP_AMOUNT, SOL } from "../lib/constants";
+import { connect, Connection } from "../lib/connect";
 describe("connect", () => {
   test("connect returns a connection object", () => {
     const connection = connect();

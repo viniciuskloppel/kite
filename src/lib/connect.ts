@@ -1,8 +1,6 @@
 import {
-  address as toAddress,
   Address,
   airdropFactory,
-  appendTransactionMessageInstruction,
   Commitment,
   createDefaultRpcTransport,
   createSignerFromKeyPair,
@@ -10,21 +8,15 @@ import {
   createSolanaRpcSubscriptions,
   createTransactionMessage,
   generateKeyPairSigner,
-  getProgramDerivedAddress,
   getSignatureFromTransaction,
   KeyPairSigner,
   lamports,
   Lamports,
   pipe,
-  RpcFromTransport,
-  RpcTransport,
   sendAndConfirmTransactionFactory,
-  setTransactionMessageFeePayer,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
-  SolanaRpcApiFromTransport,
   some,
-  getAddressEncoder,
   IInstruction,
   setTransactionMessageFeePayerSigner,
   appendTransactionMessageInstructions,
@@ -52,17 +44,18 @@ import {
 import { getTransferSolInstruction } from "@solana-program/system";
 import { checkIsValidURL, encodeURL } from "./url";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
-import { SOL, KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./constants";
+import {
+  SOL,
+  KNOWN_CLUSTER_NAMES,
+  CLUSTERS,
+  KNOWN_CLUSTER_NAMES_STRING,
+  TOKEN_EXTENSIONS_PROGRAM,
+  TOKEN_PROGRAM,
+  DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
+  DEFAULT_AIRDROP_AMOUNT,
+} from "./constants";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
 import { getComputeUnitEstimate, getPriorityFeeEstimate } from "./smart-transactions";
-
-export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
-export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
-export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
-
-const TOKEN_PROGRAM = toAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-const TOKEN_EXTENSIONS_PROGRAM = toAddress("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
-const ASSOCIATED_TOKEN_PROGRAM = toAddress("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {

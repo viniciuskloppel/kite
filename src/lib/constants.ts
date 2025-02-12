@@ -1,4 +1,15 @@
+import { lamports, address as toAddress } from "@solana/web3.js";
+
+// Some program names
+export const TOKEN_PROGRAM = toAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+export const TOKEN_EXTENSIONS_PROGRAM = toAddress("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+export const ASSOCIATED_TOKEN_PROGRAM = toAddress("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+
+// Default values for making and loading wallets
 export const SOL = 1_000_000_000n;
+export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
+export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
+export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
 // Anza keys concatenate the 32 bytes raw private key and the 32 bytes raw public key.
 // This format was commonly used in NaCl / libsodium when they were popular.
@@ -44,6 +55,8 @@ export const CLUSTERS: Record<
   }
 > = {
   // Solana Labs RPCs
+  // Don't add a seperate entry for 'mainnet'. Instead, we'll correct the cluster name to 'mainnet-beta'
+  // in the connect function, and avoid making a duplicate entry.
   "mainnet-beta": {
     httpURL: "https://api.mainnet-beta.solana.com",
     webSocketURL: "wss://api.mainnet-beta.solana.com",
