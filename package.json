@@ -21,7 +21,8 @@
   "scripts": {
     "build": "npm run clean && npx tsup src/index.ts --format esm --dts --sourcemap --out-dir dist",
     "clean": "rm -rf dist",
-    "test": "npx esrun --node-no-warnings src/tests/*"
+    "_": "Skip the 'Ed25519 is experimental' warning. Also note we'd use esrun but it runs into E2BIG errors on npm",
+    "test": "npx tsx --no-warnings src/tests/*"
   },
   "keywords": [
     "solana",
@@ -35,6 +36,7 @@
   ],
   "author": "Mike MacCana <mike.maccana@gmail.com>",
   "contributors": [
+    "Mike MacCana",
     "Nick Frostbutter",
     "John Liu",
     "Steven Luscher",
@@ -59,9 +61,9 @@
     "@types/node": "^20.16.1",
     "esbuild": "^0.23.1",
     "esbuild-register": "^3.6.0",
-    "esrun": "^3.2.26",
     "prettier": "^3.0.3",
     "tsup": "^8.3.6",
+    "tsx": "^4.19.2",
     "typescript": "^5.5.4"
   },
   "publishConfig": {
