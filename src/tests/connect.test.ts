@@ -108,20 +108,17 @@ describe("tokens", () => {
     assert.ok(mint);
   });
 
-  // TODO: test is failing
-  // Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: incorrect program id for instruction
-  // See https://solana.stackexchange.com/questions/20108/transferring-a-token-2022-token-fails-with-incorrect-program-id-even-though-i
-  // test("transferTokens transfers tokens from one account to another", async () => {
-  //   // Transfer 1 token from the mint authority to the recipient
-  //   const transferTokensTransactionSignature = await connection.transferTokens(
-  //     sender,
-  //     recipient.address,
-  //     mintAddress,
-  //     1n,
-  //   );
+  test("transferTokens transfers tokens from one account to another", async () => {
+    // Transfer 1 token from the mint authority to the recipient
+    const transferTokensTransactionSignature = await connection.transferTokens(
+      sender,
+      recipient.address,
+      mintAddress,
+      1n,
+    );
 
-  //   assert.ok(transferTokensTransactionSignature);
-  // });
+    assert.ok(transferTokensTransactionSignature);
+  });
 });
 
 describe("makeTokenMint", () => {

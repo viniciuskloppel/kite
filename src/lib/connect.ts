@@ -346,31 +346,21 @@ const transferTokensFactory = (
     // TODO: check if the destination associated token account exists before sending
 
     // Create an associated token account for the receiver
-    const createAssociatedTokenInstruction = getCreateAssociatedTokenInstruction(
-      {
-        ata: destinationAssociatedTokenAddress,
-        mint: mintAddress,
-        owner: destination,
-        payer: sender,
-      },
-      {
-        programAddress: TOKEN_2022_PROGRAM_ADDRESS,
-      },
-    );
+    const createAssociatedTokenInstruction = getCreateAssociatedTokenInstruction({
+      ata: destinationAssociatedTokenAddress,
+      mint: mintAddress,
+      owner: destination,
+      payer: sender,
+    });
 
-    const transferInstruction = getTransferCheckedInstruction(
-      {
-        source: sourceAssociatedTokenAddress,
-        mint: mintAddress,
-        destination: destinationAssociatedTokenAddress,
-        authority: sender.address,
-        amount,
-        decimals,
-      },
-      {
-        programAddress: TOKEN_2022_PROGRAM_ADDRESS,
-      },
-    );
+    const transferInstruction = getTransferCheckedInstruction({
+      source: sourceAssociatedTokenAddress,
+      mint: mintAddress,
+      destination: destinationAssociatedTokenAddress,
+      authority: sender.address,
+      amount,
+      decimals,
+    });
 
     const signature = await sendTransactionFromInstructions(sender, [
       createAssociatedTokenInstruction,
