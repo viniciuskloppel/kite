@@ -129,7 +129,7 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
 const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   needsPriorityFees: boolean,
-  supportsSmartTransactions: boolean,
+  supportsGetPriorityFeeEstimate: boolean,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
   const sendTransactionFromInstructions = async (
@@ -138,7 +138,6 @@ const sendTransactionFromInstructionsFactory = (
     commitment: "confirmed" | "finalized" = "confirmed",
     skipPreflight: boolean = false,
     abortSignal: AbortSignal | null = null,
-    supportsGetPriorityFeeEstimate: boolean = false,
   ) => {
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send({ abortSignal });
 
