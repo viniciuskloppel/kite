@@ -8,7 +8,7 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/index.d.ts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
       }
     }
@@ -19,8 +19,7 @@
     "dist"
   ],
   "scripts": {
-    "prebuild": "npm run clean",
-    "build": "tsc -p tsconfig.json",
+    "build": "npm run clean && npx tsup src/index.ts --format esm --dts --sourcemap --out-dir dist",
     "clean": "rm -rf dist",
     "test": "npx esrun --node-no-warnings src/tests/*"
   },
@@ -62,6 +61,7 @@
     "esbuild-register": "^3.6.0",
     "esrun": "^3.2.26",
     "prettier": "^3.0.3",
+    "tsup": "^8.3.6",
     "typescript": "^5.5.4"
   },
   "publishConfig": {
