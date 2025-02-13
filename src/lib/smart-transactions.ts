@@ -63,7 +63,10 @@ export const getPriorityFeeEstimate = async (
     .getPriorityFeeEstimate({
       accountKeys,
       options: {
-        recommended: true,
+        // See https://docs.helius.dev/solana-apis/priority-fee-api
+        // Per Evan at Helius 20250213: recommended: true is not longer preferred,
+        // instead use priorityLevel: "High"
+        priorityLevel: "High",
       },
     })
     .send({ abortSignal });
