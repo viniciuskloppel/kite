@@ -7,7 +7,6 @@
 - A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()` (to confirm transactions using your RPC) and `getExplorerLink()` (to get Explorer links using your RPC).
 - Most functions are now a property of `connection`. For example, `connection.getLamportBalance()` instead of `getBalance()`.
 - Added support for Helius RPCs - just specify the name and as long as the Helius API key is set in the environment, it will be used.
-- A new value `SOL` is exported, to match the previous convenience value `LAMPORTS_PER_SOL`. For example, use `10n * SOL` for 10 SOL.
 - We've tried to match the coding style of web3.js v2
   - `xToY()` becomes `createXFromY`. `create` is now the preferred nomenclature, so `initializeKeypair` is now `createWallet`,
   - Functions that return a `doThing()` function are called `doThingFactory()`
@@ -17,6 +16,7 @@
 - localhost links on `getExplorerLink()` no longer add an unnecessary customUrl parameter
 - `confirmTransaction` is now `getRecentSignatureConfirmation`
 - We no longer support base58 encoded private keys - instead we use the 'Array of numbers' format exclusively. If you have base58 encoded private keys you can convert them with the previous version of this library.
+- Use `tsx` over `esrun`. While `tsx` needs a `tsconfig.json` file, `tsx` has many more users and is more actively maintained.
 - Remove CommonJS support.
 
 ## 2.5
