@@ -115,19 +115,6 @@ export const CLUSTERS: Record<
       needsPriorityFees: true,
     },
   },
-  "helius-testnet": {
-    httpURL: "https://testnet.helius-rpc.com/",
-    webSocketURL: "wss://testnet.helius-rpc.com/",
-    requiredParam: "api-key",
-    requiredParamEnvironmentVariable: "HELIUS_API_KEY",
-    features: {
-      isExplorerDefault: false,
-      isNameKnownToSolanaExplorer: false,
-      supportsGetPriorityFeeEstimate: false,
-      enableClientSideRetries: true,
-      needsPriorityFees: true,
-    },
-  },
   "helius-devnet": {
     httpURL: "https://devnet.helius-rpc.com/",
     webSocketURL: "wss://devnet.helius-rpc.com/",
