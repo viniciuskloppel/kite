@@ -32,7 +32,8 @@
     "keyPair",
     "devnet SOL",
     "faucet",
-    "web3.js"
+    "web3.js",
+    "@solana/helpers"
   ],
   "author": "Mike MacCana <mike.maccana@gmail.com>",
   "contributors": [
@@ -59,8 +60,6 @@
   },
   "devDependencies": {
     "@types/node": "^20.16.1",
-    "esbuild": "^0.23.1",
-    "esbuild-register": "^3.6.0",
     "prettier": "^3.0.3",
     "tsup": "^8.3.6",
     "tsx": "^4.19.2",

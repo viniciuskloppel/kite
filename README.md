@@ -670,13 +670,13 @@ The tests use the [node native test runner](https://blog.logrocket.com/exploring
 If you'd like to run a single test, use:
 
 ```bash
-esrun --node-no-warnings tests/src/keypair.test.ts
+npx tsx --test --no-warnings src/tests/keypair.test.ts
 ```
 
-We use `--node-no-warnings` to avoid `ExperimentalWarning: The Ed25519 Web Crypto API algorithm is an experimental feature` which is pretty boring once you've read it for the 50th time.
+We use `--no-warnings` to avoid `ExperimentalWarning: The Ed25519 Web Crypto API algorithm is an experimental feature` which is pretty boring once you've read it for the 50th time.
 
 To just run tests matching the name `connect`.
 
 ```bash
-esrun --node-no-warnings --node-test-name-pattern='connect' src/tests/connect.test.ts
+npx tsx --test --no-warnings --test-name-pattern="connect"
 ```
