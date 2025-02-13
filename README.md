@@ -22,6 +22,7 @@ Kite includes functions to:
 ### Wallets
 
 - [Create a new wallet](#createwallet---create-a-new-wallet)
+- [Create multiple wallets](#createwallets---create-multiple-wallets)
 - [Load a wallet from a file](#loadwalletfromfile---load-a-wallet-from-file)
 - [Load a wallet from an environment variable](#loadwalletfromenvironment---load-a-wallet-from-environment)
 
@@ -152,19 +153,6 @@ Create a wallet with a custom airdrop amount:
 const wallet = await connection.createWallet({
   airdropAmount: lamports(2n * SOL),
 });
-```
-
-Create multiple wallets at once (like `makeWallets` from `@solana/helpers`):
-
-```typescript
-const [sender, recipient] = await Promise.all([
-  connection.createWallet({
-    airdropAmount: lamports(1n * SOL),
-  }),
-  connection.createWallet({
-    airdropAmount: lamports(1n * SOL),
-  }),
-]);
 ```
 
 ## loadWalletFromFile - Load a wallet from file
@@ -614,6 +602,51 @@ The mint information includes:
 - `mintAuthority`: Public key of the account allowed to mint new tokens
 - `supply`: Current total supply of the token
 - Other metadata if the token uses Token Extensions
+
+## createWallets - Create multiple wallets
+
+> Like `makeWallets` from `@solana/helpers`
+
+Creates multiple Solana wallets with the same options. Returns an array of wallet promises that can be awaited in parallel.
+
+Returns: `Array<Promise<KeyPairSigner>>`
+
+```typescript
+const wallets = await connection.createWallets(amount, options);
+```
+
+### Options (same as `createWallet`)
+
+- `amount`: `number` - Number of wallets to create
+- `options`: Same options as `createWallet`:
+  - `prefix`: `string | null` - Prefix for wallet addresses
+  - `suffix`: `string | null` - Suffix for wallet addresses
+  - `envFileName`: `string | null` - Path to .env file to save keypairs
+  - `envVariableName`: `string` - Name of environment variable to store keypairs
+  - `airdropAmount`: `Lamports | null` - Amount of SOL to airdrop to each wallet
+
+### Example
+
+Create 3 wallets with airdrops:
+
+```typescript
+const [wallet1, wallet2, wallet3] = await connection.createWallets(3, {
+  airdropAmount: lamports(1n * SOL),
+});
+```
+
+If you need to create multiple wallets with different options, you can do this with:
+
+```typescript
+const [sender, recipient] = await Promise.all([
+  connection.createWallet({
+    airdropAmount: lamports(1n * SOL),
+  }),
+  connection.createWallet({
+    airdropAmount: lamports(1n * SOL),
+  }),
+]);
+```
 
 ## Development and testing
 

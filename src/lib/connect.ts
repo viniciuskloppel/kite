@@ -283,6 +283,14 @@ const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequi
   return createWallet;
 };
 
+const createWalletsFactory = (createWallet: ReturnType<typeof createWalletFactory>) => {
+  const createWallets = (amount: number, options: CreateWalletOptions = {}): Promise<Array<KeyPairSigner>> => {
+    const walletPromises = Array.from({ length: amount }, () => createWallet(options));
+    return Promise.all(walletPromises);
+  };
+  return createWallets;
+};
+
 const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   const getLogs = async (signature: string): Promise<readonly string[]> => {
     const transaction = await rpc
@@ -650,6 +658,8 @@ export const connect = (
 
   const mintTokens = mintTokensFactory(sendTransactionFromInstructions);
 
+  const createWallets = createWalletsFactory(createWallet);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -659,6 +669,7 @@ export const connect = (
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
     airdropIfRequired,
     createWallet,
+    createWallets,
     getLogs,
     getRecentSignatureConfirmation,
     transferLamports,
@@ -682,6 +693,7 @@ export interface Connection {
   getRecentSignatureConfirmation: ReturnType<typeof createRecentSignatureConfirmationPromiseFactory>;
   airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>;
   createWallet: ReturnType<typeof createWalletFactory>;
+  createWallets: ReturnType<typeof createWalletsFactory>;
   getLogs: ReturnType<typeof getLogsFactory>;
   transferLamports: ReturnType<typeof transferLamportsFactory>;
   makeTokenMint: ReturnType<typeof makeTokenMintFactory>;
