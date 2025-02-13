@@ -2,20 +2,16 @@ import {
   appendTransactionMessageInstructions,
   Commitment,
   createSolanaRpcFromTransport,
-  createSolanaRpcSubscriptions,
   createTransactionMessage,
   FullySignedTransaction,
   getSignatureFromTransaction,
   IInstruction,
-  isSolanaError,
   KeyPairSigner,
   pipe,
   sendAndConfirmTransactionFactory,
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
-  SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED,
-  TransactionWithBlockhashLifetime,
 } from "@solana/web3.js";
 import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetries } from "./smart-transactions";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
