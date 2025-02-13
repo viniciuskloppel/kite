@@ -26,7 +26,7 @@ interface SendTransactionFromInstructionsOptions {
   instructions: Array<IInstruction>;
   commitment?: Commitment;
   skipPreflight?: boolean;
-  maximumRetries?: number;
+  maximumClientSideRetries?: number;
   abortSignal?: AbortSignal | null;
 }
 
@@ -42,7 +42,7 @@ export const sendTransactionFromInstructionsFactory = (
     instructions,
     commitment = "confirmed",
     skipPreflight = true,
-    maximumRetries = enableClientSideRetries ? DEFAULT_TRANSACTION_RETRIES : 0,
+    maximumClientSideRetries = enableClientSideRetries ? DEFAULT_TRANSACTION_RETRIES : 0,
     abortSignal = null,
   }: SendTransactionFromInstructionsOptions) => {
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send({ abortSignal });
@@ -78,9 +78,9 @@ export const sendTransactionFromInstructionsFactory = (
 
     const signature = getSignatureFromTransaction(signedTransaction);
 
-    if (maximumRetries) {
+    if (maximumClientSideRetries) {
       await sendTransactionWithRetries(sendAndConfirmTransaction, signedTransaction, {
-        maximumRetries,
+        maximumClientSideRetries,
         abortSignal,
         commitment,
       });

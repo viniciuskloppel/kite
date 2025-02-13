@@ -30,7 +30,7 @@ interface TransferLamportsOptions {
   destination: Address;
   amount: Lamports;
   skipPreflight?: boolean;
-  maximumRetries?: number;
+  maximumClientSideRetries?: number;
   abortSignal?: AbortSignal | null;
 }
 
@@ -43,7 +43,7 @@ export const transferLamportsFactory = (
     destination,
     amount,
     skipPreflight = true,
-    maximumRetries = 0,
+    maximumClientSideRetries = 0,
     abortSignal = null,
   }: TransferLamportsOptions) => {
     const instruction = getTransferSolInstruction({
@@ -57,7 +57,7 @@ export const transferLamportsFactory = (
       instructions: [instruction],
       commitment: "confirmed",
       skipPreflight,
-      maximumRetries,
+      maximumClientSideRetries,
       abortSignal,
     });
 
@@ -75,14 +75,14 @@ export const transferTokensFactory = (
     destination,
     mintAddress,
     amount,
-    maximumRetries = 0,
+    maximumClientSideRetries = 0,
     abortSignal = null,
   }: {
     sender: KeyPairSigner;
     destination: Address;
     mintAddress: Address;
     amount: bigint;
-    maximumRetries?: number;
+    maximumClientSideRetries?: number;
     abortSignal?: AbortSignal | null;
   }) => {
     const mint = await getMint(mintAddress);
@@ -119,7 +119,7 @@ export const transferTokensFactory = (
       instructions: [createAssociatedTokenInstruction, transferInstruction],
       commitment: "confirmed",
       skipPreflight: true,
-      maximumRetries,
+      maximumClientSideRetries,
       abortSignal,
     });
 

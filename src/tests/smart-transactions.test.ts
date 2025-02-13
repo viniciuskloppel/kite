@@ -26,7 +26,7 @@ describe("Smart transactions", () => {
           // A tiny amount to test the retries since this is mainnet and the SOL has value
           amount: lamports(100n),
           skipPreflight: true,
-          maximumRetries: 4,
+          maximumClientSideRetries: 4,
         });
 
         assert.ok(transferSignature);

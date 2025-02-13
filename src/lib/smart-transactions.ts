@@ -102,16 +102,16 @@ export const sendTransactionWithRetries = async (
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
   transaction: FullySignedTransaction & TransactionWithBlockhashLifetime,
   options: {
-    maximumRetries: number;
+    maximumClientSideRetries: number;
     abortSignal: AbortSignal | null;
     commitment: Commitment;
   } = {
-    maximumRetries: DEFAULT_TRANSACTION_RETRIES,
+    maximumClientSideRetries: DEFAULT_TRANSACTION_RETRIES,
     abortSignal: null,
     commitment: "confirmed",
   },
 ) => {
-  let retriesLeft = options.maximumRetries;
+  let retriesLeft = options.maximumClientSideRetries;
 
   const transactionOptions = {
     // TODO: web3.js wants explicit undefineds. Fix upstream.
