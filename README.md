@@ -31,7 +31,7 @@ Kite includes functions for:
 ### SOL
 
 - [Airdrop SOL if balance is low](#airdropifrequired---airdrop-sol-if-balance-is-low)
-- [Get a SOL balance](#getLamportBalance---get-account-balance)
+- [Get a SOL balance](#getlamportbalance---get-the-sol-balance-of-an-account)
 - [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
 
 ### Tokens
