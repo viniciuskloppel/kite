@@ -59,6 +59,7 @@ export const getPriorityFeeEstimate = async (
     return Number(recentFeesValues[Math.floor(recentFeesValues.length / 2)]);
   }
   // Get a priority fee estimate, using Helius' `getPriorityFeeEstimate` method on Helius mainnet
+
   const { priorityFeeEstimate } = await rpc
     .getPriorityFeeEstimate({
       accountKeys,
@@ -133,7 +134,7 @@ export const sendTransactionWithRetries = async (
       break;
     } catch (error) {
       if (error instanceof DOMException && error.name === "TimeoutError") {
-        // timeout error happens if the transaction is not confirmed in 15s
+        // timeout error happens if the transaction is not confirmed in DEFAULT_TRANSACTION_TIMEOUT
         // we can retry until we run out of retries
         console.debug("Transaction not confirmed, retrying...");
       } else if (isSolanaError(error, SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED)) {
