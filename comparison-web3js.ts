@@ -1,26 +1,3 @@
-Using Kite:
-
-```typescript
-import { connect } from "@helius/kite";
-const connection = connect();
-const mintAuthority = await createWallet();
-const mintAddress = await connection.createTokenMint(
-  mintAuthority,
-  6,
-  "My Token",
-  "MTKN",
-  "https://example.com/metadata.json",
-  {
-    description: "A sample token",
-    website: "https://example.com",
-  },
-);
-console.log(connection.getExplorerLink(mintAddress));
-```
-
-Using web3.js version 2 on it's own:
-
-```typescript
 import {
   airdropFactory,
   appendTransactionMessageInstructions,
@@ -125,33 +102,12 @@ const updateTokenMetadataInstruction = getUpdateTokenMetadataFieldInstruction({
   value: "Only Possible On Solana",
 });
 
-const createAtaInstruction = await getCreateAssociatedTokenInstructionAsync({
-  payer: feePayer,
-  mint: mint.address,
-  owner: feePayer.address,
-});
-
-const [associatedTokenAddress] = await findAssociatedTokenPda({
-  mint: mint.address,
-  owner: feePayer.address,
-  tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-});
-
-const mintToInstruction = getMintToInstruction({
-  mint: mint.address,
-  token: associatedTokenAddress,
-  mintAuthority: feePayer.address,
-  amount: 100n,
-});
-
 const instructions = [
   createAccountInstruction,
   initializeMetadataPointerInstruction,
   initializeMintInstruction,
   initializeTokenMetadataInstruction,
   updateTokenMetadataInstruction,
-  createAtaInstruction,
-  mintToInstruction,
 ];
 
 const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
@@ -167,10 +123,9 @@ const signedTransaction = await signTransactionMessageWithSigners(transactionMes
 
 const transactionSignature = getSignatureFromTransaction(signedTransaction);
 
-console.log("Transaction Signature:", `https://explorer.solana.com/tx/${transactionSignature}?cluster=custom`);
-
 await sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions })(signedTransaction, {
   commitment: "confirmed",
   skipPreflight: true,
 });
-```
+
+console.log("Transaction Signature:", `https://explorer.solana.com/tx/${transactionSignature}?cluster=custom`);
