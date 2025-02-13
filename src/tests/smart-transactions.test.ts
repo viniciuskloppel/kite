@@ -30,6 +30,10 @@ describe("Smart transactions", () => {
         });
 
         assert.ok(transferSignature);
+
+        // I hate console logs in test output too, but this is a mainnet test
+        // and someone running this test is likely doing it interactively.
+        console.log("Transaction Signature:", connection.getExplorerLink("tx", transferSignature));
       } catch (thrownObject) {
         const error = thrownObject as Error;
         console.log(error.message);
