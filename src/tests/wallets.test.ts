@@ -20,7 +20,7 @@ describe("createWallet", () => {
     });
 
     // Check balance
-    const balanceBefore = await connection.getBalance(walletBefore.address);
+    const balanceBefore = await connection.getLamportBalance(walletBefore.address);
     assert.equal(balanceBefore, DEFAULT_AIRDROP_AMOUNT);
 
     // Check that the environment variable was created
@@ -37,7 +37,7 @@ describe("createWallet", () => {
     assert(walletBefore.address === walletAfter.address);
 
     // Check balance has not changed
-    const balanceAfter = await connection.getBalance(walletAfter.address);
+    const balanceAfter = await connection.getLamportBalance(walletAfter.address);
 
     assert.equal(balanceBefore, balanceAfter);
 
@@ -99,7 +99,7 @@ describe("airdropIfRequired", () => {
     const connection = connect();
     const user = await generateKeyPairSigner();
 
-    const originalBalance = await connection.getBalance(user.address, "finalized");
+    const originalBalance = await connection.getLamportBalance(user.address, "finalized");
 
     assert.equal(originalBalance, 0);
     const lamportsToAirdrop = lamports(1n * SOL);
@@ -109,7 +109,7 @@ describe("airdropIfRequired", () => {
     const signature = await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
     assert.ok(signature, "Expected airdrop signature when balance is 0");
 
-    const newBalance = await connection.getBalance(user.address, "finalized");
+    const newBalance = await connection.getLamportBalance(user.address, "finalized");
 
     assert.equal(newBalance, lamportsToAirdrop);
 
@@ -128,7 +128,7 @@ describe("airdropIfRequired", () => {
   test("airdropIfRequired doesn't request unnecessary airdrops", async () => {
     const user = await generateKeyPairSigner();
     const connection = connect();
-    const balance = await connection.getBalance(user.address);
+    const balance = await connection.getLamportBalance(user.address);
     assert.equal(balance, 0n);
     const lamportsToAirdrop = lamports(1n * SOL);
 
@@ -142,7 +142,7 @@ describe("airdropIfRequired", () => {
     const secondSignature = await connection.airdropIfRequired(user.address, lamportsToAirdrop, minimumBalance);
     assert.equal(secondSignature, null, "Expected no signature when balance is sufficient");
 
-    const finalBalance = await connection.getBalance(user.address);
+    const finalBalance = await connection.getLamportBalance(user.address);
     assert.equal(finalBalance, lamportsToAirdrop);
   });
 
@@ -150,14 +150,14 @@ describe("airdropIfRequired", () => {
     const user = await generateKeyPairSigner();
 
     const connection = connect();
-    const originalBalance = await connection.getBalance(user.address, "finalized");
+    const originalBalance = await connection.getLamportBalance(user.address, "finalized");
     assert.equal(originalBalance, 0);
     // Get 999_999_999 lamports if we have less than 500_000 lamports
     const lamportsToAirdrop = lamports(1n * SOL - 1n);
     const firstSignature = await connection.airdropIfRequired(user.address, lamportsToAirdrop, lamports(500_000n));
     assert.ok(firstSignature, "Expected signature from first airdrop");
 
-    const balanceAfterFirstAirdrop = await connection.getBalance(user.address);
+    const balanceAfterFirstAirdrop = await connection.getLamportBalance(user.address);
     assert.equal(balanceAfterFirstAirdrop, lamportsToAirdrop);
 
     // We only have 999_999_999 lamports, so we should need another airdrop
@@ -165,7 +165,7 @@ describe("airdropIfRequired", () => {
     const secondSignature = await connection.airdropIfRequired(user.address, lamports(1n * SOL), lamports(1n * SOL));
     assert.ok(secondSignature, "Expected signature from second airdrop");
 
-    const finalBalance = await connection.getBalance(user.address);
+    const finalBalance = await connection.getLamportBalance(user.address);
     assert.equal(finalBalance, lamports(2n * SOL - 1n));
   });
 });
@@ -190,7 +190,7 @@ describe("createWallets", () => {
       assert.ok(wallet.keyPair.privateKey, "Wallet should have a private key");
 
       // Check balance
-      const balance = await connection.getBalance(wallet.address);
+      const balance = await connection.getLamportBalance(wallet.address);
       assert.equal(balance, airdropAmount, "Wallet should have correct airdrop amount");
     }
 

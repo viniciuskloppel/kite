@@ -22,7 +22,7 @@ import {
 } from "./tokens";
 import { getLogsFactory } from "./logs";
 import { getExplorerLinkFactory } from "./explorer";
-import { airdropIfRequiredFactory, getBalanceFactory } from "./sol";
+import { airdropIfRequiredFactory, getLamportBalanceFactory } from "./sol";
 
 export const connect = (
   clusterNameOrURL: string = "localnet",
@@ -130,7 +130,7 @@ export const connect = (
     rpcSubscriptions,
     sendAndConfirmTransaction,
     sendTransactionFromInstructions,
-    getBalance: getBalanceFactory(rpc),
+    getLamportBalance: getLamportBalanceFactory(rpc),
     getExplorerLink: getExplorerLinkFactory(clusterNameOrURL),
     airdropIfRequired,
     createWallet,
@@ -153,7 +153,7 @@ export interface Connection {
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>;
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>;
-  getBalance: ReturnType<typeof getBalanceFactory>;
+  getLamportBalance: ReturnType<typeof getLamportBalanceFactory>;
   getExplorerLink: ReturnType<typeof getExplorerLinkFactory>;
   getRecentSignatureConfirmation: ReturnType<typeof createRecentSignatureConfirmationPromiseFactory>;
   airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>;

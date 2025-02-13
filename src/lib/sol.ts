@@ -7,19 +7,19 @@ import {
   airdropFactory,
 } from "@solana/web3.js";
 
-export const getBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
-  const getBalance = async (address: string, commitment: Commitment = "finalized"): Promise<Lamports> => {
-    const getBalanceResponse = await rpc.getBalance(address, { commitment }).send();
-    return getBalanceResponse.value;
+export const getLamportBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  const getLamportBalance = async (address: string, commitment: Commitment = "finalized"): Promise<Lamports> => {
+    const getLamportBalanceResponse = await rpc.getBalance(address, { commitment }).send();
+    return getLamportBalanceResponse.value;
   };
-  return getBalance;
+  return getLamportBalance;
 };
 
 export const airdropIfRequiredFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>,
 ) => {
-  const getBalance = getBalanceFactory(rpc);
+  const getLamportBalance = getLamportBalanceFactory(rpc);
   // Plain 'airdrop' is not exported as we don't want to encourage people to
   // request airdrops when they don't need them, ie - don't bother
   // the faucet unless you really need to!
@@ -47,7 +47,7 @@ export const airdropIfRequiredFactory = (
       });
       return signature;
     }
-    const balance = await getBalance(address, "finalized");
+    const balance = await getLamportBalance(address, "finalized");
 
     if (balance >= minimumBalance) {
       return null;

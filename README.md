@@ -32,7 +32,7 @@ Kite includes functions to:
 ### SOL
 
 - [Airdrop SOL if balance is low](#airdropifrequired---airdrop-sol-if-balance-is-low)
-- [Get an account balance](#getbalance---get-account-balance)
+- [Get an account balance](#getLamportBalance---get-account-balance)
 - [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
 
 ### Tokens
@@ -209,14 +209,14 @@ await connection.sendAndConfirmTransaction(transaction, options);
   - `commitment`: `Commitment` - Desired confirmation level
   - `skipPreflight`: `boolean` - Whether to skip preflight transaction checks
 
-## getBalance - Get account balance
+## getLamportBalance - Get the SOL balance of an account
 
-Gets the SOL balance of an account.
+Gets the SOL balance of an account, in lamports.
 
 Returns: `Promise<Lamports>`
 
 ```typescript
-const balance = await connection.getBalance(address, commitment);
+const balance = await connection.getLamportBalance(address, commitment);
 ```
 
 ### Options
