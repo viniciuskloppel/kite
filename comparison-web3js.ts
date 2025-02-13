@@ -16,11 +16,8 @@ import {
 } from "@solana/web3.js";
 import { getCreateAccountInstruction } from "@solana-program/system";
 import {
-  findAssociatedTokenPda,
-  getCreateAssociatedTokenInstructionAsync,
   getInitializeMintInstruction,
   getMintSize,
-  getMintToInstruction,
   TOKEN_2022_PROGRAM_ADDRESS,
   extension,
   getInitializeMetadataPointerInstruction,
