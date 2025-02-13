@@ -39,12 +39,12 @@ describe("tokens", () => {
 
   test("transferTokens transfers tokens from one account to another", async () => {
     // Transfer 1 token from the mint authority to the recipient
-    const transferTokensTransactionSignature = await connection.transferTokens(
+    const transferTokensTransactionSignature = await connection.transferTokens({
       sender,
-      recipient.address,
+      destination: recipient.address,
       mintAddress,
-      1n,
-    );
+      amount: 1n,
+    });
 
     assert.ok(transferTokensTransactionSignature);
   });

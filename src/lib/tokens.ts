@@ -70,7 +70,21 @@ export const transferTokensFactory = (
   getMint: ReturnType<typeof getMintFactory>,
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
-  const transferTokens = async (sender: KeyPairSigner, destination: Address, mintAddress: Address, amount: bigint) => {
+  const transferTokens = async ({
+    sender,
+    destination,
+    mintAddress,
+    amount,
+    maximumRetries = 0,
+    abortSignal = null,
+  }: {
+    sender: KeyPairSigner;
+    destination: Address;
+    mintAddress: Address;
+    amount: bigint;
+    maximumRetries?: number;
+    abortSignal?: AbortSignal | null;
+  }) => {
     const mint = await getMint(mintAddress);
 
     if (!mint) {
@@ -105,6 +119,10 @@ export const transferTokensFactory = (
     const signature = await sendTransactionFromInstructions({
       feePayer: sender,
       instructions: [createAssociatedTokenInstruction, transferInstruction],
+      commitment: "confirmed",
+      skipPreflight: true,
+      maximumRetries,
+      abortSignal,
     });
 
     return signature;
