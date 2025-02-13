@@ -141,7 +141,7 @@ export const getTokenAccountAddress = async (wallet: Address, mint: Address, use
   return address;
 };
 
-export const makeTokenMintFactory = (
+export const createTokenMintFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ): ((
@@ -152,7 +152,7 @@ export const makeTokenMintFactory = (
   uri: string,
   additionalMetadata?: Record<string, string> | Map<string, string>,
 ) => Promise<Address>) => {
-  const makeTokenMint = async (
+  const createTokenMint = async (
     mintAuthority: KeyPairSigner,
     decimals: number,
     name: string,
@@ -268,7 +268,7 @@ export const makeTokenMintFactory = (
     return mint.address;
   };
 
-  return makeTokenMint;
+  return createTokenMint;
 };
 
 export const mintTokensFactory = (

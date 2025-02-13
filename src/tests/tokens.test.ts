@@ -19,7 +19,7 @@ describe("tokens", () => {
   });
 
   test("We can make a new token mint", async () => {
-    mintAddress = await connection.makeTokenMint(sender, decimals, "Unit test token", "TEST", "https://example.com", {
+    mintAddress = await connection.createTokenMint(sender, decimals, "Unit test token", "TEST", "https://example.com", {
       keyOne: "valueOne",
       keyTwo: "valueTwo",
     });
@@ -50,8 +50,8 @@ describe("tokens", () => {
   });
 });
 
-describe("makeTokenMint", () => {
-  test("makeTokenMint makes a new mint with the specified metadata", async () => {
+describe("createTokenMint", () => {
+  test("createTokenMint makes a new mint with the specified metadata", async () => {
     const connection = connect();
 
     const mintAuthority = await connection.createWallet({
@@ -66,7 +66,14 @@ describe("makeTokenMint", () => {
       keyOne: "valueOne",
       keyTwo: "valueTwo",
     };
-    const mintAddress = await connection.makeTokenMint(mintAuthority, decimals, name, symbol, uri, additionalMetadata);
+    const mintAddress = await connection.createTokenMint(
+      mintAuthority,
+      decimals,
+      name,
+      symbol,
+      uri,
+      additionalMetadata,
+    );
 
     assert.ok(mintAddress);
   });

@@ -4,7 +4,7 @@ Using Kite:
 import { connect } from "@helius/kite";
 const connection = connect();
 const mintAuthority = await createWallet();
-const mintAddress = await connection.makeTokenMint(
+const mintAddress = await connection.createTokenMint(
   mintAuthority,
   6,
   "My Token",

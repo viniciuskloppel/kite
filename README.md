@@ -37,7 +37,7 @@ Kite includes functions for:
 
 ### Tokens
 
-- [Create a new token](#maketokenmint---create-a-new-token)
+- [Create a new token](#createTokenMint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Get token mint information](#getmint---get-token-mint-information)
 - [Mint tokens to a wallet](#minttokens---mint-tokens-to-an-account)
@@ -337,7 +337,7 @@ const signature = await connection.transferLamports({
 - `maximumClientSideRetries`: `number` (optional) - Maximum number of times to retry sending the transaction (default: 0)
 - `abortSignal`: `AbortSignal | null` (optional) - Signal to abort the transaction (default: null)
 
-## makeTokenMint - Create a new token with metadata
+## createTokenMint - Create a new token with metadata
 
 Creates a new SPL token with specified parameters.
 
@@ -357,7 +357,7 @@ Returns: `Promise<Address>`
 Create a token with additional metadata:
 
 ```typescript
-const mintAddress = await connection.makeTokenMint(
+const mintAddress = await connection.createTokenMint(
   mintAuthority,
   6,
   "My token",
@@ -447,7 +447,7 @@ const mintAuthority = await connection.createWallet({
   airdropAmount: lamports(1n * SOL),
 });
 
-const mintAddress = await connection.makeTokenMint(
+const mintAddress = await connection.createTokenMint(
   mintAuthority,
   9, // decimals
   "My Token",
@@ -499,7 +499,7 @@ const [sender, recipient] = await Promise.all([
 ]);
 
 // Create a new token mint
-const mintAddress = await connection.makeTokenMint(
+const mintAddress = await connection.createTokenMint(
   sender, // sender will be the mint authority
   9, // decimals
   "My Token",

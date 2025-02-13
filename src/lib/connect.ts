@@ -15,7 +15,7 @@ import { createWalletFactory, createWalletsFactory } from "./wallets";
 import {
   getMintFactory,
   getTokenAccountAddress,
-  makeTokenMintFactory,
+  createTokenMintFactory,
   mintTokensFactory,
   transferLamportsFactory,
   transferTokensFactory,
@@ -121,7 +121,7 @@ export const connect = (
 
   const transferLamports = transferLamportsFactory(sendTransactionFromInstructions);
 
-  const makeTokenMint = makeTokenMintFactory(rpc, sendTransactionFromInstructions);
+  const createTokenMint = createTokenMintFactory(rpc, sendTransactionFromInstructions);
 
   const getMint = getMintFactory(rpc);
 
@@ -143,7 +143,7 @@ export const connect = (
     getRecentSignatureConfirmation,
     transferLamports,
     transferTokens,
-    makeTokenMint,
+    createTokenMint,
     mintTokens,
     getTokenAccountAddress,
     loadWalletFromFile,
@@ -165,7 +165,7 @@ export interface Connection {
   createWallets: ReturnType<typeof createWalletsFactory>;
   getLogs: ReturnType<typeof getLogsFactory>;
   transferLamports: ReturnType<typeof transferLamportsFactory>;
-  makeTokenMint: ReturnType<typeof makeTokenMintFactory>;
+  createTokenMint: ReturnType<typeof createTokenMintFactory>;
   mintTokens: ReturnType<typeof mintTokensFactory>;
   transferTokens: ReturnType<typeof transferTokensFactory>;
   // We expose these functions under Connection
