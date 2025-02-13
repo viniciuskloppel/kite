@@ -2,6 +2,9 @@
 
 ![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)
 
+> [!NOTE]  
+> Kite is for everyone! You don't need to use Helius RPCs to use Kite. However if you do use Helius RPCs, Kite will take advantage of Helius features like priority fee estimates and low-latency transaction confirmation.
+
 Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to complete most Solana tasks in a single step. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available. If you decide you no longer need Kite, you can easily remove it and use plain web3.js version 2.
 
 Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular high-level library for web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
@@ -9,18 +12,15 @@ Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular h
 Kite works both in the browser and node.js and has [minimal dependencies](https://github.com/helius-dev/kite/blob/main/package.json).
 
 > [!NOTE]  
-> Kite is for everyone! You don't need to be use Helius RPCs to use Kite. However if you are, Kite will take advantage of Helius features like priority fees and low-latency transaction confirmation.
-
-> [!NOTE]  
 > This is the first public release of Kite - it has extensive tests, but you should consider it a preview and it may have some bugs. Please [report any issues](https://github.com/helius-dev/kite/issues) you find.
 
 ## What can I do with Kite?
 
-Kite includes functions to:
+Kite includes functions for:
 
 ### Connecting
 
-- [Connect to a Solana cluster](#connect---connect-to-a-solana-cluster) - in one shot, either by name or using URLs, loading API keys if necessary.
+- [Connect to a Solana cluster](#connect---connect-to-a-solana-cluster)
 
 ### Wallets
 
@@ -32,7 +32,7 @@ Kite includes functions to:
 ### SOL
 
 - [Airdrop SOL if balance is low](#airdropifrequired---airdrop-sol-if-balance-is-low)
-- [Get an account balance](#getLamportBalance---get-account-balance)
+- [Get a SOL balance](#getLamportBalance---get-account-balance)
 - [Transfer SOL between wallets](#transferlamports---transfer-sol-between-wallets)
 
 ### Tokens
@@ -40,8 +40,8 @@ Kite includes functions to:
 - [Create a new token](#maketokenmint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Get token mint information](#getmint---get-token-mint-information)
-- [Mint tokens to an account](#minttokens---mint-tokens-to-an-account)
-- [Transfer tokens between accounts](#transfertokens---transfer-tokens-between-accounts)
+- [Mint tokens to a wallet](#minttokens---mint-tokens-to-an-account)
+- [Transfer tokens between wallets](#transfertokens---transfer-tokens-between-accounts)
 
 ### Transactions
 

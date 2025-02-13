@@ -97,8 +97,6 @@ export const transferTokensFactory = (
 
     const destinationAssociatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, true);
 
-    // TODO: check if the destination associated token account exists before sending
-
     // Create an associated token account for the receiver
     const createAssociatedTokenInstruction = getCreateAssociatedTokenInstruction({
       ata: destinationAssociatedTokenAddress,
