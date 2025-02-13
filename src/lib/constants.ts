@@ -52,6 +52,8 @@ export const CLUSTERS: Record<
       // Whether this cluster supports Helius priority fee estimate instruction
       // See https://docs.helius.dev/solana-apis/priority-fee-api
       supportsGetPriorityFeeEstimate: boolean;
+      // Enable retries on the client side
+      enableClientSideRetries: boolean;
       // Whether this cluster needs priority fees
       needsPriorityFees: boolean;
     };
@@ -69,6 +71,7 @@ export const CLUSTERS: Record<
       isExplorerDefault: true,
       isNameKnownToSolanaExplorer: true,
       supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
       needsPriorityFees: true,
     },
   },
@@ -81,6 +84,7 @@ export const CLUSTERS: Record<
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: true,
       supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
       needsPriorityFees: true,
     },
   },
@@ -93,6 +97,7 @@ export const CLUSTERS: Record<
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: true,
       supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
       needsPriorityFees: true,
     },
   },
@@ -106,6 +111,7 @@ export const CLUSTERS: Record<
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: false,
       supportsGetPriorityFeeEstimate: true,
+      enableClientSideRetries: true,
       needsPriorityFees: true,
     },
   },
@@ -118,6 +124,7 @@ export const CLUSTERS: Record<
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: false,
       supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
       needsPriorityFees: true,
     },
   },
@@ -130,6 +137,7 @@ export const CLUSTERS: Record<
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: false,
       supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
       needsPriorityFees: true,
     },
   },
@@ -143,6 +151,7 @@ export const CLUSTERS: Record<
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: false,
       supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: false,
       needsPriorityFees: false,
     },
   },

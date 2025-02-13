@@ -32,6 +32,7 @@ export const connect = (
   let webSocketURL: string | null = null;
   let supportsGetPriorityFeeEstimate: boolean = false;
   let needsPriorityFees: boolean = false;
+  let enableClientSideRetries: boolean = false;
   // Postel's law: be liberal in what you accept - so include 'mainnet' as well as 'mainnet-beta'
   if (clusterNameOrURL === "mainnet") {
     clusterNameOrURL = "mainnet-beta";
@@ -47,6 +48,8 @@ export const connect = (
     if (clusterDetails.features.needsPriorityFees) {
       needsPriorityFees = true;
     }
+
+    enableClientSideRetries = clusterDetails.features.enableClientSideRetries;
 
     if (clusterDetails.requiredParamEnvironmentVariable) {
       const requiredParamEnvironmentVariable = process.env[clusterDetails.requiredParamEnvironmentVariable];
@@ -112,6 +115,7 @@ export const connect = (
     rpc,
     needsPriorityFees,
     supportsGetPriorityFeeEstimate,
+    enableClientSideRetries,
     sendAndConfirmTransaction,
   );
 

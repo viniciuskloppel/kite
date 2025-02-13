@@ -19,6 +19,7 @@ import {
 } from "@solana/web3.js";
 import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetries } from "./smart-transactions";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
+import { DEFAULT_TRANSACTION_RETRIES } from "./constants";
 
 interface SendTransactionFromInstructionsOptions {
   feePayer: KeyPairSigner;
@@ -33,6 +34,7 @@ export const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   needsPriorityFees: boolean,
   supportsGetPriorityFeeEstimate: boolean,
+  enableClientSideRetries: boolean,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
   const sendTransactionFromInstructions = async ({
@@ -40,7 +42,7 @@ export const sendTransactionFromInstructionsFactory = (
     instructions,
     commitment = "confirmed",
     skipPreflight = true,
-    maximumRetries = 0,
+    maximumRetries = enableClientSideRetries ? DEFAULT_TRANSACTION_RETRIES : 0,
     abortSignal = null,
   }: SendTransactionFromInstructionsOptions) => {
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send({ abortSignal });
@@ -78,7 +80,7 @@ export const sendTransactionFromInstructionsFactory = (
 
     if (maximumRetries) {
       await sendTransactionWithRetries(sendAndConfirmTransaction, signedTransaction, {
-        maximumRetries: maximumRetries,
+        maximumRetries,
         abortSignal,
         commitment,
       });
