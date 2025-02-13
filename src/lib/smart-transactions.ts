@@ -33,8 +33,8 @@ export const getPriorityFeeEstimate = async (
     ]),
   ];
 
+  // If the RPC doesn't support getPriorityFeeEstimate, use the median of the recent fees
   if (!supportsGetPriorityFeeEstimate) {
-    console.log("Getting priority fee estimate from 'devnet''");
     const recentFeesResponse = await rpc.getRecentPrioritizationFees([...accountKeys]).send({ abortSignal });
     // @ts-expect-error TODO: typing error from original helius-smart-transactions-web3js2. Fix this.
     const recentFeesValues = recentFeesResponse.reduce((accumulator, current) => {
@@ -44,14 +44,13 @@ export const getPriorityFeeEstimate = async (
         return accumulator;
       }
     }, []);
-    // sort fees ascending order
+
+    // Return the median fee
     // @ts-expect-error TODO: typing error from original helius-smart-transactions-web3js2. Fix this.
     recentFeesValues.sort((a, b) => Number(a - b));
-    // return median fee
     return Number(recentFeesValues[Math.floor(recentFeesValues.length / 2)]);
   }
   // Get a priority fee estimate, using Helius' `getPriorityFeeEstimate` method on Helius mainnet
-  console.log("Getting priority fee estimate from Helius");
   const { priorityFeeEstimate } = await rpc
     .getPriorityFeeEstimate({
       accountKeys,
