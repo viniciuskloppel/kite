@@ -17,7 +17,7 @@ import {
   SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED,
   TransactionWithBlockhashLifetime,
 } from "@solana/web3.js";
-import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetry } from "./smart-transactions";
+import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetries } from "./smart-transactions";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
 
 interface SendTransactionFromInstructionsOptions {
@@ -77,7 +77,7 @@ export const sendTransactionFromInstructionsFactory = (
     const signature = getSignatureFromTransaction(signedTransaction);
 
     if (maximumRetries) {
-      await sendTransactionWithRetry(sendAndConfirmTransaction, signedTransaction, {
+      await sendTransactionWithRetries(sendAndConfirmTransaction, signedTransaction, {
         maximumRetries: maximumRetries,
         abortSignal,
         commitment,

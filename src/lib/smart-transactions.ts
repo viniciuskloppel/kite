@@ -98,7 +98,7 @@ export const getComputeUnitEstimate = async (
   });
 };
 
-export const sendTransactionWithRetry = async (
+export const sendTransactionWithRetries = async (
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
   transaction: FullySignedTransaction & TransactionWithBlockhashLifetime,
   options: {
@@ -126,7 +126,6 @@ export const sendTransactionWithRetry = async (
   while (retriesLeft) {
     try {
       const txPromise = sendAndConfirmTransaction(transaction, transactionOptions);
-
       await getAbortablePromise(txPromise, AbortSignal.timeout(DEFAULT_TRANSACTION_TIMEOUT));
       break;
     } catch (error) {
