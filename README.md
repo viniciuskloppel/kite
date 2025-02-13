@@ -318,7 +318,14 @@ Transfers SOL from one wallet to another.
 Returns: `Promise<Signature>`
 
 ```typescript
-const signature = await connection.transferLamports(source, destination, amount);
+const signature = await connection.transferLamports({
+  source,
+  destination,
+  amount,
+  skipPreflight,
+  maximumClientSideRetries,
+  abortSignal,
+});
 ```
 
 ### Options
@@ -326,6 +333,9 @@ const signature = await connection.transferLamports(source, destination, amount)
 - `source`: `KeyPairSigner` - The wallet to send SOL from
 - `destination`: `Address` - The wallet to send SOL to
 - `amount`: `Lamports` - Amount of lamports to send
+- `skipPreflight`: `boolean` (optional) - Whether to skip preflight checks (default: true)
+- `maximumClientSideRetries`: `number` (optional) - Maximum number of times to retry sending the transaction (default: 0)
+- `abortSignal`: `AbortSignal | null` (optional) - Signal to abort the transaction (default: null)
 
 ## makeTokenMint - Create a new token with metadata
 
@@ -456,12 +466,14 @@ Transfers tokens from one account to another. The sender must sign the transacti
 Returns: `Promise<Signature>`
 
 ```typescript
-const signature = await connection.transferTokens(
-  sender, // signer that owns the tokens
-  destination, // address to receive the tokens
-  mintAddress, // address of the token mint
-  amount, // amount of tokens to transfer
-);
+const signature = await connection.transferTokens({
+  sender,
+  destination,
+  mintAddress,
+  amount,
+  maximumClientSideRetries,
+  abortSignal,
+});
 ```
 
 ### Options
@@ -470,6 +482,8 @@ const signature = await connection.transferTokens(
 - `destination`: `Address` - Address to receive the tokens
 - `mintAddress`: `Address` - Address of the token mint
 - `amount`: `bigint` - Amount of tokens to transfer (in base units)
+- `maximumClientSideRetries`: `number` (optional) - Maximum number of times to retry sending the transaction (default: 0)
+- `abortSignal`: `AbortSignal | null` (optional) - Signal to abort the transaction (default: null)
 
 ### Example
 
@@ -496,8 +510,14 @@ const mintAddress = await connection.makeTokenMint(
 // Mint some tokens to the sender's account
 await connection.mintTokens(mintAddress, sender, 100n, sender.address);
 
-// Transfer 50 tokens from sender to recipient
-const signature = await connection.transferTokens(sender, recipient.address, mintAddress, 50n);
+// Transfer 50 tokens from sender to recipient with retries
+const signature = await connection.transferTokens({
+  sender,
+  destination: recipient.address,
+  mintAddress,
+  amount: 50n,
+  maximumClientSideRetries: 3,
+});
 ```
 
 ## sendTransactionFromInstructions - Send a transaction with multiple instructions
@@ -509,7 +529,14 @@ Sends a transaction containing one or more instructions. The transaction will be
 Returns: `Promise<Signature>`
 
 ```typescript
-const signature = await connection.sendTransactionFromInstructions(feePayer, instructions, commitment, skipPreflight);
+const signature = await connection.sendTransactionFromInstructions({
+  feePayer,
+  instructions,
+  commitment,
+  skipPreflight,
+  maximumClientSideRetries,
+  abortSignal,
+});
 ```
 
 ### Options
@@ -517,7 +544,9 @@ const signature = await connection.sendTransactionFromInstructions(feePayer, ins
 - `feePayer`: `KeyPairSigner` - The account that will pay for the transaction
 - `instructions`: `Array<IInstruction>` - Array of instructions to include in the transaction
 - `commitment`: `"confirmed" | "finalized"` (optional) - Desired confirmation level (default: "confirmed")
-- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: false)
+- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: true)
+- `maximumClientSideRetries`: `number` (optional) - Maximum number of times to retry sending the transaction (default: 0)
+- `abortSignal`: `AbortSignal | null` (optional) - Signal to abort the transaction (default: null)
 
 ### Example
 
@@ -538,10 +567,11 @@ const transferInstruction = getTransferSolInstruction({
 });
 
 // Send the transaction with the transfer instruction
-const signature = await connection.sendTransactionFromInstructions(
+const signature = await connection.sendTransactionFromInstructions({
   feePayer,
-  [transferInstruction]
-);
+  instructions: [transferInstruction],
+  maximumClientSideRetries: 3 // retry up to 3 times if the transaction fails
+});
 ```
 
 You can also send multiple instructions in a single transaction:
@@ -557,10 +587,12 @@ const transferInstructions = recipients.map(recipient =>
 );
 
 // Send all transfers in one transaction
-const signature = await connection.sendTransactionFromInstructions(
+const signature = await connection.sendTransactionFromInstructions({
   feePayer,
-  transferInstructions
-);
+  instructions: transferInstructions,
+  commitment: "confirmed",
+  skipPreflight: true
+});
 ```
 
 The function will automatically:
@@ -570,6 +602,7 @@ The function will automatically:
 - Add compute budget instructions if needed
 - Sign the transaction with the fee payer
 - Send and confirm the transaction
+- Retry the transaction if requested and needed
 
 ## getMint - Get token mint information
 
