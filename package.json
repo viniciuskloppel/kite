@@ -22,7 +22,7 @@
     "build": "npm run clean && npx tsup src/index.ts --format esm --dts --sourcemap --out-dir dist",
     "clean": "rm -rf dist",
     "_": "Skip the 'Ed25519 is experimental' warning. Also note we'd use esrun but it runs into E2BIG errors on npm",
-    "test": "npx tsx --no-warnings src/tests/*"
+    "test": "npx tsx --test --no-warnings --test-concurrency=true src/tests/*"
   },
   "keywords": [
     "solana",

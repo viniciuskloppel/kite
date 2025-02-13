@@ -6,7 +6,6 @@ import {
   grindKeyPair,
   loadWalletFromEnvironment,
   loadWalletFromFile,
-  makeKeyPairSigners,
 } from "../lib/keypair";
 // See https://m.media-amazon.com/images/I/51TJeGHxyTL._SY445_SX342_.jpg
 import { exec as execNoPromises } from "node:child_process";
@@ -35,12 +34,17 @@ describe("bytesToCryptoKeyPair", () => {
   });
 });
 
-describe("addCryptoKeyPairToEnvFile", () => {
+describe("addKeyPairSignerToEnvFile", () => {
   const TEST_ENV_VAR_ARRAY_OF_NUMBERS = "TEST_ENV_VAR_ARRAY_OF_NUMBERS";
   let testKeyPairSigner: KeyPairSigner;
 
   before(async () => {
-    const testCryptoKeyPair = await grindKeyPair();
+    const testCryptoKeyPair = await grindKeyPair(
+      null,
+      null,
+      true,
+      "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
+    );
     testKeyPairSigner = await createSignerFromKeyPair(testCryptoKeyPair);
 
     const testCryptoKeyPairString = await createJSONFromKeyPairSigner(testKeyPairSigner);
@@ -72,21 +76,6 @@ describe("addCryptoKeyPairToEnvFile", () => {
   });
 });
 
-describe("makeKeyPairSigners", () => {
-  test("makeKeyPairSigners makes exactly the amount of keyPairs requested", async () => {
-    // We could test more, but keyPair generation takes time and slows down tests
-    const KEYPAIRS_TO_MAKE = 3;
-    const keyPairs = await makeKeyPairSigners(KEYPAIRS_TO_MAKE);
-    assert.equal(keyPairs.length, KEYPAIRS_TO_MAKE);
-    assert.ok(keyPairs[KEYPAIRS_TO_MAKE - 1].keyPair.privateKey);
-  });
-
-  test("makeKeyPairSigners() creates the correct number of keyPairs", async () => {
-    const keyPairs = await makeKeyPairSigners(3);
-    assert.equal(keyPairs.length, 3);
-  });
-});
-
 describe("loadWalletFromFile", () => {
   const TEST_KEY_PAIR_FILE = `${TEMP_DIR}/test-key-pair-file-do-not-use.json`;
   const CORRUPT_TEST_KEY_PAIR = `${TEMP_DIR}/corrupt-key-pair-file-do-not-use.json`;
@@ -113,7 +102,7 @@ describe("loadWalletFromFile", () => {
 
   test("throws a nice error if the file is corrupt", async () => {
     assert.rejects(() => loadWalletFromFile(CORRUPT_TEST_KEY_PAIR), {
-      message: `Invalid secret key file at '${CORRUPT_TEST_KEY_PAIR}'!`,
+      message: `Could not read keyPair from file at '${CORRUPT_TEST_KEY_PAIR}'`,
     });
   });
 
@@ -128,7 +117,12 @@ describe("loadWalletFromEnvironment", () => {
   const TEST_ENV_VAR_WITH_BAD_VALUE = "TEST_ENV_VAR_WITH_BAD_VALUE";
 
   before(async () => {
-    const randomCryptoKeyPair = await grindKeyPair();
+    const randomCryptoKeyPair = await grindKeyPair(
+      null,
+      null,
+      true,
+      "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
+    );
     const randomKeyPairSigner = await createSignerFromKeyPair(randomCryptoKeyPair);
 
     process.env[TEST_ENV_VAR_ARRAY_OF_NUMBERS] = await createJSONFromKeyPairSigner(randomKeyPairSigner);
