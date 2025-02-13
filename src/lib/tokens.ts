@@ -25,19 +25,41 @@ import { getCreateAccountInstruction, getTransferSolInstruction } from "@solana-
 import { TOKEN_PROGRAM } from "./constants";
 import { TOKEN_EXTENSIONS_PROGRAM } from "./constants";
 
+interface TransferLamportsOptions {
+  source: KeyPairSigner;
+  destination: Address;
+  amount: Lamports;
+  skipPreflight?: boolean;
+  maximumRetries?: number;
+  abortSignal?: AbortSignal | null;
+}
+
 export const transferLamportsFactory = (
-  rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
   // Adapted from https://solana.com/developers/docs/transactions/examples/transfer-sol-with-web3-js/
-  const transferLamports = async (source: KeyPairSigner, destination: Address, amount: Lamports) => {
+  const transferLamports = async ({
+    source,
+    destination,
+    amount,
+    skipPreflight = true,
+    maximumRetries = 0,
+    abortSignal = null,
+  }: TransferLamportsOptions) => {
     const instruction = getTransferSolInstruction({
       amount,
       destination: destination,
       source: source,
     });
 
-    const signature = await sendTransactionFromInstructions(source, [instruction]);
+    const signature = await sendTransactionFromInstructions({
+      feePayer: source,
+      instructions: [instruction],
+      commitment: "confirmed",
+      skipPreflight,
+      maximumRetries,
+      abortSignal,
+    });
 
     return signature;
   };
@@ -80,10 +102,10 @@ export const transferTokensFactory = (
       decimals,
     });
 
-    const signature = await sendTransactionFromInstructions(sender, [
-      createAssociatedTokenInstruction,
-      transferInstruction,
-    ]);
+    const signature = await sendTransactionFromInstructions({
+      feePayer: sender,
+      instructions: [createAssociatedTokenInstruction, transferInstruction],
+    });
 
     return signature;
   };
@@ -222,7 +244,10 @@ export const makeTokenMintFactory = (
       updateTokenMetadataInstruction,
     ];
 
-    await sendTransactionFromInstructions(mintAuthority, instructions);
+    await sendTransactionFromInstructions({
+      feePayer: mintAuthority,
+      instructions,
+    });
 
     return mint.address;
   };
@@ -257,10 +282,10 @@ export const mintTokensFactory = (
       amount: amount,
     });
 
-    const transactionSignature = await sendTransactionFromInstructions(mintAuthority, [
-      createAtaInstruction,
-      mintToInstruction,
-    ]);
+    const transactionSignature = await sendTransactionFromInstructions({
+      feePayer: mintAuthority,
+      instructions: [createAtaInstruction, mintToInstruction],
+    });
 
     return transactionSignature;
   };

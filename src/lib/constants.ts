@@ -7,10 +7,13 @@ export const ASSOCIATED_TOKEN_PROGRAM = toAddress("ATokenGPvbdGVxr1b2hvZbsiqW5xW
 
 // Default values for making and loading wallets
 export const SOL = 1_000_000_000n;
+export const SECONDS = 1_000;
 export const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
 export const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
 export const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
+export const DEFAULT_TRANSACTION_RETRIES = 4;
+export const DEFAULT_TRANSACTION_TIMEOUT = 15 * SECONDS;
 // Anza keys concatenate the 32 bytes raw private key and the 32 bytes raw public key.
 // This format was commonly used in NaCl / libsodium when they were popular.
 export const KEYPAIR_LENGTH = 64;

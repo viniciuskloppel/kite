@@ -1,4 +1,4 @@
-// Based on smart-transaction.ts from https://github.com/mcintyre94/helius-smart-transactions-web3js2/blob/main/index.ts
+// Based on smart-transaction.ts from https://github.com/mcintyre94/helius-smart-transactions-web3js2
 
 import {
   IInstruction,
@@ -9,6 +9,12 @@ import {
   isInstructionWithData,
   CompilableTransactionMessage,
   createSolanaRpcFromTransport,
+  sendAndConfirmTransactionFactory,
+  TransactionWithBlockhashLifetime,
+  FullySignedTransaction,
+  Commitment,
+  SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED,
+  isSolanaError,
 } from "@solana/web3.js";
 import {
   getSetComputeUnitPriceInstruction,
@@ -16,6 +22,8 @@ import {
   COMPUTE_BUDGET_PROGRAM_ADDRESS,
   ComputeBudgetInstruction,
 } from "@solana-program/compute-budget";
+import { getAbortablePromise } from "@solana/promises";
+import { DEFAULT_TRANSACTION_RETRIES, DEFAULT_TRANSACTION_TIMEOUT } from "./constants";
 
 export const getPriorityFeeEstimate = async (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
@@ -88,4 +96,53 @@ export const getComputeUnitEstimate = async (
   return computeUnitEstimateFn(transactionMessageToSimulate, {
     abortSignal: abortSignal ?? undefined,
   });
+};
+
+export const sendTransactionWithRetry = async (
+  sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
+  transaction: FullySignedTransaction & TransactionWithBlockhashLifetime,
+  options: {
+    maximumRetries: number;
+    abortSignal: AbortSignal | null;
+    commitment: Commitment;
+  } = {
+    maximumRetries: DEFAULT_TRANSACTION_RETRIES,
+    abortSignal: null,
+    commitment: "confirmed",
+  },
+) => {
+  let retriesLeft = options.maximumRetries;
+
+  const transactionOptions = {
+    // TODO: web3.js wants explicit undefineds. Fix upstream.
+    abortSignal: options.abortSignal || undefined,
+    commitment: options.commitment,
+    // This is the server-side retries and should always be 0.
+    // We will do retries here on the client.
+    // See https://docs.helius.dev/solana-rpc-nodes/sending-transactions-on-solana#sending-transactions-without-the-sdk
+    maxRetries: 0n,
+  };
+
+  while (retriesLeft) {
+    try {
+      const txPromise = sendAndConfirmTransaction(transaction, transactionOptions);
+
+      await getAbortablePromise(txPromise, AbortSignal.timeout(DEFAULT_TRANSACTION_TIMEOUT));
+      break;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "TimeoutError") {
+        // timeout error happens if the transaction is not confirmed in 15s
+        // we can retry until we run out of retries
+        console.debug("Transaction not confirmed, retrying...");
+      } else if (isSolanaError(error, SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED)) {
+        // race condition where the transaction is processed between throwing the
+        // `TimeoutError` and our next retry
+        break;
+      } else {
+        throw error;
+      }
+    } finally {
+      retriesLeft--;
+    }
+  }
 };

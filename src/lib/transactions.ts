@@ -1,18 +1,33 @@
 import {
   appendTransactionMessageInstructions,
+  Commitment,
   createSolanaRpcFromTransport,
+  createSolanaRpcSubscriptions,
   createTransactionMessage,
+  FullySignedTransaction,
   getSignatureFromTransaction,
   IInstruction,
+  isSolanaError,
   KeyPairSigner,
   pipe,
   sendAndConfirmTransactionFactory,
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
+  SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED,
+  TransactionWithBlockhashLifetime,
 } from "@solana/web3.js";
-import { getComputeUnitEstimate, getPriorityFeeEstimate } from "./smart-transactions";
+import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetry } from "./smart-transactions";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
+
+interface SendTransactionFromInstructionsOptions {
+  feePayer: KeyPairSigner;
+  instructions: Array<IInstruction>;
+  commitment?: Commitment;
+  skipPreflight?: boolean;
+  maximumRetries?: number;
+  abortSignal?: AbortSignal | null;
+}
 
 export const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
@@ -20,13 +35,14 @@ export const sendTransactionFromInstructionsFactory = (
   supportsGetPriorityFeeEstimate: boolean,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
-  const sendTransactionFromInstructions = async (
-    feePayer: KeyPairSigner,
-    instructions: Array<IInstruction>,
-    commitment: "confirmed" | "finalized" = "confirmed",
-    skipPreflight: boolean = false,
-    abortSignal: AbortSignal | null = null,
-  ) => {
+  const sendTransactionFromInstructions = async ({
+    feePayer,
+    instructions,
+    commitment = "confirmed",
+    skipPreflight = true,
+    maximumRetries = 0,
+    abortSignal = null,
+  }: SendTransactionFromInstructionsOptions) => {
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send({ abortSignal });
 
     let transactionMessage = pipe(
@@ -58,12 +74,20 @@ export const sendTransactionFromInstructionsFactory = (
 
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
 
-    await sendAndConfirmTransaction(signedTransaction, {
-      commitment,
-      skipPreflight,
-    });
-
     const signature = getSignatureFromTransaction(signedTransaction);
+
+    if (maximumRetries) {
+      await sendTransactionWithRetry(sendAndConfirmTransaction, signedTransaction, {
+        maximumRetries: maximumRetries,
+        abortSignal,
+        commitment,
+      });
+    } else {
+      await sendAndConfirmTransaction(signedTransaction, {
+        commitment,
+        skipPreflight,
+      });
+    }
 
     return signature;
   };

@@ -14,6 +14,11 @@ interface CreateWalletOptions {
 
 export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
   const createWallet = async (options: CreateWalletOptions = {}): Promise<KeyPairSigner> => {
+    // If the user wants to save to an env variable, we need to save to a file
+    if (options.envVariableName && !options.envFileName) {
+      options.envFileName = ".env";
+    }
+
     const {
       prefix = null,
       suffix = null,

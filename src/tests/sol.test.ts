@@ -22,13 +22,17 @@ describe("getBalance", () => {
 });
 
 describe("transferLamports", () => {
-  test("Checking the balance after airdropIfRequired", async () => {
+  test("Transferring SOL / lamports between wallets", async () => {
     const connection = connect();
     const [sender, recipient] = await connection.createWallets(2, {
       airdropAmount: lamports(1n * SOL),
     });
 
-    const transferSignature = await connection.transferLamports(sender, recipient.address, lamports(1_000_000n));
+    const transferSignature = await connection.transferLamports({
+      source: sender,
+      destination: recipient.address,
+      amount: lamports(1_000_000n),
+    });
 
     assert.ok(transferSignature);
   });

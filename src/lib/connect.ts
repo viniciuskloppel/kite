@@ -115,7 +115,7 @@ export const connect = (
     sendAndConfirmTransaction,
   );
 
-  const transferLamports = transferLamportsFactory(rpc, sendTransactionFromInstructions);
+  const transferLamports = transferLamportsFactory(sendTransactionFromInstructions);
 
   const makeTokenMint = makeTokenMintFactory(rpc, sendTransactionFromInstructions);
 

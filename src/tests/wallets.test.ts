@@ -116,7 +116,11 @@ describe("airdropIfRequired", () => {
     const recipient = await generateKeyPairSigner();
 
     // Spend our SOL now to ensure we can use the airdrop immediately
-    const transferSignature = await connection.transferLamports(user, recipient.address, lamports(1_000_000n));
+    const transferSignature = await connection.transferLamports({
+      source: user,
+      destination: recipient.address,
+      amount: lamports(1_000_000n),
+    });
 
     assert.ok(transferSignature);
   });
