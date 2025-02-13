@@ -13,10 +13,7 @@ describe("tokens", () => {
   const decimals = 9;
   before(async () => {
     connection = connect();
-    sender = await connection.createWallet({
-      airdropAmount: lamports(1n * SOL),
-    });
-    recipient = await connection.createWallet({
+    [sender, recipient] = await connection.createWallets(2, {
       airdropAmount: lamports(1n * SOL),
     });
   });
@@ -26,14 +23,12 @@ describe("tokens", () => {
       keyOne: "valueOne",
       keyTwo: "valueTwo",
     });
-
     assert.ok(mintAddress);
   });
 
   test("The mint authority can mintTokens", async () => {
     // Have the mint authority mint to their own account
     const mintTokensTransactionSignature = await connection.mintTokens(mintAddress, sender, 1n, sender.address);
-
     assert.ok(mintTokensTransactionSignature);
   });
 
