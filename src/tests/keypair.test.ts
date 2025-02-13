@@ -77,37 +77,28 @@ describe("addKeyPairSignerToEnvFile", () => {
 });
 
 describe("loadWalletFromFile", () => {
-  const TEST_KEY_PAIR_FILE = `${TEMP_DIR}/test-key-pair-file-do-not-use.json`;
-  const CORRUPT_TEST_KEY_PAIR = `${TEMP_DIR}/corrupt-key-pair-file-do-not-use.json`;
-
-  const MISSING_KEY_PAIR_FILE = "THIS FILE DOES NOT EXIST";
-  before(async () => {
+  test("getting a keyPair from a file", async () => {
+    const TEST_KEY_PAIR_FILE = `${TEMP_DIR}/test-key-pair-file-do-not-use.json`;
     const { stdout } = await exec(`solana-keygen new --force --no-bip39-passphrase -o ${TEST_KEY_PAIR_FILE}`);
-    log(stdout);
     // Note Azna's web3.js spells keypair as twp words, Anza's Solana CLI spells it as one word
     assert(stdout.includes("Wrote new keypair"));
-
-    await writeFile(CORRUPT_TEST_KEY_PAIR, "I AM CORRUPT");
-  });
-
-  test("getting a keyPair from a file", async () => {
     await loadWalletFromFile(TEST_KEY_PAIR_FILE);
+    await deleteFile(TEST_KEY_PAIR_FILE);
   });
 
   test("throws a nice error if the file is missing", async () => {
-    assert.rejects(async () => await loadWalletFromFile(MISSING_KEY_PAIR_FILE), {
+    const MISSING_KEY_PAIR_FILE = "THIS FILE DOES NOT EXIST";
+    await assert.rejects(async () => loadWalletFromFile(MISSING_KEY_PAIR_FILE), {
       message: `Could not read keyPair from file at '${MISSING_KEY_PAIR_FILE}'`,
     });
   });
 
   test("throws a nice error if the file is corrupt", async () => {
-    assert.rejects(() => loadWalletFromFile(CORRUPT_TEST_KEY_PAIR), {
-      message: `Could not read keyPair from file at '${CORRUPT_TEST_KEY_PAIR}'`,
+    const CORRUPT_TEST_KEY_PAIR = `${TEMP_DIR}/corrupt-key-pair-file-do-not-use.json`;
+    await writeFile(CORRUPT_TEST_KEY_PAIR, "I AM CORRUPT");
+    await assert.rejects(async () => loadWalletFromFile(CORRUPT_TEST_KEY_PAIR), {
+      message: `Invalid secret key file at '${CORRUPT_TEST_KEY_PAIR}'!`,
     });
-  });
-
-  after(async () => {
-    await deleteFile(TEST_KEY_PAIR_FILE);
     await deleteFile(CORRUPT_TEST_KEY_PAIR);
   });
 });
