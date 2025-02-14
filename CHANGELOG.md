@@ -1,4 +1,4 @@
-# Version 3
+# Kite Changelog
 
 ## Kite version 1.01
 
@@ -23,6 +23,8 @@
 - We no longer support base58 encoded private keys - instead we use the 'Array of numbers' format exclusively. If you have base58 encoded private keys you can convert them with the previous version of this library.
 - Use `tsx` over `esrun`. While `tsx` needs a `tsconfig.json` file, `tsx` has many more users and is more actively maintained.
 - Remove CommonJS support.
+
+# Previous changelog as @solana/helpers
 
 ## 2.5
 
