@@ -48,6 +48,14 @@ describe("tokens", () => {
 
     assert.ok(transferTokensTransactionSignature);
   });
+
+  test("getTokenAccountBalance returns the correct balance", async () => {
+    const balance = await connection.getTokenAccountBalance(recipient.address, mintAddress, true);
+    assert(balance.amount);
+    assert(balance.decimals);
+    assert(balance.uiAmount);
+    assert(balance.uiAmountString);
+  });
 });
 
 describe("createTokenMint", () => {

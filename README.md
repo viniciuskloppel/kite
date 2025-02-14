@@ -39,6 +39,7 @@ Kite includes functions for:
 - [Create a new token](#createTokenMint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Get token mint information](#getmint---get-token-mint-information)
+- [Get token account balance](#gettokenaccountbalance---get-token-account-balance)
 - [Mint tokens to a wallet](#minttokens---mint-tokens-to-an-account)
 - [Transfer tokens between wallets](#transfertokens---transfer-tokens-between-accounts)
 
@@ -53,7 +54,7 @@ Kite includes functions for:
 
 - [Get a Solana Explorer link](#getexplorerlink---get-solana-explorer-link)
 
-We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
+We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](https://github.com/helius-labs/kite/blob/main/CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
 
 ## Why the name 'Kite'?
 
@@ -682,6 +683,53 @@ const [sender, recipient] = await Promise.all([
   }),
 ]);
 ```
+
+## getTokenAccountBalance - Get token account balance
+
+Gets the balance of tokens in a token account for a given wallet and mint.
+
+Returns: `Promise<TokenAmount>`
+
+```typescript
+const balance = await connection.getTokenAccountBalance(wallet, mint, useTokenExtensions);
+```
+
+### Options
+
+- `wallet`: `Address` - The wallet address to check the token balance for
+- `mint`: `Address` - The token mint address
+- `useTokenExtensions`: `boolean` (optional) - Whether to use Token Extensions program (default: false)
+
+### Example
+
+Get a token balance for a classic SPL token:
+
+```typescript
+// Get USDC balance
+const balance = await connection.getTokenAccountBalance(
+  "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn", // wallet
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC mint
+);
+
+console.log(`Balance: ${balance.uiAmount} ${balance.symbol}`);
+```
+
+Get a token balance for a Token Extensions token:
+
+```typescript
+const balance = await connection.getTokenAccountBalance(
+  "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn",
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  true, // use Token Extensions program
+);
+```
+
+The balance includes:
+
+- `amount`: Raw token amount (in base units)
+- `decimals`: Number of decimal places for the token
+- `uiAmount`: Formatted amount with decimals
+- `uiAmountString`: String representation of the UI amount
 
 ## Development and testing
 

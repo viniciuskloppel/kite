@@ -316,3 +316,12 @@ export const getMintFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
 
   return getMint;
 };
+
+export const getTokenAccountBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  const getTokenAccountBalance = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
+    const tokenAccountAddress = await getTokenAccountAddress(wallet, mint, useTokenExtensions);
+    const result = await rpc.getTokenAccountBalance(tokenAccountAddress).send();
+    return result.value;
+  };
+  return getTokenAccountBalance;
+};

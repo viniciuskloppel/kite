@@ -1,5 +1,10 @@
 # Version 3
 
+## Kite version 1.01
+
+- Add `getTokenAccountBalance()`
+- Minor docs updates
+
 ## Kite version 1.0
 
 - New name: `@helius-dev/kite`

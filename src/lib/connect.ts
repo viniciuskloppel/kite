@@ -19,6 +19,7 @@ import {
   mintTokensFactory,
   transferLamportsFactory,
   transferTokensFactory,
+  getTokenAccountBalanceFactory,
 } from "./tokens";
 import { getLogsFactory } from "./logs";
 import { getExplorerLinkFactory } from "./explorer";
@@ -129,6 +130,8 @@ export const connect = (
 
   const mintTokens = mintTokensFactory(sendTransactionFromInstructions);
 
+  const getTokenAccountBalance = getTokenAccountBalanceFactory(rpc);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -149,6 +152,7 @@ export const connect = (
     loadWalletFromFile,
     loadWalletFromEnvironment,
     getMint,
+    getTokenAccountBalance,
   };
 };
 
@@ -175,4 +179,5 @@ export interface Connection {
   loadWalletFromFile: typeof loadWalletFromFile;
   loadWalletFromEnvironment: typeof loadWalletFromEnvironment;
   getMint: ReturnType<typeof getMintFactory>;
+  getTokenAccountBalance: ReturnType<typeof getTokenAccountBalanceFactory>;
 }
