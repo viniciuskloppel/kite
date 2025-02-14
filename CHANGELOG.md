@@ -2,7 +2,7 @@
 
 ## Kite version 1.0
 
-- New name: `@helius/kite`
+- New name: `@helius-dev/kite`
 - Use @solana/web3.js version 2
 - A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()` (to confirm transactions using your RPC) and `getExplorerLink()` (to get Explorer links using your RPC).
 - Most functions are now a property of `connection`. For example, `connection.getLamportBalance()` instead of `getBalance()`.

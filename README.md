@@ -62,7 +62,7 @@ Solana itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beac
 ## Installation
 
 ```bash
-npm i @helius/kite
+npm i @helius-dev/kite
 ```
 
 ## Starting Kite & connecting to an RPC
@@ -72,7 +72,7 @@ To start Kite, you need to connect to an RPC.
 To use the local cluster (ie, `solana-test-validator` running on your machine):
 
 ```typescript
-import { connect } from "@helius/kite";
+import { connect } from "@helius-dev/kite";
 
 const connection = connect();
 ```

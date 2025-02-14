@@ -1,4 +1,4 @@
-import { connect } from "@helius/kite";
+import { connect } from "@helius-dev/kite";
 
 const connection = connect();
 const mintAuthority = await connection.createWallet();
