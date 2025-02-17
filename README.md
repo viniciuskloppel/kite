@@ -60,6 +60,10 @@ We'll be adding more functions over time. You're welcome to [suggest a new funct
 
 Solana itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beach,_California). Kite is a high-level framework, so what is high above a beach? Kites! 🪁😃
 
+## How do I use Kite with Anchor, or other custom onchain programs?
+
+You can use Kite to interact with any onchain program, including Anchor programs. Just use [Codama](https://github.com/codama-idl/codama) to turn your program's IDL into a TypeScript client, and then [create transactions with the program's instructions](https://github.com/helius-labs/kite?tab=readme-ov-file#sendtransactionfrominstructions---send-a-transaction-with-multiple-instructions).
+
 ## Installation
 
 ```bash
