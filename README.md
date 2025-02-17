@@ -8,7 +8,7 @@ Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular h
 
 Kite is for everyone! You don't need to use Helius RPCs to use Kite. However if you do use Helius RPCs, Kite will take advantage of Helius features like priority fee estimates and low-latency transaction confirmation.
 
-Kite works both in the browser and node.js and has [minimal dependencies](https://github.com/helius-dev/kite/blob/main/package.json).
+Kite works both in the browser and node.js and has [minimal dependencies](https://github.com/helius-labs/kite/blob/main/package.json#L48).
 
 > [!NOTE]  
 > This is the first public release of Kite - it has extensive tests, but you should consider it a preview and it may have some bugs. Please [report any issues](https://github.com/helius-dev/kite/issues) you find.
