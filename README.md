@@ -19,7 +19,7 @@ Kite includes functions for:
 
 ### Connecting
 
-- [Connect to a Solana cluster](#connect---connect-to-a-solana-cluster)
+- [Connect to a Solana cluster](#starting-kite--connecting-to-an-rpc)
 
 ### Wallets
 
@@ -36,7 +36,7 @@ Kite includes functions for:
 
 ### Tokens
 
-- [Create a new token](#createTokenMint---create-a-new-token)
+- [Create a new token](#createtokenmint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Get token mint information](#getmint---get-token-mint-information)
 - [Get token account balance](#gettokenaccountbalance---get-token-account-balance)
@@ -45,8 +45,8 @@ Kite includes functions for:
 
 ### Transactions
 
-- [Send and confirm a transaction](#sendandconfirmtransaction---send-and-confirm-a-transaction)
-- [Send a transaction with multiple instructions](#sendtransactionfrominstructions---send-a-transaction-with-multiple-instructions)
+- [Send a transaction from multiple instructions](#sendtransactionfrominstructions---send-a-transaction-with-multiple-instructions)
+- [Send and confirm a transaction you're already created](#sendandconfirmtransaction---send-and-confirm-a-transaction)
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
 - [Get transaction logs](#getlogs---get-transaction-logs)
 
@@ -339,7 +339,7 @@ const signature = await connection.transferLamports({
 
 ## createTokenMint - Create a new token with metadata
 
-Creates a new SPL token with specified parameters.
+Creates a new SPL token mint with specified parameters.
 
 Returns: `Promise<Address>`
 
