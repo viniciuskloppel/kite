@@ -9,7 +9,7 @@
 
 - New name: `@helius-dev/kite`
 - Use @solana/web3.js version 2
-- A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()` (to confirm transactions using your RPC) and `getExplorerLink()` (to get Explorer links using your RPC).
+- A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()`, `getExplorerLink()` and the other functions in this library. 
 - Most functions are now a property of `connection`. For example, `connection.getLamportBalance()` instead of `getBalance()`.
 - Added support for Helius RPCs - just specify the name and as long as the Helius API key is set in the environment, it will be used.
 - We've tried to match the coding style of web3.js v2
