@@ -11,27 +11,27 @@ import {
 const ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE =
   "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file";
 
-export const grindKeyPair = async (
-  prefix: string | null = null,
-  suffix: string | null = null,
-  silenceGrindProgress: boolean = false,
-  isPrivateKeyExtractable: false | typeof ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE = false,
-): Promise<CryptoKeyPair> => {
+export const grindKeyPair = async (options: {
+  prefix?: string | null;
+  suffix?: string | null;
+  silenceGrindProgress?: boolean;
+  isPrivateKeyExtractable?: false | typeof ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE;
+}): Promise<CryptoKeyPair> => {
   await assertKeyGenerationIsAvailable();
 
   // Do not allow extractable keyPairs unless the user has explicitly said they understand the risk
-  const allowExtractablePrivateKey = isPrivateKeyExtractable === ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE;
+  const allowExtractablePrivateKey = options.isPrivateKeyExtractable === ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE;
 
   // Ensure the prefix and suffix are within the base58 character set
-  if (prefix && !BASE58_CHARACTER_SET.test(prefix)) {
+  if (options.prefix && !BASE58_CHARACTER_SET.test(options.prefix)) {
     throw new Error("Prefix must contain only base58 characters.");
   }
-  if (suffix && !BASE58_CHARACTER_SET.test(suffix)) {
+  if (options.suffix && !BASE58_CHARACTER_SET.test(options.suffix)) {
     throw new Error("Suffix must contain only base58 characters.");
   }
 
   // Add the total length of the prefix and suffix
-  const keypairGrindComplexity = (prefix?.length || 0) + (suffix?.length || 0);
+  const keypairGrindComplexity = (options.prefix?.length || 0) + (options.suffix?.length || 0);
   // Throw a warning if keypairGrindComplexity is greater than GRIND_COMPLEXITY_THRESHOLD
   if (keypairGrindComplexity > GRIND_COMPLEXITY_THRESHOLD) {
     console.warn(
@@ -45,7 +45,7 @@ export const grindKeyPair = async (
     counter++;
 
     // Log every 100,000 iterations
-    if (!silenceGrindProgress && counter % 100000 === 0) {
+    if (!options.silenceGrindProgress && counter % 100000 === 0) {
       console.log(`Keypair grind tries: ${counter}`);
     }
 
@@ -58,12 +58,12 @@ export const grindKeyPair = async (
     const publicKeyString = await getBase58AddressFromPublicKey(keyPair.publicKey);
 
     // If we don't have a prefix, we don't need to check if the keyPair starts with the prefix
-    if (!prefix && !suffix) {
+    if (!options.prefix && !options.suffix) {
       return keyPair;
     }
 
-    const matchesPrefix = prefix ? publicKeyString.startsWith(prefix) : true;
-    const matchesSuffix = suffix ? publicKeyString.endsWith(suffix) : true;
+    const matchesPrefix = options.prefix ? publicKeyString.startsWith(options.prefix) : true;
+    const matchesSuffix = options.suffix ? publicKeyString.endsWith(options.suffix) : true;
 
     // If the keyPair matches, return it
     if (matchesPrefix && matchesSuffix) {

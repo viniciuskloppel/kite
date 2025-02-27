@@ -33,19 +33,23 @@ export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdrop
       // Important: we make a temporary extractable keyPair and write it to the environment file
       // We then reload the keypair from the environment as non-extractable
       // This is because the temporaryExtractableKeyPair's private key is extractable, and we want to keep it secret
-      const temporaryExtractableKeyPair = await grindKeyPair(
+      const temporaryExtractableKeyPair = await grindKeyPair({
         prefix,
         suffix,
-        false,
-        "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
-      );
+        silenceGrindProgress: false,
+        isPrivateKeyExtractable:
+          "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
+      });
       const temporaryExtractableKeyPairSigner = await createSignerFromKeyPair(temporaryExtractableKeyPair);
       await addKeyPairSignerToEnvFile(temporaryExtractableKeyPairSigner, envVariableName, envFileName);
       dotenv.config({ path: envFileName });
       keyPairSigner = await loadWalletFromEnvironment(envVariableName);
       // Once the block is exited, the variable will be dereferenced and no longer accessible. This means the memory used by the variable can be reclaimed by the garbage collector, as there are no other references to it outside the block. Goodbye temporaryExtractableKeyPair and temporaryExtractableKeyPairSigner!
     } else {
-      const keyPair = await grindKeyPair(prefix, suffix);
+      const keyPair = await grindKeyPair({
+        prefix,
+        suffix,
+      });
       keyPairSigner = await createSignerFromKeyPair(keyPair);
     }
 
@@ -62,7 +66,10 @@ export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdrop
 
 // See https://assets.fengsi.io/pr:sharp/rs:fill:1600:1067:1:1/g:ce/q:80/L2FwaS9qZGxlYXRoZXJnb29kcy9vcmlnaW5hbHMvYjZmNmU2ODAtNzY3OC00MDFiLWE1MzctODg4MWQyMmMzZWIyLmpwZw.jpg
 export const createWalletsFactory = (createWallet: ReturnType<typeof createWalletFactory>) => {
-  const createWallets = (amount: number, options: CreateWalletOptions = {}): Promise<Array<KeyPairSigner>> => {
+  const createWallets = (
+    amount: number,
+    options: Parameters<ReturnType<typeof createWalletFactory>>[0],
+  ): Promise<Array<KeyPairSigner>> => {
     const walletPromises = Array.from({ length: amount }, () => createWallet(options));
     return Promise.all(walletPromises);
   };

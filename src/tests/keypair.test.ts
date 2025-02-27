@@ -39,12 +39,13 @@ describe("addKeyPairSignerToEnvFile", () => {
   let testKeyPairSigner: KeyPairSigner;
 
   before(async () => {
-    const testCryptoKeyPair = await grindKeyPair(
-      null,
-      null,
-      true,
-      "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
-    );
+    const testCryptoKeyPair = await grindKeyPair({
+      prefix: null,
+      suffix: null,
+      silenceGrindProgress: true,
+      isPrivateKeyExtractable:
+        "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
+    });
     testKeyPairSigner = await createSignerFromKeyPair(testCryptoKeyPair);
 
     const testCryptoKeyPairString = await createJSONFromKeyPairSigner(testKeyPairSigner);
@@ -108,12 +109,13 @@ describe("loadWalletFromEnvironment", () => {
   const TEST_ENV_VAR_WITH_BAD_VALUE = "TEST_ENV_VAR_WITH_BAD_VALUE";
 
   before(async () => {
-    const randomCryptoKeyPair = await grindKeyPair(
-      null,
-      null,
-      true,
-      "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
-    );
+    const randomCryptoKeyPair = await grindKeyPair({
+      prefix: null,
+      suffix: null,
+      silenceGrindProgress: true,
+      isPrivateKeyExtractable:
+        "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
+    });
     const randomKeyPairSigner = await createSignerFromKeyPair(randomCryptoKeyPair);
 
     process.env[TEST_ENV_VAR_ARRAY_OF_NUMBERS] = await createJSONFromKeyPairSigner(randomKeyPairSigner);
