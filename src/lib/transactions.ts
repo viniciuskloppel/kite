@@ -17,15 +17,6 @@ import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetr
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
 import { DEFAULT_TRANSACTION_RETRIES } from "./constants";
 
-interface SendTransactionFromInstructionsOptions {
-  feePayer: KeyPairSigner;
-  instructions: Array<IInstruction>;
-  commitment?: Commitment;
-  skipPreflight?: boolean;
-  maximumClientSideRetries?: number;
-  abortSignal?: AbortSignal | null;
-}
-
 export const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   needsPriorityFees: boolean,
@@ -40,7 +31,14 @@ export const sendTransactionFromInstructionsFactory = (
     skipPreflight = true,
     maximumClientSideRetries = enableClientSideRetries ? DEFAULT_TRANSACTION_RETRIES : 0,
     abortSignal = null,
-  }: SendTransactionFromInstructionsOptions) => {
+  }: {
+    feePayer: KeyPairSigner;
+    instructions: Array<IInstruction>;
+    commitment?: Commitment;
+    skipPreflight?: boolean;
+    maximumClientSideRetries?: number;
+    abortSignal?: AbortSignal | null;
+  }) => {
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send({ abortSignal });
 
     let transactionMessage = pipe(

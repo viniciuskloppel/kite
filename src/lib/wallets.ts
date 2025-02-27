@@ -4,16 +4,16 @@ import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment } fr
 import dotenv from "dotenv";
 import { airdropIfRequiredFactory } from "./sol";
 
-interface CreateWalletOptions {
-  prefix?: string | null;
-  suffix?: string | null;
-  envFileName?: string | null;
-  envVariableName?: string;
-  airdropAmount?: Lamports | null;
-}
-
 export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
-  const createWallet = async (options: CreateWalletOptions = {}): Promise<KeyPairSigner> => {
+  const createWallet = async (
+    options: {
+      prefix?: string | null;
+      suffix?: string | null;
+      envFileName?: string | null;
+      envVariableName?: string;
+      airdropAmount?: Lamports | null;
+    } = {},
+  ): Promise<KeyPairSigner> => {
     // If the user wants to save to an env variable, we need to save to a file
     if (options.envVariableName && !options.envFileName) {
       options.envFileName = ".env";

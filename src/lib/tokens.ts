@@ -25,15 +25,6 @@ import { getCreateAccountInstruction, getTransferSolInstruction } from "@solana-
 import { TOKEN_PROGRAM } from "./constants";
 import { TOKEN_EXTENSIONS_PROGRAM } from "./constants";
 
-interface TransferLamportsOptions {
-  source: KeyPairSigner;
-  destination: Address;
-  amount: Lamports;
-  skipPreflight?: boolean;
-  maximumClientSideRetries?: number;
-  abortSignal?: AbortSignal | null;
-}
-
 export const transferLamportsFactory = (
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
@@ -44,7 +35,14 @@ export const transferLamportsFactory = (
     skipPreflight = true,
     maximumClientSideRetries = 0,
     abortSignal = null,
-  }: TransferLamportsOptions) => {
+  }: {
+    source: KeyPairSigner;
+    destination: Address;
+    amount: Lamports;
+    skipPreflight?: boolean;
+    maximumClientSideRetries?: number;
+    abortSignal?: AbortSignal | null;
+  }) => {
     const instruction = getTransferSolInstruction({
       amount,
       destination: destination,
