@@ -24,7 +24,7 @@ export const airdropIfRequiredFactory = (
   // request airdrops when they don't need them, ie - don't bother
   // the faucet unless you really need to!
   //
-  // Note rpc.requestAirdrop is broken, the commitment paramater doesn't do anything
+  // Note rpc.requestAirdrop is broken, the commitment parameter doesn't do anything
   // despite the docs repeatedly referring to rpc.requestAirdrop
   // See https://github.com/solana-labs/solana-web3.js/issues/3683
   //

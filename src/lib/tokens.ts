@@ -37,7 +37,6 @@ interface TransferLamportsOptions {
 export const transferLamportsFactory = (
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
-  // Adapted from https://solana.com/developers/docs/transactions/examples/transfer-sol-with-web3-js/
   const transferLamports = async ({
     source,
     destination,
