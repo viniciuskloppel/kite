@@ -284,7 +284,7 @@ export const mintTokensFactory = (
     const createAtaInstruction = await getCreateAssociatedTokenInstructionAsync({
       payer: mintAuthority,
       mint: mintAddress,
-      owner: mintAuthority.address,
+      owner: destination,
     });
 
     // Derive destination associated token address
