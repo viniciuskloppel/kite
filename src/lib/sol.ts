@@ -38,7 +38,7 @@ export const airdropIfRequiredFactory = (
   const airdrop = airdropFactory({ rpc, rpcSubscriptions });
 
   /**
-   * Airdrops SOL to an address if its balance is below the specified threshold.
+   * Airdrops SOL to an address if its balance is below the specified minimumBalance.
    * @param {Address} address - The address to check balance and potentially airdrop to
    * @param {Lamports} airdropAmount - Amount of lamports to airdrop if needed
    * @param {Lamports} minimumBalance - Minimum balance threshold that triggers airdrop
