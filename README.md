@@ -363,17 +363,16 @@ Returns: `Promise<Address>`
 Create a token with additional metadata:
 
 ```typescript
-const mintAddress = await connection.createTokenMint(
-  mintAuthority,
-  6,
-  "My token",
-  "MTKN",
-  "https://example.com/metadata.json",
-  {
-    description: "A stablecoin pegged to the US dollar",
-    website: "https://example.com",
+const mintAddress = await connection.createTokenMint({
+  mintAuthority: wallet,
+  decimals: 9,
+  name: "My Token",
+  symbol: "MYTKN",
+  uri: "https://example.com/token-metadata.json",
+  additionalMetadata: {
+    description: "My custom token",
   },
-);
+});
 ```
 
 A `metadata.json` file, and any images inside, should be hosted at an [decentralized storage service](https://solana.com/developers/guides/getstarted/how-to-create-a-token#create-and-upload-image-and-offchain-metadata). The file itself is at minimum:
