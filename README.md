@@ -4,6 +4,8 @@
 
 Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to complete most Solana tasks in a single step. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available. If you decide you no longer need Kite, you can easily remove it and use plain web3.js version 2.
 
+All functions in Kite are thoroughly documented with TSDoc comments, providing detailed information about parameters, return types, and usage examples. These comments are formatted for optimal visibility in VSCode and other IDEs, making it easier to understand and use the API.
+
 Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular high-level library for web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
 
 Kite is for everyone! You don't need to use Helius RPCs to use Kite. However if you do use Helius RPCs, Kite will take advantage of Helius features like priority fee estimates and low-latency transaction confirmation.
@@ -737,6 +739,8 @@ The balance includes:
 
 ## Development and testing
 
+All functions in the codebase must include TSDoc comments that describe their purpose, parameters, and return types. These comments should be formatted for optimal visibility in VSCode and other IDEs. See existing functions for examples of the required documentation format.
+
 To run tests, open a terminal tab, and run:
 
 ```bash
@@ -759,7 +763,7 @@ npx tsx --test --no-warnings src/tests/keypair.test.ts
 
 We use `--no-warnings` to avoid `ExperimentalWarning: The Ed25519 Web Crypto API algorithm is an experimental feature` which is pretty boring once you've read it for the 50th time.
 
-To just run tests matching the name `connect`.
+To just run tests matching the name `connect`:
 
 ```bash
 npx tsx --test --no-warnings --test-name-pattern="connect"
