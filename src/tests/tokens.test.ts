@@ -19,9 +19,16 @@ describe("tokens", () => {
   });
 
   test("We can make a new token mint", async () => {
-    mintAddress = await connection.createTokenMint(sender, decimals, "Unit test token", "TEST", "https://example.com", {
-      keyOne: "valueOne",
-      keyTwo: "valueTwo",
+    mintAddress = await connection.createTokenMint({
+      mintAuthority: sender,
+      decimals,
+      name: "Unit test token",
+      symbol: "TEST",
+      uri: "https://example.com",
+      additionalMetadata: {
+        keyOne: "valueOne",
+        keyTwo: "valueTwo",
+      },
     });
     assert.ok(mintAddress);
   });
@@ -74,14 +81,14 @@ describe("createTokenMint", () => {
       keyOne: "valueOne",
       keyTwo: "valueTwo",
     };
-    const mintAddress = await connection.createTokenMint(
+    const mintAddress = await connection.createTokenMint({
       mintAuthority,
       decimals,
       name,
       symbol,
       uri,
       additionalMetadata,
-    );
+    });
 
     assert.ok(mintAddress);
   });

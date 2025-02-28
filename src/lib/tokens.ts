@@ -141,22 +141,22 @@ export const getTokenAccountAddress = async (wallet: Address, mint: Address, use
 export const createTokenMintFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
-): ((
-  mintAuthority: KeyPairSigner,
-  decimals: number,
-  name: string,
-  symbol: string,
-  uri: string,
-  additionalMetadata?: Record<string, string> | Map<string, string>,
-) => Promise<Address>) => {
-  const createTokenMint = async (
-    mintAuthority: KeyPairSigner,
-    decimals: number,
-    name: string,
-    symbol: string,
-    uri: string,
-    additionalMetadata: Record<string, string> | Map<string, string> = {},
-  ) => {
+) => {
+  const createTokenMint = async ({
+    mintAuthority,
+    decimals,
+    name,
+    symbol,
+    uri,
+    additionalMetadata = {},
+  }: {
+    mintAuthority: KeyPairSigner;
+    decimals: number;
+    name: string;
+    symbol: string;
+    uri: string;
+    additionalMetadata?: Record<string, string> | Map<string, string>;
+  }) => {
     // See https://solana.stackexchange.com/questions/19747/how-do-i-make-a-token-with-metadata-using-web3-js-version-2/19792#19792 - big thanks to John for helping me turn the unit tests into a working example
 
     // Generate keypairs for and mint
