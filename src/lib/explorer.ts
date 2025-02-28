@@ -1,4 +1,4 @@
-import { KNOWN_CLUSTER_NAMES, CLUSTERS } from "./constants";
+import { KNOWN_CLUSTER_NAMES, CLUSTERS } from "./clusters";
 import { checkIsValidURL, encodeURL } from "./url";
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {

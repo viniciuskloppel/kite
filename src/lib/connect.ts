@@ -8,7 +8,7 @@ import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transac
 
 import { checkIsValidURL, encodeURL } from "./url";
 import { loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
-import { KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./constants";
+import { KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./clusters";
 
 import { sendTransactionFromInstructionsFactory } from "./transactions";
 import { createWalletFactory, createWalletsFactory } from "./wallets";
