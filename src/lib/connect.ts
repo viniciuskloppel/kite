@@ -24,6 +24,7 @@ import {
 import { getLogsFactory } from "./logs";
 import { getExplorerLinkFactory } from "./explorer";
 import { airdropIfRequiredFactory, getLamportBalanceFactory } from "./sol";
+import { getPDAAndBump } from "./pdas";
 
 /**
  * Creates a connection to a Solana cluster with all helper functions pre-configured.
@@ -164,6 +165,7 @@ export const connect = (
     loadWalletFromEnvironment,
     getMint,
     getTokenAccountBalance,
+    getPDAAndBump,
   };
 };
 
@@ -183,12 +185,13 @@ export interface Connection {
   createTokenMint: ReturnType<typeof createTokenMintFactory>;
   mintTokens: ReturnType<typeof mintTokensFactory>;
   transferTokens: ReturnType<typeof transferTokensFactory>;
+  getMint: ReturnType<typeof getMintFactory>;
+  getTokenAccountBalance: ReturnType<typeof getTokenAccountBalanceFactory>;
   // We expose these functions under Connection
   // simply because it's boring trying to remember what's a property of connection and what isn't,
   // They don't need to use 'ReturnType' because they're not factory functions
   getTokenAccountAddress: typeof getTokenAccountAddress;
   loadWalletFromFile: typeof loadWalletFromFile;
   loadWalletFromEnvironment: typeof loadWalletFromEnvironment;
-  getMint: ReturnType<typeof getMintFactory>;
-  getTokenAccountBalance: ReturnType<typeof getTokenAccountBalanceFactory>;
+  getPDAAndBump: typeof getPDAAndBump;
 }
