@@ -92,11 +92,11 @@ export const createJSONFromKeyPairSigner = async (keyPairSigner: KeyPairSigner):
   return JSON.stringify(Array.from(combinedArrayBuffer));
 };
 
-// From solana-web3.js/examples/transfer-lamports/src/example.ts
-//  "These are the bytes that we saved at the time this account's key pair was originally
-//  generated. Here, they are inlined into the source code, but you can also imagine them being
-//  loaded from disk or, better yet, read from an environment variable."
-// Oddly, Solana Foundation propose this be added to web3.js but were rejected.
+/**
+ * Loads a wallet (KeyPairSigner) from a file. The file should be in the same format as files created by the solana-keygen command.
+ * @param {string} [filepath] - Path to load keypair from file. Defaults to ~/.config/solana/id.json
+ * @returns {Promise<KeyPairSigner>} The loaded wallet
+ */
 export const loadWalletFromFile = async (filepath?: string): Promise<KeyPairSigner> => {
   // Node-specific imports
   const path = await import("node:path");
@@ -134,14 +134,11 @@ export const loadWalletFromFile = async (filepath?: string): Promise<KeyPairSign
   }
 };
 
-// Get a keyPair based on an environment variable
-// The keyPair is expected to be a JSON string of the raw bytes
-// per what Anza CLI uses
-// From solana-web3.js/examples/transfer-lamports/src/example.ts
-//  "These are the bytes that we saved at the time this account's key pair was originally
-//  generated. Here, they are inlined into the source code, but you can also imagine them being
-//  loaded from disk or, better yet, read from an environment variable."
-// Oddly, Solana Foundation propose this be added to web3.js but were rejected.
+/**
+ * Loads a wallet (KeyPairSigner) from an environment variable. The keypair should be in the same 'array of numbers' format as used by solana-keygen.
+ * @param {string} variableName - Name of environment variable containing the keypair
+ * @returns {KeyPairSigner} The loaded wallet
+ */
 export const loadWalletFromEnvironment = (variableName: string) => {
   const privateKeyString = process.env[variableName];
   if (!privateKeyString) {

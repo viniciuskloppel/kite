@@ -2,6 +2,13 @@ import { KNOWN_CLUSTER_NAMES, CLUSTERS } from "./constants";
 import { checkIsValidURL, encodeURL } from "./url";
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
+  /**
+   * Gets a link to view an address, transaction, or block on Solana Explorer.
+   * The link will automatically use the current RPC configuration.
+   * @param {("transaction" | "tx" | "address" | "block")} linkType - Type of entity to link to
+   * @param {string} id - The address, signature, or block to link to
+   * @returns {string} The complete Solana Explorer URL
+   */
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
     const searchParams: Record<string, string> = {};
     if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {

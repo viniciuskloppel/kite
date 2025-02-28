@@ -8,6 +8,12 @@ import {
 } from "@solana/web3.js";
 
 export const getLamportBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  /**
+   * Gets the SOL balance of an account in lamports.
+   * @param {string} address - The address to check the balance for
+   * @param {Commitment} commitment - The commitment level to use for the query (default: "finalized")
+   * @returns {Promise<Lamports>} The balance in lamports
+   */
   const getLamportBalance = async (address: string, commitment: Commitment = "finalized"): Promise<Lamports> => {
     const getLamportBalanceResponse = await rpc.getBalance(address, { commitment }).send();
     return getLamportBalanceResponse.value;
@@ -31,6 +37,14 @@ export const airdropIfRequiredFactory = (
   // @ts-expect-error TODO need to work out devnet/mainnet typing issue re: airdrops
   const airdrop = airdropFactory({ rpc, rpcSubscriptions });
 
+  /**
+   * Airdrops SOL to an address if its balance is below the specified threshold.
+   * @param {Address} address - The address to check balance and potentially airdrop to
+   * @param {Lamports} airdropAmount - Amount of lamports to airdrop if needed
+   * @param {Lamports} minimumBalance - Minimum balance threshold that triggers airdrop
+   * @param {Commitment} commitment - The commitment level to use (default: "finalized")
+   * @returns {Promise<string | null>} Transaction signature if airdrop occurred, null if no airdrop was needed
+   */
   const airdropIfRequired = async (
     address: Address,
     airdropAmount: Lamports,

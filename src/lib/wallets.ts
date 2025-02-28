@@ -5,6 +5,16 @@ import dotenv from "dotenv";
 import { airdropIfRequiredFactory } from "./sol";
 
 export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdropIfRequiredFactory>) => {
+  /**
+   * Creates a new Solana wallet (KeyPairSigner) with optional prefix/suffix, SOL balance, and file storage.
+   * @param {Object} [options={}] - The wallet creation options
+   * @param {string | null} [options.prefix] - Prefix for wallet address
+   * @param {string | null} [options.suffix] - Suffix for wallet address
+   * @param {string | null} [options.envFileName] - Path to .env file to save keypair
+   * @param {string} [options.envVariableName] - Name of environment variable to store keypair
+   * @param {Lamports | null} [options.airdropAmount] - Amount of SOL to airdrop
+   * @returns {Promise<KeyPairSigner>} The newly created wallet
+   */
   const createWallet = async (
     options: {
       prefix?: string | null;
@@ -66,6 +76,12 @@ export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdrop
 
 // See https://assets.fengsi.io/pr:sharp/rs:fill:1600:1067:1:1/g:ce/q:80/L2FwaS9qZGxlYXRoZXJnb29kcy9vcmlnaW5hbHMvYjZmNmU2ODAtNzY3OC00MDFiLWE1MzctODg4MWQyMmMzZWIyLmpwZw.jpg
 export const createWalletsFactory = (createWallet: ReturnType<typeof createWalletFactory>) => {
+  /**
+   * Creates multiple Solana wallets with the same options.
+   * @param {number} amount - Number of wallets to create
+   * @param {Object} options - Same options as createWallet
+   * @returns {Promise<Array<KeyPairSigner>>} Array of created wallets
+   */
   const createWallets = (
     amount: number,
     options: Parameters<ReturnType<typeof createWalletFactory>>[0],
