@@ -159,7 +159,14 @@ export const getTokenAccountAddress = async (wallet: Address, mint: Address, use
 export const createTokenMintFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
-) => {
+): ((params: {
+  mintAuthority: KeyPairSigner;
+  decimals: number;
+  name: string;
+  symbol: string;
+  uri: string;
+  additionalMetadata?: Record<string, string> | Map<string, string>;
+}) => Promise<Address>) => {
   /**
    * Creates a new SPL token mint with specified parameters and metadata.
    * @param {Object} params - The token mint parameters
