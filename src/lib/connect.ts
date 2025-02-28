@@ -25,6 +25,17 @@ import { getLogsFactory } from "./logs";
 import { getExplorerLinkFactory } from "./explorer";
 import { airdropIfRequiredFactory, getLamportBalanceFactory } from "./sol";
 
+/**
+ * Creates a connection to a Solana cluster with all helper functions pre-configured.
+ * @param {string} [clusterNameOrURL="localnet"] - Either a known cluster name or an HTTP URL
+ *                 Known names: "mainnet-beta"/"mainnet", "testnet", "devnet", "localnet",
+ *                 "helius-mainnet", "helius-testnet", "helius-devnet"
+ * @param {string | null} [clusterWebSocketURL=null] - WebSocket URL for subscriptions. Required if using custom HTTP URL
+ * @returns {Connection} Connection object with all helper functions configured
+ * @throws {Error} If using Helius cluster without HELIUS_API_KEY environment variable set
+ * @throws {Error} If using custom HTTP URL without WebSocket URL
+ * @throws {Error} If cluster name is invalid
+ */
 export const connect = (
   clusterNameOrURL: string = "localnet",
   clusterWebSocketURL: string | null = null,
