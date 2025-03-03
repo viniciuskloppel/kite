@@ -1,3 +1,3 @@
 export { connect } from "./lib/connect";
-export { SOL } from "./lib/constants";
+export { SOL, TOKEN_PROGRAM, TOKEN_EXTENSIONS_PROGRAM, ASSOCIATED_TOKEN_PROGRAM } from "./lib/constants";
 export type { Connection } from "./lib/connect";
