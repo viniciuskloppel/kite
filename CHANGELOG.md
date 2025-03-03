@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.02
+
+- Add `getPDAAndBump()` - calculates a Program Derived Address (PDA) and its bump seed from a program address and seeds, automatically encoding different seed types (strings, addresses, and bigints).
+- Add TSDoc comments for all functions.
+- Fix bug where `mintTokens()` was minting to the mint authority rather than the destination.
+
 ## Kite version 1.01
 
 - Add `getTokenAccountBalance()`
@@ -9,7 +15,7 @@
 
 - New name: `@helius-dev/kite`
 - Use @solana/web3.js version 2
-- A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()`, `getExplorerLink()` and the other functions in this library. 
+- A new `connect()` method is provided, which returns an object with `rpc`, `rpcSubscriptions`, `sendAndConfirmTransaction()`, `getExplorerLink()` and the other functions in this library.
 - Most functions are now a property of `connection`. For example, `connection.getLamportBalance()` instead of `getBalance()`.
 - Added support for Helius RPCs - just specify the name and as long as the Helius API key is set in the environment, it will be used.
 - We've tried to match the coding style of web3.js v2

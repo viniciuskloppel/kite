@@ -738,7 +738,9 @@ The balance includes:
 
 ## Development and testing
 
-All functions in the codebase must include TSDoc comments that describe their purpose, parameters, and return types. These comments should be formatted for optimal visibility in VSCode and other IDEs. See existing functions for examples of the required documentation format.
+Since this is a library, all functions in the codebase must include TSDoc comments that describe their purpose, parameters, and return types. I appreciate TSDoc can be annoying and reptitive, but we use TSdoc because VSCode and other IDEs show these comments when the function is hovered. See existing functions for examples of the required documentation format.
+
+> Make the TSDoc comments actually useful. Eg, don't tell people that `mintAuthority` is 'the mint authority'. Tell them that `mintAuthority` is 'the account that is allowed to use the token mint'.
 
 To run tests, open a terminal tab, and run:
 

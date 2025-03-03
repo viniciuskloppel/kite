@@ -1,4 +1,4 @@
-// Not needed for esrun, but sadly still needed for tsup
+// Not needed for esrun, but sadly still needed for tsx
 {
   "compilerOptions": {
     "target": "ES2022",
