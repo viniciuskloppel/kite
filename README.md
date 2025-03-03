@@ -51,6 +51,7 @@ Kite includes functions for:
 - [Send and confirm a transaction you're already created](#sendandconfirmtransaction---send-and-confirm-a-transaction)
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
 - [Get transaction logs](#getlogs---get-transaction-logs)
+- [Get a PDA and seeds](#getpdaandbump---get-a-program-derived-address-and-bump-seed)
 
 ### Explorer
 
@@ -735,6 +736,39 @@ The balance includes:
 - `decimals`: Number of decimal places for the token
 - `uiAmount`: Formatted amount with decimals
 - `uiAmountString`: String representation of the UI amount
+
+## getPDAAndBump - Get a Program Derived Address and bump seed
+
+Gets a Program Derived Address (PDA) and its bump seed from a program address and seeds. Automatically handles encoding of different seed types.
+
+Returns: `Promise<{pda: Address, bump: number}>`
+
+```typescript
+const { pda, bump } = await connection.getPDAAndBump(programAddress, seeds);
+```
+
+### Options
+
+- `programAddress`: `Address` - The program address to derive the PDA from
+- `seeds`: `Array<String | Address | BigInt>` - Array of seeds to derive the PDA. Can include:
+  - Strings (encoded as UTF-8)
+  - Addresses (encoded as base58)
+  - BigInts (encoded as 8-byte little-endian)
+
+### Example
+
+```typescript
+const programAddress = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address;
+const seeds = [
+  "offer", // string seed
+  aliceAddress, // address seed
+  420n, // bigint seed
+];
+
+const { pda, bump } = await connection.getPDAAndBump(programAddress, seeds);
+console.log("PDA:", pda.toString());
+console.log("Bump seed:", bump);
+```
 
 ## Development and testing
 
