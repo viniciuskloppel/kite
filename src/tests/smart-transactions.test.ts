@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
 import { connect } from "..";
-import { lamports } from "@solana/web3.js";
+import { lamports } from "@solana/kit";
 import { loadWalletFromEnvironment } from "../lib/keypair";
 import dotenv from "dotenv";
 

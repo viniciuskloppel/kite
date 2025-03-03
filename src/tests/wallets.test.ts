@@ -1,7 +1,7 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert";
 import { connect } from "..";
-import { generateKeyPairSigner, lamports } from "@solana/web3.js";
+import { generateKeyPairSigner, lamports } from "@solana/kit";
 import { DEFAULT_AIRDROP_AMOUNT, SOL } from "../lib/constants";
 import { unlink as deleteFile } from "node:fs/promises";
 import dotenv from "dotenv";

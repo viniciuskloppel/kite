@@ -3,7 +3,7 @@ import {
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
   sendAndConfirmTransactionFactory,
-} from "@solana/web3.js";
+} from "@solana/kit";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 
 import { checkIsValidURL, encodeURL } from "./url";

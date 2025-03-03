@@ -1,4 +1,4 @@
-import { createKeyPairSignerFromBytes, generateKeyPairSigner, KeyPairSigner } from "@solana/web3.js";
+import { createKeyPairSignerFromBytes, generateKeyPairSigner, KeyPairSigner } from "@solana/kit";
 import { assertKeyGenerationIsAvailable } from "@solana/assertions";
 import { exportRawPrivateKeyBytes, exportRawPublicKeyBytes, getBase58AddressFromPublicKey } from "./crypto";
 import {

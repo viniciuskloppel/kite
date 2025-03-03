@@ -13,7 +13,7 @@ import {
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
   some,
-} from "@solana/web3.js";
+} from "@solana/kit";
 import { getCreateAccountInstruction } from "@solana-program/system";
 import {
   getInitializeMintInstruction,

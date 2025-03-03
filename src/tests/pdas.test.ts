@@ -1,12 +1,12 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert";
-import { Address } from "@solana/web3.js";
+import { Address } from "@solana/kit";
 import { getPDAAndBump } from "../lib/pdas";
 
 describe("getPDAAndBump", () => {
   // This is the web3.js v1 equivalent code:
   //
-  //   import { PublicKey } from "@solana/web3.js";
+  //   import { PublicKey } from "@solana/kit";
   //   import { BN } from "bn.js";
 
   //   const aliceAddress = new PublicKey("qbuMdeYxYJXBjU6C6qFKjZKjXmrU83eDQomHdrch826");

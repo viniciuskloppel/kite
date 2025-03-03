@@ -1,6 +1,6 @@
-import { Commitment, generateKeyPairSigner, Lamports, some } from "@solana/web3.js";
+import { Commitment, generateKeyPairSigner, Lamports, some } from "@solana/kit";
 
-import { Address } from "@solana/web3.js";
+import { Address } from "@solana/kit";
 
 import {
   // This is badly named. It's a function that returns an object.
@@ -19,7 +19,7 @@ import {
   fetchMint,
   getCreateAssociatedTokenInstruction,
 } from "@solana-program/token-2022";
-import { createSolanaRpcFromTransport, KeyPairSigner } from "@solana/web3.js";
+import { createSolanaRpcFromTransport, KeyPairSigner } from "@solana/kit";
 import { sendTransactionFromInstructionsFactory } from "./transactions";
 import { getCreateAccountInstruction, getTransferSolInstruction } from "@solana-program/system";
 import { TOKEN_PROGRAM } from "./constants";

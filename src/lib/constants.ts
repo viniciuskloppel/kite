@@ -1,4 +1,4 @@
-import { lamports, address as toAddress } from "@solana/web3.js";
+import { lamports, address as toAddress } from "@solana/kit";
 
 // Some program names
 export const TOKEN_PROGRAM = toAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");

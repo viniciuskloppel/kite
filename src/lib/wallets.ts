@@ -1,4 +1,4 @@
-import { createSignerFromKeyPair, KeyPairSigner, Lamports } from "@solana/web3.js";
+import { createSignerFromKeyPair, KeyPairSigner, Lamports } from "@solana/kit";
 import { DEFAULT_AIRDROP_AMOUNT, DEFAULT_ENV_KEYPAIR_VARIABLE_NAME } from "./constants";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment } from "./keypair";
 import dotenv from "dotenv";

@@ -15,7 +15,7 @@ import {
   Commitment,
   SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED,
   isSolanaError,
-} from "@solana/web3.js";
+} from "@solana/kit";
 import {
   getSetComputeUnitPriceInstruction,
   identifyComputeBudgetInstruction,

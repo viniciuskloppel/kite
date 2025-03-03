@@ -1,7 +1,7 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert";
 import { connect } from "..";
-import { generateKeyPairSigner, lamports } from "@solana/web3.js";
+import { generateKeyPairSigner, lamports } from "@solana/kit";
 import { SOL } from "../lib/constants";
 
 describe("getLamportBalance", () => {

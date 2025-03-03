@@ -1,4 +1,4 @@
-import { Address, getAddressEncoder, getProgramDerivedAddress } from "@solana/web3.js";
+import { Address, getAddressEncoder, getProgramDerivedAddress } from "@solana/kit";
 
 const addressEncoder = getAddressEncoder();
 

@@ -1,6 +1,6 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert";
-import { address as toAddress, generateKeyPairSigner, lamports, KeyPairSigner, Address } from "@solana/web3.js";
+import { address as toAddress, generateKeyPairSigner, lamports, KeyPairSigner, Address } from "@solana/kit";
 
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";

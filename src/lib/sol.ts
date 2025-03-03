@@ -5,7 +5,7 @@ import {
   Commitment,
   createSolanaRpcFromTransport,
   airdropFactory,
-} from "@solana/web3.js";
+} from "@solana/kit";
 
 export const getLamportBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   /**

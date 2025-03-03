@@ -1,7 +1,7 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert";
 import { connect } from "..";
-import { KeyPairSigner, lamports, Address, address as toAddress } from "@solana/web3.js";
+import { KeyPairSigner, lamports, Address, address as toAddress } from "@solana/kit";
 import { SOL } from "../lib/constants";
 import { Connection } from "../lib/connect";
 

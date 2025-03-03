@@ -1,4 +1,4 @@
-import { createSolanaRpcFromTransport } from "@solana/web3.js";
+import { createSolanaRpcFromTransport } from "@solana/kit";
 
 export const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   /**
