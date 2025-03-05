@@ -1,7 +1,5 @@
 import { Commitment, generateKeyPairSigner, Lamports, some } from "@solana/kit";
-
 import { Address } from "@solana/kit";
-
 import {
   // This is badly named. It's a function that returns an object.
   extension as getExtensionData,
@@ -67,17 +65,6 @@ export const transferTokensFactory = (
   getMint: ReturnType<typeof getMintFactory>,
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
-  /**
-   * Transfers tokens from one account to another. The sender must sign the transaction.
-   * @param {Object} params - The transfer parameters
-   * @param {KeyPairSigner} params.sender - Signer that owns the tokens and will sign the transaction
-   * @param {Address} params.destination - Address to receive the tokens
-   * @param {Address} params.mintAddress - Address of the token mint
-   * @param {bigint} params.amount - Amount of tokens to transfer (in base units)
-   * @param {number} [params.maximumClientSideRetries=0] - Maximum number of times to retry sending the transaction
-   * @param {AbortSignal | null} [params.abortSignal=null] - Signal to abort the transaction
-   * @returns {Promise<string>} Transaction signature
-   */
   const transferTokens = async ({
     sender,
     destination,
@@ -137,11 +124,12 @@ export const transferTokensFactory = (
 };
 
 /**
- * Gets the associated token account address for a given wallet and token mint.
- * @param {Address} wallet - The wallet address to get the token account for
- * @param {Address} mint - The token mint address
- * @param {boolean} [useTokenExtensions=false] - Whether to use Token Extensions program
- * @returns {Promise<Address>} The associated token account address
+ * Gets the address where a wallet's tokens are stored.
+ * Each wallet has a unique storage address for each type of token.
+ * @param {Address} wallet - The wallet that owns the tokens
+ * @param {Address} mint - The type of token
+ * @param {boolean} [useTokenExtensions=false] - Use Token-2022 program instead of Token program
+ * @returns {Promise<Address>} The token account address
  */
 export const getTokenAccountAddress = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
   const tokenProgram = useTokenExtensions ? TOKEN_EXTENSIONS_PROGRAM : TOKEN_PROGRAM;
@@ -167,17 +155,6 @@ export const createTokenMintFactory = (
   uri: string;
   additionalMetadata?: Record<string, string> | Map<string, string>;
 }) => Promise<Address>) => {
-  /**
-   * Creates a new SPL token mint with specified parameters and metadata.
-   * @param {Object} params - The token mint parameters
-   * @param {KeyPairSigner} params.mintAuthority - Authority that can mint new tokens
-   * @param {number} params.decimals - Number of decimal places for the token
-   * @param {string} params.name - Name of the token
-   * @param {string} params.symbol - Symbol of the token
-   * @param {string} params.uri - URI pointing to the token's metadata
-   * @param {Record<string, string> | Map<string, string>} [params.additionalMetadata={}] - Additional metadata fields
-   * @returns {Promise<Address>} The address of the new token mint
-   */
   const createTokenMint = async ({
     mintAuthority,
     decimals,
@@ -307,14 +284,6 @@ export const createTokenMintFactory = (
 export const mintTokensFactory = (
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
 ) => {
-  /**
-   * Mints tokens from a token mint to a destination account. The mint authority must sign the transaction.
-   * @param {Address} mintAddress - Address of the token mint
-   * @param {KeyPairSigner} mintAuthority - Signer with authority to mint tokens
-   * @param {bigint} amount - Amount of tokens to mint (in base units)
-   * @param {Address} destination - Address to receive the minted tokens
-   * @returns {Promise<string>} Transaction signature
-   */
   const mintTokens = async (
     mintAddress: Address,
     mintAuthority: KeyPairSigner,
@@ -350,12 +319,6 @@ export const mintTokensFactory = (
 };
 
 export const getMintFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
-  /**
-   * Gets information about a token mint, including its decimals, authority, and supply.
-   * @param {Address} mintAddress - Address of the token mint to get information for
-   * @param {Commitment} [commitment="confirmed"] - Desired confirmation level
-   * @returns {Promise<Mint | null>} Information about the token mint, or null if not found
-   */
   const getMint = async (mintAddress: Address, commitment: Commitment = "confirmed") => {
     const mint = await fetchMint(rpc, mintAddress, { commitment });
     return mint;
@@ -365,13 +328,6 @@ export const getMintFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
 };
 
 export const getTokenAccountBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
-  /**
-   * Gets the balance of tokens in a token account for a given wallet and mint.
-   * @param {Address} wallet - The wallet address to check the token balance for
-   * @param {Address} mint - The token mint address
-   * @param {boolean} [useTokenExtensions=false] - Whether to use Token Extensions program
-   * @returns {Promise<TokenAmount>} The token balance information including amount and decimals
-   */
   const getTokenAccountBalance = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
     const tokenAccountAddress = await getTokenAccountAddress(wallet, mint, useTokenExtensions);
     const result = await rpc.getTokenAccountBalance(tokenAccountAddress).send();

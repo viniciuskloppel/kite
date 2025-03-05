@@ -24,17 +24,6 @@ export const sendTransactionFromInstructionsFactory = (
   enableClientSideRetries: boolean,
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
 ) => {
-  /**
-   * Sends a transaction containing one or more instructions. The transaction will be signed by the fee payer.
-   * @param {Object} params - The transaction parameters
-   * @param {KeyPairSigner} params.feePayer - The account that will pay for the transaction
-   * @param {Array<IInstruction>} params.instructions - Array of instructions to include in the transaction
-   * @param {Commitment} [params.commitment="confirmed"] - Desired confirmation level
-   * @param {boolean} [params.skipPreflight=true] - Whether to skip preflight transaction checks
-   * @param {number} [params.maximumClientSideRetries=0] - Maximum number of times to retry sending the transaction
-   * @param {AbortSignal | null} [params.abortSignal=null] - Signal to abort the transaction
-   * @returns {Promise<string>} Transaction signature
-   */
   const sendTransactionFromInstructions = async ({
     feePayer,
     instructions,
