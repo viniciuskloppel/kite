@@ -6,7 +6,8 @@ Kite leverages the speed and elegance of [`@solana/kit`](https://github.com/anza
 
 Users of VSCode and other popular editors will see TSDoc comments with parameters, return types, and usage examples right in their editor.
 
-Kite is the `@solana/kit` update of `@solana-developers/helpers`, the [most popular high-level library for @solana/web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://solana.org/), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
+> [!TIP]
+> Kite is the `@solana/kit` update of `@solana-developers/helpers`, the [most popular high-level library for @solana/web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://solana.org/), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
 
 Kite is for everyone! You don't need to use Helius RPCs to use Kite. However if you do use Helius RPCs, Kite will take advantage of Helius features like priority fee estimates and low-latency transaction confirmation.
 
