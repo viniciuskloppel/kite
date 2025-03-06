@@ -2,10 +2,16 @@
 
 ## Kite version 1.02
 
+### Additions
+
 - Add `getPDAAndBump()` - calculates a Program Derived Address (PDA) and its bump seed from a program address and seeds, automatically encoding different seed types (strings, addresses, and bigints).
 - Add TSDoc comments for all functions.
+- Solana `@solana/kit` has been renamed to `@solana/kit`, and dependencies have been updated accordingly.
+
+### Bug fixes
+
+- Fix bug where types were generated but not shown to consuming apps.
 - Fix bug where `mintTokens()` was minting to the mint authority rather than the destination.
-- Solana `@solana/kit` has been renamed to `@solana/kit`
 
 ## Kite version 1.01
 
