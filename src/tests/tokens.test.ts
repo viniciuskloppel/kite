@@ -56,12 +56,33 @@ describe("tokens", () => {
     assert.ok(transferTokensTransactionSignature);
   });
 
-  test("getTokenAccountBalance returns the correct balance", async () => {
-    const balance = await connection.getTokenAccountBalance(recipient.address, mintAddress, true);
+  test("getTokenAccountBalance returns the correct balance using wallet and mint", async () => {
+    const balance = await connection.getTokenAccountBalance({
+      wallet: recipient.address,
+      mint: mintAddress,
+      useTokenExtensions: true,
+    });
     assert(balance.amount);
     assert(balance.decimals);
     assert(balance.uiAmount);
     assert(balance.uiAmountString);
+  });
+
+  test("getTokenAccountBalance returns the correct balance using direct token account", async () => {
+    const tokenAccount = await connection.getTokenAccountAddress(recipient.address, mintAddress, true);
+    const balance = await connection.getTokenAccountBalance({
+      tokenAccount,
+    });
+    assert(balance.amount);
+    assert(balance.decimals);
+    assert(balance.uiAmount);
+    assert(balance.uiAmountString);
+  });
+
+  test("getTokenAccountBalance throws error when neither tokenAccount nor wallet+mint provided", async () => {
+    await assert.rejects(() => connection.getTokenAccountBalance({}), {
+      message: "wallet and mint are required when tokenAccount is not provided",
+    });
   });
 });
 

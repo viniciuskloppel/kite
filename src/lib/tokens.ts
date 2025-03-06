@@ -327,10 +327,22 @@ export const getMintFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
   return getMint;
 };
 
+// TODO: these should return BigInts not Strigified BigInts, to save the user the effort of parsing
 export const getTokenAccountBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
-  const getTokenAccountBalance = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
-    const tokenAccountAddress = await getTokenAccountAddress(wallet, mint, useTokenExtensions);
-    const result = await rpc.getTokenAccountBalance(tokenAccountAddress).send();
+  const getTokenAccountBalance = async (options: {
+    wallet?: Address;
+    mint?: Address;
+    tokenAccount?: Address;
+    useTokenExtensions?: boolean;
+  }) => {
+    const { wallet, mint, tokenAccount, useTokenExtensions } = options;
+    if (!options.tokenAccount) {
+      if (!wallet || !mint) {
+        throw new Error("wallet and mint are required when tokenAccount is not provided");
+      }
+      options.tokenAccount = await getTokenAccountAddress(wallet, mint, useTokenExtensions);
+    }
+    const result = await rpc.getTokenAccountBalance(options.tokenAccount).send();
     return result.value;
   };
   return getTokenAccountBalance;

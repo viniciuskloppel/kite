@@ -358,12 +358,20 @@ export interface Connection {
 
   /**
    * Gets the token balance for a specific account.
-   * @param {Address} wallet - Account to check the balance for
-   * @param {Address} mint - Type of token to check
-   * @param {boolean} [useTokenExtensions=false] - Use Token-2022 program instead of Token program
+   * @param {Object} params - Parameters for getting token balance
+   * @param {Address} [params.tokenAccount] - Direct token account address to check balance for
+   * @param {Address} [params.wallet] - Wallet address (required if tokenAccount not provided)
+   * @param {Address} [params.mint] - Token mint address (required if tokenAccount not provided)
+   * @param {boolean} [params.useTokenExtensions=false] - Use Token-2022 program instead of Token program
    * @returns {Promise<TokenAmount>} Balance information including amount and decimals
+   * @throws {Error} If neither tokenAccount nor both wallet and mint are provided
    */
-  getTokenAccountBalance: (wallet: Address, mint: Address, useTokenExtensions?: boolean) => Promise<TokenAmount>;
+  getTokenAccountBalance: (params: {
+    tokenAccount?: Address;
+    wallet?: Address;
+    mint?: Address;
+    useTokenExtensions?: boolean;
+  }) => Promise<TokenAmount>;
 
   /**
    * Gets the address where a wallet's tokens are stored.
