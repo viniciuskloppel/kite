@@ -1,12 +1,12 @@
-# The Solana framework for web3.js version 2 🪁
+# The modern TypeScript framework for Solana 🪁
 
 ![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)
 
-Kite leverages the speed and elegance of [Solana web3.js version 2](https://www.helius.dev/blog/how-to-start-building-with-the-solana-web3-js-2-0-sdk) but allows you to complete most Solana tasks in a single step. Since Kite uses web3.js version 2 for the heavy lifting, the full features of web3.js version 2 are available. If you decide you no longer need Kite, you can easily remove it and use plain web3.js version 2.
+Kite leverages the speed and elegance of [`@solana/kit`](https://github.com/anza-xyz/kit) (previously known as `@solana/web3.js` version 2) but allows you to **complete most Solana tasks in a single step**. Since Kite uses `@solana/kit` for the heavy lifting, the full features of `@solana/kit` are available. If you decide you no longer need Kite, you can easily remove it and use plain `@solana/kit`.
 
 All functions in Kite are thoroughly documented with TSDoc comments, providing detailed information about parameters, return types, and usage examples. These comments are formatted for optimal visibility in VSCode and other IDEs, making it easier to understand and use the API.
 
-Kite is a web3.js v2 update of `@solana-developers/helpers`, the [most popular high-level library for web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
+Kite is a `@solana/kit` update of `@solana-developers/helpers`, the [most popular high-level library for @solana/web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://youtu.be/zvQIa68ObK8?t=319), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
 
 Kite is for everyone! You don't need to use Helius RPCs to use Kite. However if you do use Helius RPCs, Kite will take advantage of Helius features like priority fee estimates and low-latency transaction confirmation.
 
@@ -51,7 +51,7 @@ Kite includes functions for:
 - [Send and confirm a transaction you're already created](#sendandconfirmtransaction---send-and-confirm-a-transaction)
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
 - [Get transaction logs](#getlogs---get-transaction-logs)
-- [Get a PDA and seeds](#getpdaandbump---get-a-program-derived-address-and-bump-seed)
+- [Get a PDA from seeds](#getpdaandbump---get-a-program-derived-address-and-bump-seed)
 
 ### Explorer
 
@@ -63,9 +63,11 @@ We'll be adding more functions over time. You're welcome to [suggest a new funct
 
 Solana itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beach,_California). Kite is a high-level framework, so what is high above a beach? Kites! 🪁😃
 
-## How do I use Kite with Anchor, or other custom onchain programs?
+Coincidentally, a couple of weeks after Kite's release, Solana web3.js version 2 was renamed `kit`. So Kite now flies on top of Kit.
 
-You can use Kite to interact with any onchain program, including Anchor programs. Just use [Codama](https://github.com/codama-idl/codama) to turn your program's IDL into a TypeScript client, and then [create transactions with the program's instructions](https://github.com/helius-labs/kite?tab=readme-ov-file#sendtransactionfrominstructions---send-a-transaction-with-multiple-instructions).
+## Can I use Kite with Anchor?
+
+**Yes.** Here's a [full Anchor demo token Swap app using Kite, Kit and Codama](https://github.com/mikemaccana/anchor-escrow-2025).
 
 ## Installation
 
