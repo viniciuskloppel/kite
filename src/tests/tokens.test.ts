@@ -84,6 +84,40 @@ describe("tokens", () => {
       message: "wallet and mint are required when tokenAccount is not provided",
     });
   });
+
+  test("checkTokenAccountIsClosed returns false for an open token account", async () => {
+    const tokenAccount = await connection.getTokenAccountAddress(recipient.address, mintAddress, true);
+    const isClosed = await connection.checkTokenAccountIsClosed({
+      tokenAccount,
+    });
+    assert.equal(isClosed, false);
+  });
+
+  test("checkTokenAccountIsClosed returns false when using wallet and mint for an open account", async () => {
+    const isClosed = await connection.checkTokenAccountIsClosed({
+      wallet: recipient.address,
+      mint: mintAddress,
+      useTokenExtensions: true,
+    });
+    assert.equal(isClosed, false);
+  });
+
+  test("checkTokenAccountIsClosed returns true for a non-existent token account", async () => {
+    // Generate a random address that won't have a token account
+    const nonExistentWallet = await connection.createWallet();
+    const isClosed = await connection.checkTokenAccountIsClosed({
+      wallet: nonExistentWallet.address,
+      mint: mintAddress,
+      useTokenExtensions: true,
+    });
+    assert.equal(isClosed, true);
+  });
+
+  test("checkTokenAccountIsClosed throws error when neither tokenAccount nor wallet+mint provided", async () => {
+    await assert.rejects(() => connection.checkTokenAccountIsClosed({}), {
+      message: "wallet and mint are required when tokenAccount is not provided",
+    });
+  });
 });
 
 describe("createTokenMint", () => {

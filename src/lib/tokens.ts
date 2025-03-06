@@ -22,6 +22,7 @@ import { sendTransactionFromInstructionsFactory } from "./transactions";
 import { getCreateAccountInstruction, getTransferSolInstruction } from "@solana-program/system";
 import { TOKEN_PROGRAM } from "./constants";
 import { TOKEN_EXTENSIONS_PROGRAM } from "./constants";
+import { assert } from "node:console";
 
 export const transferLamportsFactory = (
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
@@ -346,4 +347,27 @@ export const getTokenAccountBalanceFactory = (rpc: ReturnType<typeof createSolan
     return result.value;
   };
   return getTokenAccountBalance;
+};
+
+export const checkTokenAccountIsClosedFactory = (
+  getTokenAccountBalance: ReturnType<typeof getTokenAccountBalanceFactory>,
+) => {
+  const checkTokenAccountIsClosed = async (options: {
+    wallet?: Address;
+    mint?: Address;
+    tokenAccount?: Address;
+    useTokenExtensions?: boolean;
+  }) => {
+    try {
+      await getTokenAccountBalance(options);
+      return false;
+    } catch (thrownObject) {
+      const error = thrownObject as Error;
+      if (error.message.includes("Invalid param: could not find account")) {
+        return true;
+      }
+      throw error;
+    }
+  };
+  return checkTokenAccountIsClosed;
 };

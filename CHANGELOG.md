@@ -6,6 +6,7 @@
 
 - Add `getPDAAndBump()` - calculates a Program Derived Address (PDA) and its bump seed from a program address and seeds, automatically encoding different seed types (strings, addresses, and bigints).
 - `getTokenAccountBalance()` - can now take either a wallet and token mint (it will find the token account and then get the balance), or a token account address.
+- Add `checkTokenAccountIsClosed()` - checks if a token account is closed or doesn't exist, supporting both direct token account address and wallet+mint lookup.
 - Add TSDoc comments for all functions, so VSCode and other editors can display parameters nicely.
 - Solana `@solana/kit` has been renamed to `@solana/kit`, and dependencies have been updated accordingly.
 

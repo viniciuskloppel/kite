@@ -23,6 +23,7 @@ import {
   transferLamportsFactory,
   transferTokensFactory,
   getTokenAccountBalanceFactory,
+  checkTokenAccountIsClosedFactory,
 } from "./tokens";
 import { getLogsFactory } from "./logs";
 import { getExplorerLinkFactory } from "./explorer";
@@ -147,6 +148,8 @@ export const connect = (
 
   const getTokenAccountBalance = getTokenAccountBalanceFactory(rpc);
 
+  const checkTokenAccountIsClosed = checkTokenAccountIsClosedFactory(getTokenAccountBalance);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -169,6 +172,7 @@ export const connect = (
     getMint,
     getTokenAccountBalance,
     getPDAAndBump,
+    checkTokenAccountIsClosed,
   };
 };
 
@@ -241,6 +245,20 @@ export interface Connection {
    * @returns {Promise<boolean>} True if the transaction is confirmed
    */
   getRecentSignatureConfirmation: ReturnType<typeof createRecentSignatureConfirmationPromiseFactory>;
+
+  /**
+   * Checks if a token account is closed or doesn't exist.
+   * A token account can be specified directly or derived from a wallet and mint address.
+   * @param {Object} params - Parameters for checking token account
+   * @param {Address} [params.tokenAccount] - Direct token account address to check
+   * @param {Address} [params.wallet] - Wallet address (required if tokenAccount not provided)
+   * @param {Address} [params.mint] - Token mint address (required if tokenAccount not provided)
+   * @param {boolean} [params.useTokenExtensions=false] - Use Token-2022 program instead of Token program
+   * @returns {Promise<boolean>} True if the token account is closed or doesn't exist, false if it exists and is open
+   * @throws {Error} If neither tokenAccount nor both wallet and mint are provided
+   * @throws {Error} If there's an error checking the account that isn't related to the account not existing
+   */
+  checkTokenAccountIsClosed: ReturnType<typeof checkTokenAccountIsClosedFactory>;
 
   /**
    * Requests free test SOL from a faucet if an account's balance is too low.

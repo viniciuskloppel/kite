@@ -39,6 +39,7 @@ Kite includes functions for:
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Get token mint information](#getmint---get-token-mint-information)
 - [Get token account balance](#gettokenaccountbalance---get-token-account-balance)
+- [Check if token account is closed](#checktokenaccountisclosed---check-if-token-account-is-closed)
 - [Mint tokens to a wallet](#minttokens---mint-tokens-to-an-account)
 - [Transfer tokens between wallets](#transfertokens---transfer-tokens-between-accounts)
 
@@ -735,6 +736,47 @@ The balance includes:
 - `decimals`: Number of decimal places for the token
 - `uiAmount`: Formatted amount with decimals
 - `uiAmountString`: String representation of the UI amount
+
+## checkTokenAccountIsClosed - Check if token account is closed
+
+Checks if a token account is closed or doesn't exist. A token account can be specified directly or derived from a wallet and mint address.
+
+Returns: `Promise<boolean>`
+
+```typescript
+const isClosed = await connection.checkTokenAccountIsClosed(params);
+```
+
+### Options
+
+- `params`: `Object` - Parameters for checking token account
+  - `tokenAccount`: `Address` (optional) - Direct token account address to check
+  - `wallet`: `Address` (optional) - Wallet address (required if tokenAccount not provided)
+  - `mint`: `Address` (optional) - Token mint address (required if tokenAccount not provided)
+  - `useTokenExtensions`: `boolean` (optional) - Use Token-2022 program instead of Token program (default: false)
+
+### Example
+
+Check if a token account is closed using direct token account address:
+
+```typescript
+const tokenAccount = "4MD31b2GFAWVDYQT8KG7E5GcZiFyy4MpDUt4BcyEdJRP";
+const isClosed = await connection.checkTokenAccountIsClosed({
+  tokenAccount,
+});
+console.log(`Token account is ${isClosed ? "closed" : "open"}`);
+```
+
+Check if a token account is closed using wallet and mint:
+
+```typescript
+const isClosed = await connection.checkTokenAccountIsClosed({
+  wallet: "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn",
+  mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  useTokenExtensions: true,
+});
+console.log(`Token account is ${isClosed ? "closed" : "open"}`);
+```
 
 ## getPDAAndBump - Get a Program Derived Address and bump seed
 
