@@ -1,6 +1,6 @@
 # Kite Changelog
 
-## Kite version 1.02
+## Kite version 1.1.0
 
 ### Additions
 
@@ -15,7 +15,7 @@
 - Fix bug where types were generated but not shown to consuming apps.
 - Fix bug where `mintTokens()` was minting to the mint authority rather than the destination.
 
-## Kite version 1.01
+## Kite version 1.0.1
 
 - Add `getTokenAccountBalance()`
 - Minor docs updates
