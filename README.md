@@ -1,6 +1,6 @@
 # The modern TypeScript framework for Solana 🪁
 
-![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)
+[![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)](https://github.com/helius-labs/kite/actions/workflows/tests.yaml)
 
 Kite leverages the speed and elegance of [`@solana/kit`](https://github.com/anza-xyz/kit) (previously known as `@solana/web3.js` version 2) but allows you to **complete most Solana tasks in a single step**. Since Kite uses `@solana/kit` for the heavy lifting, Kite is fully compatible with `@solana/kit`. If you decide you no longer need Kite, you can easily remove it and use plain `@solana/kit`.
 
