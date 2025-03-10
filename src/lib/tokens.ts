@@ -328,7 +328,6 @@ export const getMintFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
   return getMint;
 };
 
-// TODO: these should return BigInts not Strigified BigInts, to save the user the effort of parsing
 export const getTokenAccountBalanceFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   const getTokenAccountBalance = async (options: {
     wallet?: Address;
@@ -344,7 +343,15 @@ export const getTokenAccountBalanceFactory = (rpc: ReturnType<typeof createSolan
       options.tokenAccount = await getTokenAccountAddress(wallet, mint, useTokenExtensions);
     }
     const result = await rpc.getTokenAccountBalance(options.tokenAccount).send();
-    return result.value;
+
+    const { amount, decimals, uiAmount, uiAmountString } = result.value;
+
+    return {
+      amount: BigInt(amount),
+      decimals,
+      uiAmount,
+      uiAmountString,
+    };
   };
   return getTokenAccountBalance;
 };

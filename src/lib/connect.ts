@@ -381,7 +381,7 @@ export interface Connection {
    * @param {Address} [params.wallet] - Wallet address (required if tokenAccount not provided)
    * @param {Address} [params.mint] - Token mint address (required if tokenAccount not provided)
    * @param {boolean} [params.useTokenExtensions=false] - Use Token-2022 program instead of Token program
-   * @returns {Promise<TokenAmount>} Balance information including amount and decimals
+   * @returns {Promise<{amount: BigInt, decimals: number, uiAmount: number | null, uiAmountString: string}>} Balance information including amount and decimals
    * @throws {Error} If neither tokenAccount nor both wallet and mint are provided
    */
   getTokenAccountBalance: (params: {
@@ -389,7 +389,12 @@ export interface Connection {
     wallet?: Address;
     mint?: Address;
     useTokenExtensions?: boolean;
-  }) => Promise<TokenAmount>;
+  }) => Promise<{
+    amount: BigInt;
+    decimals: number;
+    uiAmount: number | null;
+    uiAmountString: string;
+  }>;
 
   /**
    * Gets the address where a wallet's tokens are stored.
