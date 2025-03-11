@@ -375,7 +375,7 @@ export interface Connection {
   getMint: ReturnType<typeof getMintFactory>;
 
   /**
-   * Gets the token balance for a specific account.
+   * Gets the token balance for a specific account. You can either provide a token account address directly, or provide a wallet address and a mint address to derive the token account address.
    * @param {Object} params - Parameters for getting token balance
    * @param {Address} [params.tokenAccount] - Direct token account address to check balance for
    * @param {Address} [params.wallet] - Wallet address (required if tokenAccount not provided)

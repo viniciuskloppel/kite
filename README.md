@@ -1,10 +1,10 @@
-# The modern TypeScript framework for Solana 🪁
+# Kite: the modern TypeScript framework for Solana 🪁
 
 [![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)](https://github.com/helius-labs/kite/actions/workflows/tests.yaml)
 
 Kite leverages the speed and elegance of [`@solana/kit`](https://github.com/anza-xyz/kit) (previously known as `@solana/web3.js` version 2) but allows you to **complete most Solana tasks in a single step**. Since Kite uses `@solana/kit` for the heavy lifting, Kite is fully compatible with `@solana/kit`. If you decide you no longer need Kite, you can easily remove it and use plain `@solana/kit`.
 
-Users of VSCode and other popular editors will see TSDoc comments with parameters, return types, and usage examples right in their editor.
+Users of Cursor, VSCode, Sublime and other popular editors will see TSDoc comments with parameters, return types, and usage examples right in their editor.
 
 > [!TIP]
 > Kite is the `@solana/kit` update of `@solana-developers/helpers`, the [most popular high-level library for @solana/web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://solana.org/), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
@@ -62,7 +62,7 @@ Solana itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beac
 
 Coincidentally, a couple of weeks after Kite's release, Solana web3.js version 2 was renamed `kit`. So **Kite now flies on top of Kit**.
 
-Also coincidentally, a Kite is a type of Edwards curve!
+Also coincidentally, a Kite is a type of [Edwards curve](https://www.wolframalpha.com/input?i=x%5E2+%2B+y%5E2+%3D+1+%2B+d+x%5E2+y%5E2+where+d+%3D+-300)!
 
 ## Can I use Kite with Anchor?
 
