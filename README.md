@@ -76,7 +76,7 @@ npm i solana-kite
 
 ## Starting Kite & connecting to an RPC
 
-To start Kite, you need to connect to an RPC.
+To start Kite, you need to connect to a [Solana RPC](https://solana.com/rpc) - RPCs are how your code communicates with the Solana blockchain.
 
 To use the local cluster (ie, `solana-test-validator` running on your machine):
 
@@ -86,13 +86,18 @@ import { connect } from "solana-kite";
 const connection = connect();
 ```
 
-You can also specify a cluster name. The connection object defaults to `localnet` but any of the following cluster names are supported: `mainnet-beta` (or `mainnet`), `testnet`, `devnet`, `helius-mainnet`, `helius-testnet`, or `helius-devnet`.
+You can also specify a cluster name. The connection object defaults to `localnet` but any of the following cluster names are supported:
+
+- `mainnet-beta` (or `mainnet`) - Main Solana network where transactions involving real value occur.
+- `testnet` - Used to test future versions of the Solana blockchain.
+- `devnet` - Development network for testing with fake SOL. This is where Solana apps developers typically deploy first.
+- `helius-mainnet`, `helius-testnet`, or `helius-devnet` - [Helius](https://helius.xyz)-operated RPC nodes with additional features.
 
 ```typescript
 const connection = connect("helius-devnet");
 ```
 
-The Helius names require the environment variable `HELIUS_API_KEY` to be set in your environment.
+The Helius names require the environment variable `HELIUS_API_KEY` to be set in your environment. You can get an API key from [Helius](https://www.helius.dev/).
 
 You can also specify an arbitrary RPC URL and RPC subscription URL:
 
@@ -114,11 +119,11 @@ Returns: `Promise<KeyPairSigner>`
 
 ```typescript
 const wallet = await connection.createWallet({
-  prefix, // optional: prefix for wallet address
-  suffix, // optional: suffix for wallet address
-  envFileName, // optional: path to .env file to save keypair
-  envVariableName, // optional: name of environment variable to store keypair
-  airdropAmount, // optional: amount of SOL to airdrop
+  prefix: "be", // Optional: Generate address starting with these characters
+  suffix: "en", // Optional: Generate address ending with these characters
+  envFileName: ".env", // Optional: Save private key to this .env file
+  envVariableName: "PRIVATE_KEY", // Optional: Environment variable name to store the key
+  airdropAmount: 1_000_000_000n, // Optional: Amount of test SOL to request from faucet
 });
 ```
 
@@ -219,9 +224,9 @@ await connection.sendAndConfirmTransaction(transaction, options);
 
 ## getLamportBalance - Get the SOL balance of an account
 
-Gets the SOL balance of an account, in lamports.
+Gets the SOL balance of an account in lamports (1 SOL = 1,000,000,000 lamports). Lamports are the smallest unit of SOL, similar to how cents are the smallest unit of dollars.
 
-Returns: `Promise<Lamports>`
+Returns: `Promise<Lamports>` - The balance in lamports as a bigint
 
 ```typescript
 const balance = await connection.getLamportBalance(address, commitment);
@@ -230,7 +235,22 @@ const balance = await connection.getLamportBalance(address, commitment);
 ### Options
 
 - `address`: `string` - Address to check balance for
-- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "finalized")
+- `commitment`: [`Commitment`](https://docs.anza.xyz/consensus/commitments/) (optional) - Desired [commitment level](https://docs.anza.xyz/consensus/commitments/). Can be `"processed"`, `"confirmed"` (default), or `"finalized"`.
+
+### Example
+
+```typescript
+// Get balance in lamports
+const balanceInLamports = await connection.getLamportBalance("GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn");
+// Convert to SOL
+const balanceInSOL = Number(balanceInLamports) / 1_000_000_000;
+console.log(`Balance: ${balanceInSOL} SOL`);
+```
+
+### Errors
+
+- Throws if the address is invalid
+- Throws if the RPC connection fails
 
 ## getExplorerLink - Get Solana Explorer link
 
@@ -327,12 +347,11 @@ Returns: `Promise<Signature>`
 
 ```typescript
 const signature = await connection.transferLamports({
-  source,
-  destination,
-  amount,
-  skipPreflight,
-  maximumClientSideRetries,
-  abortSignal,
+  source: senderWallet,
+  destination: recipientAddress,
+  amount: 1_000_000_000n,
+  skipPreflight: true,
+  maximumClientSideRetries: 0,
 });
 ```
 
@@ -369,10 +388,11 @@ const mintAddress = await connection.createTokenMint({
   mintAuthority: wallet,
   decimals: 9,
   name: "My Token",
-  symbol: "MYTKN",
+  symbol: "TKN",
   uri: "https://example.com/token-metadata.json",
   additionalMetadata: {
-    description: "My custom token",
+    description: "A sample token",
+    website: "https://example.com",
   },
 });
 ```
@@ -474,12 +494,11 @@ Returns: `Promise<Signature>`
 
 ```typescript
 const signature = await connection.transferTokens({
-  sender,
-  destination,
-  mintAddress,
-  amount,
-  maximumClientSideRetries,
-  abortSignal,
+  sender: senderWallet,
+  destination: recipientAddress,
+  mintAddress: tokenMint,
+  amount: 1_000_000n,
+  maximumClientSideRetries: 0,
 });
 ```
 
@@ -533,27 +552,27 @@ const signature = await connection.transferTokens({
 
 Sends a transaction containing one or more instructions. The transaction will be signed by the fee payer.
 
-Returns: `Promise<Signature>`
+Returns: `Promise<Signature>` - The unique transaction signature that can be used to look up the transaction
 
 ```typescript
 const signature = await connection.sendTransactionFromInstructions({
-  feePayer,
-  instructions,
-  commitment,
-  skipPreflight,
-  maximumClientSideRetries,
-  abortSignal,
+  feePayer: wallet,
+  instructions: [instruction1, instruction2],
+  commitment: "confirmed",
+  skipPreflight: true,
+  maximumClientSideRetries: 0,
+  abortSignal: null,
 });
 ```
 
 ### Options
 
-- `feePayer`: `KeyPairSigner` - The account that will pay for the transaction
+- `feePayer`: `KeyPairSigner` - The account that will pay for the transaction's fees
 - `instructions`: `Array<IInstruction>` - Array of instructions to include in the transaction
-- `commitment`: `"confirmed" | "finalized"` (optional) - Desired confirmation level (default: "confirmed")
-- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks (default: true)
-- `maximumClientSideRetries`: `number` (optional) - Maximum number of times to retry sending the transaction (default: 0)
-- `abortSignal`: `AbortSignal | null` (optional) - Signal to abort the transaction (default: null)
+- `commitment`: [`Commitment`](https://docs.anza.xyz/consensus/commitments/) (optional) - Desired [commitment level](https://docs.anza.xyz/consensus/commitments/). Can be `"processed"`, `"confirmed"` (default), or `"finalized"`.
+- `skipPreflight`: `boolean` (optional) - Whether to skip preflight transaction checks. Enable to reduce latency, disable for more safety (default: true)
+- `maximumClientSideRetries`: `number` (optional) - Maximum number of times to retry if the transaction fails. Useful for handling temporary network issues (default: 0)
+- `abortSignal`: `AbortSignal | null` (optional) - Signal to abort the transaction. Use this to implement timeouts or cancel pending transactions (default: null)
 
 ### Example
 
@@ -577,8 +596,11 @@ const transferInstruction = getTransferSolInstruction({
 const signature = await connection.sendTransactionFromInstructions({
   feePayer,
   instructions: [transferInstruction],
-  maximumClientSideRetries: 3 // retry up to 3 times if the transaction fails
+  maximumClientSideRetries: 3
 });
+
+console.log(`Transaction successful: ${signature}`);
+console.log(`Explorer link: ${connection.getExplorerLink("tx", signature)}`);
 ```
 
 You can also send multiple instructions in a single transaction:
@@ -597,8 +619,7 @@ const transferInstructions = recipients.map(recipient =>
 const signature = await connection.sendTransactionFromInstructions({
   feePayer,
   instructions: transferInstructions,
-  commitment: "confirmed",
-  skipPreflight: true
+  commitment: "confirmed"
 });
 ```
 
@@ -610,6 +631,14 @@ The function will automatically:
 - Sign the transaction with the fee payer
 - Send and confirm the transaction
 - Retry the transaction if requested and needed
+
+### Errors
+
+- Throws if any instruction is invalid
+- Throws if the fee payer lacks sufficient SOL
+- Throws if the transaction exceeds the maximum size
+- Throws if the transaction is not confirmed within the timeout period
+- Throws if the RPC connection fails
 
 ## getMint - Get token mint information
 
@@ -632,11 +661,9 @@ const mint = await connection.getMint(mintAddress, commitment);
 // Get information about the USDC mint
 const usdcMint = await connection.getMint("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
-if (usdcMint) {
-  console.log(`Decimals: ${usdcMint.data.decimals}`);
-  console.log(`Mint authority: ${usdcMint.data.mintAuthority}`);
-  console.log(`Supply: ${usdcMint.data.supply}`);
-}
+console.log(`Decimals: ${usdcMint.data.decimals}`);
+console.log(`Mint authority: ${usdcMint.data.mintAuthority}`);
+console.log(`Supply: ${usdcMint.data.supply}`);
 ```
 
 The mint information includes:
@@ -762,9 +789,7 @@ Check if a token account is closed using direct token account address:
 
 ```typescript
 const tokenAccount = "4MD31b2GFAWVDYQT8KG7E5GcZiFyy4MpDUt4BcyEdJRP";
-const isClosed = await connection.checkTokenAccountIsClosed({
-  tokenAccount,
-});
+const isClosed = await connection.checkTokenAccountIsClosed({ tokenAccount });
 console.log(`Token account is ${isClosed ? "closed" : "open"}`);
 ```
 
