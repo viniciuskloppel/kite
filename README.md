@@ -1,6 +1,6 @@
 # Kite: the modern TypeScript framework for Solana 🪁
 
-[![Tests](https://github.com/helius-labs/kite/actions/workflows/tests.yaml/badge.svg)](https://github.com/helius-labs/kite/actions/workflows/tests.yaml)
+[![Tests](https://github.com/mikemaccana/kite/actions/workflows/tests.yaml/badge.svg)](https://github.com/mikemaccana/kite/actions/workflows/tests.yaml)
 
 Kite leverages the speed and elegance of [`@solana/kit`](https://github.com/anza-xyz/kit) (previously known as `@solana/web3.js` version 2) but allows you to **complete most Solana tasks in a single step**. Since Kite uses `@solana/kit` for the heavy lifting, Kite is fully compatible with `@solana/kit`. If you decide you no longer need Kite, you can easily remove it and use plain `@solana/kit`.
 
@@ -9,7 +9,7 @@ Users of Cursor, VSCode, Sublime and other popular editors will see TSDoc commen
 > [!TIP]
 > Kite is the `@solana/kit` update of `@solana-developers/helpers`, the [most popular high-level library for @solana/web3.js version 1](https://www.npmjs.com/package/@solana-developers/helpers), by the original author. The `kite` package includes updated versions of most of the original helpers, including contributions from [Helius](https://helius.xyz), [the Solana Foundation](https://solana.org/), [Anza](https://anza.xyz), [Turbin3](https://turbin3.com/), [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com). The ones we haven't added yet should be there soon.
 
-Kite works both in the browser and node.js, is small, and has [minimal dependencies](https://github.com/helius-labs/kite/blob/main/package.json#L48). It also works with **Anchor**.
+Kite works both in the browser and node.js, is small, and has [minimal dependencies](https://github.com/mikemaccana/kite/blob/main/package.json#L48). It also works with **Anchor**.
 
 ## What can I do with Kite?
 
@@ -54,7 +54,7 @@ Kite includes functions for:
 
 - [Get a Solana Explorer link](#getexplorerlink---get-solana-explorer-link)
 
-We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](https://github.com/helius-labs/kite/blob/main/CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
+We'll be adding more functions over time. You're welcome to [suggest a new function](https://github.com/helius-dev/kite/issues) or read the [CONTRIBUTING guidelines](https://github.com/mikemaccana/kite/blob/main/CONTRIBUTING.md) and [send a PR](https://github.com/helius-dev/kite/pulls).
 
 ## Why the name 'Kite'?
 
