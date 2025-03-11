@@ -1,5 +1,5 @@
 {
-  "name": "@helius-dev/kite",
+  "name": "solana-kite",
   "version": "1.1.0",
   "description": "A modern Solana framework for TypeScript.",
   "type": "module",
