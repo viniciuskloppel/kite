@@ -720,50 +720,71 @@ const [sender, recipient] = await Promise.all([
 
 ## getTokenAccountBalance - Get token account balance
 
-Gets the balance of tokens in a token account for a given wallet and mint.
+Gets the balance of tokens in a token account. You can either provide a token account address directly, or provide a wallet address and a mint address to derive the token account address.
 
-Returns: `Promise<TokenAmount>`
+Returns: `Promise<{amount: BigInt, decimals: number, uiAmount: number | null, uiAmountString: string}>`
 
 ```typescript
-const balance = await connection.getTokenAccountBalance(wallet, mint, useTokenExtensions);
+const balance = await connection.getTokenAccountBalance({
+  tokenAccount, // Optional: Direct token account address to check
+  wallet, // Optional: Wallet address (required if tokenAccount not provided)
+  mint, // Optional: Token mint address (required if tokenAccount not provided)
+  useTokenExtensions, // Optional: Use Token-2022 program instead of Token program
+});
 ```
 
 ### Options
 
-- `wallet`: `Address` - The wallet address to check the token balance for
-- `mint`: `Address` - The token mint address
-- `useTokenExtensions`: `boolean` (optional) - Whether to use Token Extensions program (default: false)
+- `params`: `Object` - Parameters for getting token balance
+  - `tokenAccount`: `Address` (optional) - Direct token account address to check balance for
+  - `wallet`: `Address` (optional) - Wallet address (required if tokenAccount not provided)
+  - `mint`: `Address` (optional) - Token mint address (required if tokenAccount not provided)
+  - `useTokenExtensions`: `boolean` (optional) - Use Token-2022 program instead of Token program (default: false)
 
 ### Example
 
-Get a token balance for a classic SPL token:
+Get a token balance using wallet or PDA address, and mint addresses.
 
 ```typescript
 // Get USDC balance
-const balance = await connection.getTokenAccountBalance(
-  "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn", // wallet
-  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC mint
-);
+const balance = await connection.getTokenAccountBalance({
+  wallet: "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn", // wallet or PDA address
+  mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC mint
+});
 
 console.log(`Balance: ${balance.uiAmount} ${balance.symbol}`);
 ```
 
-Get a token balance for a Token Extensions token:
+Get a token balance using direct token account address:
 
 ```typescript
-const balance = await connection.getTokenAccountBalance(
-  "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn",
-  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-  true, // use Token Extensions program
-);
+const balance = await connection.getTokenAccountBalance({
+  tokenAccount: "4MD31b2GFAWVDYQT8KG7E5GcZiFyy4MpDUt4BcyEdJRP",
+});
+```
+
+Get a Token-2022 token balance:
+
+```typescript
+const balance = await connection.getTokenAccountBalance({
+  wallet: "GkFTrgp8FcCgkCZeKreKKVHLyzGV6eqBpDHxRzg1brRn",
+  mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  useTokenExtensions: true,
+});
 ```
 
 The balance includes:
 
-- `amount`: Raw token amount (in base units)
+- `amount`: Raw token amount as a BigInt (in base units)
 - `decimals`: Number of decimal places for the token
 - `uiAmount`: Formatted amount with decimals
 - `uiAmountString`: String representation of the UI amount
+
+### Errors
+
+- Throws if neither `tokenAccount` nor both `wallet` and `mint` are provided
+- Throws if the token account doesn't exist
+- Throws if there's an error retrieving the balance
 
 ## checkTokenAccountIsClosed - Check if token account is closed
 
