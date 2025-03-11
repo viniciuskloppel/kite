@@ -20,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build",
     "build": "npm run clean && npx tsup src/index.ts --format esm --dts --sourcemap --out-dir dist",
     "clean": "rm -rf dist",
     "_": "Skip the 'Ed25519 is experimental' warning. Also note we'd use esrun but it runs into E2BIG errors on github actions",
