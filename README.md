@@ -64,6 +64,8 @@ Solana itself is named after [a beach](https://en.wikipedia.org/wiki/Solana_Beac
 
 Coincidentally, a couple of weeks after Kite's release, Solana web3.js version 2 was renamed `kit`. So **Kite now flies on top of Kit**.
 
+Also coincidentally, a Kite is a type of Edwards curve!
+
 ## Can I use Kite with Anchor?
 
 **Yes.** Here's a [full Anchor demo token Swap app using Kite, Kit and Codama](https://github.com/mikemaccana/anchor-escrow-2025).
