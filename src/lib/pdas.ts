@@ -31,10 +31,8 @@ export const getPDAAndBump = async (programAddress: Address, seeds: Array<String
     // (since Address is an extension of String at runtime)
     try {
       const encoded = addressEncoder.encode(seed as Address);
-      console.log("address", seed);
       return encoded;
     } catch {
-      console.log("string", seed);
       return Buffer.from(seed as string);
     }
   });
