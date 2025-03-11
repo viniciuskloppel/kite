@@ -253,7 +253,7 @@ const transactionLink = connection.getExplorerLink(
 );
 ```
 
-Or if you like abbrieviations:
+Or if you like abbreviations:
 
 ```typescript
 const transactionLink = connection.getExplorerLink(
@@ -377,7 +377,7 @@ const mintAddress = await connection.createTokenMint({
 });
 ```
 
-A `metadata.json` file, and any images inside, should be hosted at an [decentralized storage service](https://solana.com/developers/guides/getstarted/how-to-create-a-token#create-and-upload-image-and-offchain-metadata). The file itself is at minimum:
+A `metadata.json` file, and any images inside, should be hosted at a [decentralized storage service](https://solana.com/developers/guides/getstarted/how-to-create-a-token#create-and-upload-image-and-offchain-metadata). The file itself is at minimum:
 
 ```json
 {
