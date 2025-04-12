@@ -1,5 +1,9 @@
 # Kite Changelog
 
+## Kite version 1.1.1
+
+- Update to latest @solana/kit
+
 ## Kite version 1.1.0
 
 ### Additions
