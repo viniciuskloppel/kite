@@ -10,6 +10,7 @@ export const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
     const transaction = await rpc
       .getTransaction(signature, {
         commitment: "confirmed",
+        maxSupportedTransactionVersion: 0,
       })
       .send();
 
