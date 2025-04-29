@@ -4,9 +4,9 @@ export const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
   /**
    * Retrieves logs for a transaction.
    * @param {string} signature - Transaction signature to get logs for
-   * @returns {Promise<readonly Array<string>>} Array of log messages from the transaction
+   * @returns {Promise<Array<string>>} Array of log messages from the transaction
    */
-  const getLogs = async (signature: string): Promise<readonly Array<string>[]> => {
+  const getLogs = async (signature: string): Promise<Array<string>> => {
     const transaction = await rpc
       .getTransaction(signature, {
         commitment: "confirmed",
