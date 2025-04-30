@@ -3,7 +3,6 @@ import {
   Commitment,
   createSolanaRpcFromTransport,
   createTransactionMessage,
-  FullySignedTransaction,
   getSignatureFromTransaction,
   IInstruction,
   KeyPairSigner,
@@ -16,6 +15,11 @@ import {
 import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetries } from "./smart-transactions";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
 import { DEFAULT_TRANSACTION_RETRIES } from "./constants";
+import { getLogsFactory } from "./logs";
+
+export interface ErrorWithTransaction extends Error {
+  transaction: Awaited<ReturnType<ReturnType<typeof createSolanaRpcFromTransport>["getTransaction"]>>;
+}
 
 export const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
@@ -72,17 +76,31 @@ export const sendTransactionFromInstructionsFactory = (
 
     const signature = getSignatureFromTransaction(signedTransaction);
 
-    if (maximumClientSideRetries) {
-      await sendTransactionWithRetries(sendAndConfirmTransaction, signedTransaction, {
-        maximumClientSideRetries,
-        abortSignal,
-        commitment,
-      });
-    } else {
-      await sendAndConfirmTransaction(signedTransaction, {
-        commitment,
-        skipPreflight,
-      });
+    try {
+      if (maximumClientSideRetries) {
+        await sendTransactionWithRetries(sendAndConfirmTransaction, signedTransaction, {
+          maximumClientSideRetries,
+          abortSignal,
+          commitment,
+        });
+      } else {
+        await sendAndConfirmTransaction(signedTransaction, {
+          commitment,
+          skipPreflight,
+        });
+      }
+    } catch (thrownObject) {
+      const error = thrownObject as ErrorWithTransaction;
+
+      const transaction = await rpc
+        .getTransaction(signature, {
+          commitment,
+          maxSupportedTransactionVersion: 0,
+        })
+        .send();
+
+      error.transaction = transaction;
+      throw error;
     }
 
     return signature;
