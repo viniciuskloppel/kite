@@ -4,6 +4,12 @@
 
 ### Additions
 
+- More error messages are now shown in the new, friendly format.
+
+## Kite version 1.2.1
+
+### Additions
+
 - Error messages from Anchor are also now shown in the new, friendly format. No more custom program errors!
 
 ## Kite version 1.2.0

@@ -26,23 +26,15 @@ export const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
 
 /**
  * Extracts a user-friendly error message from transaction logs.
- * Looks for two possible patterns:
- *
- * 1. Anchor error pattern:
- * "Program <program> invoke [n]"
- * "Program log: Instruction: <instruction>"
- * "Program log: AnchorError caused by account: <account>. Error Code: <code>. Error Number: <number>. Error Message: <message>"
- *
- * 2. Regular error pattern:
- * "Program <program> invoke [n]"
- * "Program log: Instruction: <instruction>"
- * "Program log: Error: <error>"
- *
  * @param logMessages Array of log messages from the transaction
  * @returns A formatted error message in the format "programAddress.instructionName: errorMessage" or null if no error found
  */
 export const getErrorMessageFromLogs = (logMessages: Array<string>): string | null => {
   // First try to find an Anchor error
+  // Pattern:
+  // "Program <program> invoke [n]"
+  // "Program log: Instruction: <instruction>"
+  // "Program log: AnchorError caused by account: <account>. Error Code: <code>. Error Number: <number>. Error Message: <message>"
   const anchorErrorIndex = logMessages.findIndex((logMessage: string) =>
     logMessage.includes("Program log: AnchorError caused by account:"),
   );
@@ -67,26 +59,67 @@ export const getErrorMessageFromLogs = (logMessages: Array<string>): string | nu
   }
 
   // If no Anchor error found, look for regular error
+  // Pattern:
+  // "Program <program> invoke [n]"
+  // "Program log: Instruction: <instruction>"
+  // "Program log: Error: <error>"
   const errorIndex = logMessages.findIndex((logMessage: string) => logMessage.includes("Program log: Error: "));
 
-  if (errorIndex === NOT_FOUND) {
-    return null;
+  if (errorIndex !== NOT_FOUND) {
+    // Get the program name from the invoke log (usually 2 lines before the error)
+    const programInvokeLog = logMessages[errorIndex - 2];
+    const programName = programInvokeLog?.split("Program ")[1]?.split(" invoke")[0];
+
+    // Get the instruction name from the instruction log (usually 1 line before the error)
+    const instructionHandlerLog = logMessages[errorIndex - 1];
+    const instructionHandlerName = instructionHandlerLog?.split("Instruction: ")[1];
+
+    // Get the error message
+    const errorMessage = logMessages[errorIndex].split("Program log: Error: ")[1]?.trim();
+
+    if (!errorMessage || !programName || !instructionHandlerName) {
+      return null;
+    }
+
+    return `${programName}.${instructionHandlerName}: ${errorMessage}`;
   }
 
-  // Get the program name from the invoke log (usually 2 lines before the error)
-  const programInvokeLog = logMessages[errorIndex - 2];
-  const programName = programInvokeLog?.split("Program ")[1]?.split(" invoke")[0];
+  // If no regular error found, look for system program error
+  // Pattern:
+  // "Program <program> invoke [n]"
+  // "<instruction>: <error>"
+  const systemErrorIndex = logMessages.findIndex(
+    (logMessage: string) =>
+      logMessage.includes(": ") &&
+      !logMessage.includes("Program log:") &&
+      !logMessage.includes("Program ") &&
+      !logMessage.includes(" consumed ") &&
+      !logMessage.includes(" success") &&
+      !logMessage.includes(" failed:"),
+  );
 
-  // Get the instruction name from the instruction log (usually 1 line before the error)
-  const instructionHandlerLog = logMessages[errorIndex - 1];
-  const instructionHandlerName = instructionHandlerLog?.split("Instruction: ")[1];
+  if (systemErrorIndex !== NOT_FOUND) {
+    // Get the program name from the invoke log (usually 1 line before the error)
+    const programInvokeLog = logMessages[systemErrorIndex - 1];
+    const programName = programInvokeLog?.split("Program ")[1]?.split(" invoke")[0];
 
-  // Get the error message
-  const errorMessage = logMessages[errorIndex].split("Program log: Error: ")[1]?.trim();
+    // Get the instruction name and error message from the error log
+    const [instructionName, ...errorParts] = logMessages[systemErrorIndex].split(": ");
+    const errorMessage = errorParts.join(": ");
 
-  if (!errorMessage || !programName || !instructionHandlerName) {
-    return null;
+    if (!errorMessage || !programName || !instructionName) {
+      return null;
+    }
+
+    // For system program errors, we want to keep the full error message
+    // but remove the address details if present
+    const cleanErrorMessage = errorMessage
+      .replace(/Address {[^}]*}/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return `${programName}.${instructionName}: ${cleanErrorMessage}`;
   }
 
-  return `${programName}.${instructionHandlerName}: ${errorMessage}`;
+  return null;
 };

@@ -88,4 +88,19 @@ describe("getErrorMessageFromLogs", () => {
       "8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y.RefundOffer: A has one constraint was violated",
     );
   });
+
+  test("extracts system program error message with program and instruction name", () => {
+    const logMessages = [
+      "Program 8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y invoke [1]",
+      "Program log: Instruction: MakeOffer",
+      "Program 11111111111111111111111111111111 invoke [2]",
+      "Allocate: account Address { address: BiyVmyr8KEdrmmVDGsC6r1xQL2sinTtiEhjZhoFaHJbA, base: None } already in use",
+      "Program 11111111111111111111111111111111 failed: custom program error: 0x0",
+      "Program 8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y consumed 11747 of 200000 compute units",
+      "Program 8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y failed: custom program error: 0x0",
+    ];
+
+    const errorMessage = getErrorMessageFromLogs(logMessages);
+    assert.equal(errorMessage, "11111111111111111111111111111111.Allocate: account already in use");
+  });
 });
