@@ -1,5 +1,8 @@
 import { lamports, address as toAddress } from "@solana/kit";
 
+// General JS constants
+export const NOT_FOUND = -1;
+
 // Some program names
 export const TOKEN_PROGRAM = toAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 export const TOKEN_EXTENSIONS_PROGRAM = toAddress("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
