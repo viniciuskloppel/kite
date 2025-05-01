@@ -746,7 +746,7 @@ const balance = await connection.getTokenAccountBalance({
   tokenAccount, // Optional: Direct token account address to check
   wallet, // Optional: Wallet address (required if tokenAccount not provided)
   mint, // Optional: Token mint address (required if tokenAccount not provided)
-  useTokenExtensions, // Optional: Use Token-2022 program instead of Token program
+  useTokenExtensions, // Optional: Use Token Extensions Program instead of Token program
 });
 ```
 
@@ -756,7 +756,7 @@ const balance = await connection.getTokenAccountBalance({
   - `tokenAccount`: `Address` (optional) - Direct token account address to check balance for
   - `wallet`: `Address` (optional) - Wallet address (required if tokenAccount not provided)
   - `mint`: `Address` (optional) - Token mint address (required if tokenAccount not provided)
-  - `useTokenExtensions`: `boolean` (optional) - Use Token-2022 program instead of Token program (default: false)
+  - `useTokenExtensions`: `boolean` (optional) - Use Token Extensions Program instead of Token program (default: false)
 
 ### Example
 
@@ -780,7 +780,7 @@ const balance = await connection.getTokenAccountBalance({
 });
 ```
 
-Get a Token-2022 token balance:
+Get a Token Extensions Program token balance:
 
 ```typescript
 const balance = await connection.getTokenAccountBalance({
@@ -819,7 +819,7 @@ const isClosed = await connection.checkTokenAccountIsClosed(params);
   - `tokenAccount`: `Address` (optional) - Direct token account address to check
   - `wallet`: `Address` (optional) - Wallet address (required if tokenAccount not provided)
   - `mint`: `Address` (optional) - Token mint address (required if tokenAccount not provided)
-  - `useTokenExtensions`: `boolean` (optional) - Use Token-2022 program instead of Token program (default: false)
+  - `useTokenExtensions`: `boolean` (optional) - Use Token Extensions Program instead of Token program (default: false)
 
 ### Example
 
