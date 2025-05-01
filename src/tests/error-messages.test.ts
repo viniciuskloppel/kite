@@ -68,4 +68,24 @@ describe("getErrorMessageFromLogs", () => {
     const errorMessage = getErrorMessageFromLogs(logMessages);
     assert.equal(errorMessage, null);
   });
+
+  test("extracts Anchor error message with program and instruction name", () => {
+    const logMessages = [
+      "Program 8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y invoke [1]",
+      "Program log: Instruction: RefundOffer",
+      "Program log: AnchorError caused by account: offer. Error Code: ConstraintHasOne. Error Number: 2001. Error Message: A has one constraint was violated.",
+      "Program log: Left:",
+      "Program log: 8AtymagduEcKX2jsos2M8Zm2fh3fcwUoKVavtbZy6BuA",
+      "Program log: Right:",
+      "Program log: 6boYThNJPGwuPXWqypTvpimgQRYCVYMSesXNdpdbGK8B",
+      "Program 8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y consumed 12645 of 200000 compute units",
+      "Program 8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y failed: custom program error: 0x7d1",
+    ];
+
+    const errorMessage = getErrorMessageFromLogs(logMessages);
+    assert.equal(
+      errorMessage,
+      "8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y.RefundOffer: A has one constraint was violated",
+    );
+  });
 });

@@ -332,12 +332,29 @@ Retrieves logs for a transaction.
 Returns: `Promise<Array<string>>`
 
 ```typescript
-const logs = await connection.getLogs(signature);
+const logs = await connection.getLogs(signature, commitment);
 ```
 
 ### Options
 
 - `signature`: `string` - Transaction signature to get logs for
+- `commitment`: `Commitment` (optional) - Desired confirmation level (default: "confirmed")
+
+### Error Message Format
+
+When a transaction fails, the error message will be formatted as:
+
+```
+programAddress.instructionHandler: errorMessage
+```
+
+For example:
+
+- `TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb.TransferChecked: insufficient funds`
+- `8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y.RefundOffer: A has one constraint was violated`
+
+> [!NOTE]
+> Kite should _always_ return useful error messages in `error.message`. If you have transactions that fail and don't return good error messages, please send us the logs and [file a github issue](https://github.com/mikemaccana/kite/issues).
 
 ## transferLamports - Transfer SOL between wallets
 

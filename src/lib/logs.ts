@@ -26,15 +26,47 @@ export const getLogsFactory = (rpc: ReturnType<typeof createSolanaRpcFromTranspo
 
 /**
  * Extracts a user-friendly error message from transaction logs.
- * Looks for the pattern:
+ * Looks for two possible patterns:
+ *
+ * 1. Anchor error pattern:
+ * "Program <program> invoke [n]"
+ * "Program log: Instruction: <instruction>"
+ * "Program log: AnchorError caused by account: <account>. Error Code: <code>. Error Number: <number>. Error Message: <message>"
+ *
+ * 2. Regular error pattern:
  * "Program <program> invoke [n]"
  * "Program log: Instruction: <instruction>"
  * "Program log: Error: <error>"
  *
  * @param logMessages Array of log messages from the transaction
- * @returns A formatted error message or null if no error found
+ * @returns A formatted error message in the format "programAddress.instructionName: errorMessage" or null if no error found
  */
 export const getErrorMessageFromLogs = (logMessages: Array<string>): string | null => {
+  // First try to find an Anchor error
+  const anchorErrorIndex = logMessages.findIndex((logMessage: string) =>
+    logMessage.includes("Program log: AnchorError caused by account:"),
+  );
+
+  if (anchorErrorIndex !== NOT_FOUND) {
+    // Get the program name from the invoke log (usually 2 lines before the error)
+    const programInvokeLog = logMessages[anchorErrorIndex - 2];
+    const programName = programInvokeLog?.split("Program ")[1]?.split(" invoke")[0];
+
+    // Get the instruction name from the instruction log (usually 1 line before the error)
+    const instructionHandlerLog = logMessages[anchorErrorIndex - 1];
+    const instructionHandlerName = instructionHandlerLog?.split("Instruction: ")[1];
+
+    // Get the error message from the Anchor error log
+    const errorMessage = logMessages[anchorErrorIndex].split("Error Message: ")[1]?.split(".")[0]?.trim();
+
+    if (!errorMessage || !programName || !instructionHandlerName) {
+      return null;
+    }
+
+    return `${programName}.${instructionHandlerName}: ${errorMessage}`;
+  }
+
+  // If no Anchor error found, look for regular error
   const errorIndex = logMessages.findIndex((logMessage: string) => logMessage.includes("Program log: Error: "));
 
   if (errorIndex === NOT_FOUND) {
