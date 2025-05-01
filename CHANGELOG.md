@@ -1,5 +1,22 @@
 # Kite Changelog
 
+## Kite version 1.2.0
+
+### Additions
+
+- Errors from transactions will now include:
+  - a better `message`, featuring
+    - the name of the program
+    - the instruction handler
+    - the error text from the program's instruction handler
+      Rather than 'custom program error'
+  - a `transaction` property, so you can inspect the transaction (including its logs) from the error.
+
+### Bug fixes
+
+- Fix accidental nested array on getLogs return type
+- Add missing maxSupportedTransactionVersion param to `getLogs()`
+
 ## Kite version 1.1.1
 
 - Update to latest @solana/kit
