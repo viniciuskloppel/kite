@@ -14,7 +14,8 @@ import {
 } from "@solana/kit";
 import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetries } from "./smart-transactions";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
-import { DEFAULT_TRANSACTION_RETRIES, NOT_FOUND } from "./constants";
+import { DEFAULT_TRANSACTION_RETRIES } from "./constants";
+import { getErrorMessageFromLogs } from "./logs";
 
 export interface ErrorWithTransaction extends Error {
   // We add this ourselves, so users can see logs etc
@@ -26,41 +27,6 @@ export interface ErrorWithTransaction extends Error {
     index: number;
   };
 }
-
-/**
- * Extracts a user-friendly error message from transaction logs.
- * Looks for the pattern:
- * "Program <program> invoke [n]"
- * "Program log: Instruction: <instruction>"
- * "Program log: Error: <error>"
- *
- * @param logMessages Array of log messages from the transaction
- * @returns A formatted error message or null if no error found
- */
-export const getErrorMessageFromLogs = (logMessages: Array<string>): string | null => {
-  const errorIndex = logMessages.findIndex((logMessage: string) => logMessage.includes("Program log: Error: "));
-
-  if (errorIndex === NOT_FOUND) {
-    return null;
-  }
-
-  // Get the program name from the invoke log (usually 2 lines before the error)
-  const programInvokeLog = logMessages[errorIndex - 2];
-  const programName = programInvokeLog?.split("Program ")[1]?.split(" invoke")[0];
-
-  // Get the instruction name from the instruction log (usually 1 line before the error)
-  const instructionHandlerLog = logMessages[errorIndex - 1];
-  const instructionHandlerName = instructionHandlerLog?.split("Instruction: ")[1];
-
-  // Get the error message
-  const errorMessage = logMessages[errorIndex].split("Program log: Error: ")[1]?.trim();
-
-  if (!errorMessage || !programName || !instructionHandlerName) {
-    return null;
-  }
-
-  return `${programName}.${instructionHandlerName}: ${errorMessage}`;
-};
 
 export const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,

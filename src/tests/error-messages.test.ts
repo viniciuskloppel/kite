@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import { getErrorMessageFromLogs } from "../lib/transactions";
+import { getErrorMessageFromLogs } from "../lib/logs";
 
 describe("getErrorMessageFromLogs", () => {
   test("extracts error message with program and instruction name", () => {
