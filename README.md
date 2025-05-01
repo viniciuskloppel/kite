@@ -235,7 +235,7 @@ const balance = await connection.getLamportBalance(address, commitment);
 ### Options
 
 - `address`: `string` - Address to check balance for
-- `commitment`: [`Commitment`](https://docs.anza.xyz/consensus/commitments/) (optional) - Desired [commitment level](https://docs.anza.xyz/consensus/commitments/). Can be `"processed"`, `"confirmed"` (default), or `"finalized"`.
+- `commitment`: [`Commitment`](https://docs.anza.xyz/consensus/commitments/) (optional) - Desired [commitment level](https://docs.anza.xyz/consensus/commitments/). Can be `"processed"`, `"confirmed"`, or `"finalized"` (default: "finalized")
 
 ### Example
 
