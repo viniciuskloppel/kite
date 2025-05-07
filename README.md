@@ -34,13 +34,17 @@ Kite includes functions for:
 
 ### Tokens
 
-- [Create a new token](#createtokenmint---create-a-new-token)
+- [Create a new token](#createtokenmint---create-a-new-token-with-metadata)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Get token mint information](#getmint---get-token-mint-information)
 - [Get token account balance](#gettokenaccountbalance---get-token-account-balance)
 - 🆕 [Check if token account is closed](#checktokenaccountisclosed---check-if-token-account-is-closed)
 - [Mint tokens to a wallet](#minttokens---mint-tokens-to-an-account)
 - [Transfer tokens between wallets](#transfertokens---transfer-tokens-between-accounts)
+
+### Data accounts
+
+- 🆕 [Make a function that gets accounts of a particular type](#getaccountsfactory---make-a-function-to-get-and-decodes-accounts-of-a-particular-type)
 
 ### Transactions
 
@@ -49,7 +53,6 @@ Kite includes functions for:
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
 - [Get transaction logs](#getlogs---get-transaction-logs)
 - 🆕 [Get a PDA from seeds](#getpdaandbump---get-a-program-derived-address-and-bump-seed)
-- 🆕 [Make a function that gets accounts of a particular type](#getaccountsfactory---make-a-function-to-get-and-decode-program-accounts-of-a-particular-type)
 
 ### Explorer
 
