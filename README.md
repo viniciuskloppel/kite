@@ -49,6 +49,7 @@ Kite includes functions for:
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
 - [Get transaction logs](#getlogs---get-transaction-logs)
 - 🆕 [Get a PDA from seeds](#getpdaandbump---get-a-program-derived-address-and-bump-seed)
+- 🆕 [Get program accounts of a particular type](#getaccountsfactory---get-program-accounts-of-a-particular-type)
 
 ### Explorer
 
@@ -874,6 +875,30 @@ const { pda, bump } = await connection.getPDAAndBump(programAddress, seeds);
 console.log("PDA:", pda.toString());
 console.log("Bump seed:", bump);
 ```
+
+## getAccountsFactory - make a function to get and decode program accounts of a particular type
+
+Creates a function that gets all program accounts of a particular type. Accounts will be decoded, so you can see the actual values for each of the fields inside. Useful for getting all offers, auctions, or users from a program.
+
+Returns: `() => Promise<Array<T>>` - A function that returns an array of decoded accounts. The example below is from a program that has an `Offer` struct. `programClient`, `OFFER_DISCRIMINATOR` and `getOfferDecoder` all code from a generated client made by Codama.
+
+```typescript
+// Create a function to get all offers
+const getOffers = connection.getAccountsFactory(
+  programClient.ESCROW_PROGRAM_ADDRESS,
+  OFFER_DISCRIMINATOR,
+  getOfferDecoder(),
+);
+
+// Use it to get all offers
+const offers = await getOffers();
+```
+
+### Options
+
+- `programAddress`: `Address` - The program address to query accounts from
+- `discriminator`: `Uint8Array` - The discriminator to filter accounts by
+- `decoder`: `Decoder<T>` - The decoder to use for parsing account data
 
 ## Development and testing
 

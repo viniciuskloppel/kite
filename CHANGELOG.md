@@ -1,6 +1,12 @@
 # Kite Changelog
 
-## Kite version 1.2.1
+## Kite version 1.2.2
+
+### Additions
+
+- More error messages are now shown in the new, friendly format.
+
+## Kite version 1.2.2
 
 ### Additions
 

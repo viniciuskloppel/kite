@@ -5,7 +5,6 @@ import {
   sendAndConfirmTransactionFactory,
   KeyPairSigner,
   Address,
-  TokenAmount,
 } from "@solana/kit";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 
@@ -29,6 +28,7 @@ import { getLogsFactory } from "./logs";
 import { getExplorerLinkFactory } from "./explorer";
 import { airdropIfRequiredFactory, getLamportBalanceFactory } from "./sol";
 import { getPDAAndBump } from "./pdas";
+import { getAccountsFactoryFactory } from "./accounts";
 
 /**
  * Creates a connection to a Solana cluster with all helper functions pre-configured.
@@ -150,6 +150,8 @@ export const connect = (
 
   const checkTokenAccountIsClosed = checkTokenAccountIsClosedFactory(getTokenAccountBalance);
 
+  const getAccountsFactory = getAccountsFactoryFactory(rpc);
+
   return {
     rpc,
     rpcSubscriptions,
@@ -173,6 +175,7 @@ export const connect = (
     getTokenAccountBalance,
     getPDAAndBump,
     checkTokenAccountIsClosed,
+    getAccountsFactory,
   };
 };
 
@@ -430,4 +433,9 @@ export interface Connection {
    * @returns {Promise<{pda: Address, bump: number}>} The derived address and bump seed
    */
   getPDAAndBump: typeof getPDAAndBump;
+
+  /**
+   * Creates a factory function for getting program accounts with a specific discriminator.
+   */
+  getAccountsFactory: ReturnType<typeof getAccountsFactoryFactory>;
 }
