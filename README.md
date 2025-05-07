@@ -880,7 +880,16 @@ console.log("Bump seed:", bump);
 
 Creates a function that gets all program accounts of a particular type. Accounts will be decoded, so you can see the actual values for each of the fields inside. Useful for getting all offers, auctions, or users from a program.
 
-Returns: `() => Promise<Array<T>>` - A function that returns an array of decoded accounts. The example below is from a program that has an `Offer` struct. `programClient`, `OFFER_DISCRIMINATOR` and `getOfferDecoder` all code from a generated client made by Codama.
+Returns: `() => Promise<Array<T>>` - A function that returns an array of decoded accounts.
+
+The example below is from a program that has an `Offer` struct. `programClient`, `OFFER_DISCRIMINATOR` and `getOfferDecoder` all code from a generated client made by Codama.
+
+```typescript
+import * as programClient from "../dist/js-client";
+import { getOfferDecoder, OFFER_DISCRIMINATOR } from "../dist/js-client";
+```
+
+And then:
 
 ```typescript
 // Create a function to get all offers

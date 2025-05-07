@@ -4,7 +4,7 @@
 
 ### Additions
 
-- Add getAccountsFactory
+- Add `getAccountsFactory()`
 
 ## Kite version 1.2.2
 
