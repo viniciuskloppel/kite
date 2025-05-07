@@ -49,7 +49,7 @@ Kite includes functions for:
 - [Check if a transaction is confirmed](#getrecentsignatureconfirmation---get-transaction-confirmation-status)
 - [Get transaction logs](#getlogs---get-transaction-logs)
 - 🆕 [Get a PDA from seeds](#getpdaandbump---get-a-program-derived-address-and-bump-seed)
-- 🆕 [Get program accounts of a particular type](#getaccountsfactory---get-program-accounts-of-a-particular-type)
+- 🆕 [Make a function that gets accounts of a particular type](#getaccountsfactory---make-a-function-to-get-and-decode-program-accounts-of-a-particular-type)
 
 ### Explorer
 
@@ -876,7 +876,7 @@ console.log("PDA:", pda.toString());
 console.log("Bump seed:", bump);
 ```
 
-## getAccountsFactory - make a function to get and decode program accounts of a particular type
+## getAccountsFactory - make a function to get and decodes accounts of a particular type
 
 Creates a function that gets all program accounts of a particular type. Accounts will be decoded, so you can see the actual values for each of the fields inside. Useful for getting all offers, auctions, or users from a program.
 

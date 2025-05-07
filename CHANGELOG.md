@@ -1,10 +1,10 @@
 # Kite Changelog
 
-## Kite version 1.2.2
+## Kite version 1.2.3
 
 ### Additions
 
-- More error messages are now shown in the new, friendly format.
+- Add getAccountsFactory
 
 ## Kite version 1.2.2
 
