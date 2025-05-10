@@ -22,7 +22,6 @@ import { sendTransactionFromInstructionsFactory } from "./transactions";
 import { getCreateAccountInstruction, getTransferSolInstruction } from "@solana-program/system";
 import { TOKEN_PROGRAM } from "./constants";
 import { TOKEN_EXTENSIONS_PROGRAM } from "./constants";
-import { assert } from "node:console";
 
 export const transferLamportsFactory = (
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
