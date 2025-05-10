@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.2.5
+
+### Bug fixes
+
+- Docs: use 'Token Extensions' consistently
+
 ## Kite version 1.2.4
 
 ### Bug fixes

@@ -257,7 +257,7 @@ export interface Connection {
    * @param {Address} [params.tokenAccount] - Direct token account address to check
    * @param {Address} [params.wallet] - Wallet address (required if tokenAccount not provided)
    * @param {Address} [params.mint] - Token mint address (required if tokenAccount not provided)
-   * @param {boolean} [params.useTokenExtensions=false] - Use Token-2022 program instead of Token program
+   * @param {boolean} [params.useTokenExtensions=false] - Use Token Extensions program instead of classic Token program
    * @returns {Promise<boolean>} True if the token account is closed or doesn't exist, false if it exists and is open
    * @throws {Error} If neither tokenAccount nor both wallet and mint are provided
    * @throws {Error} If there's an error checking the account that isn't related to the account not existing
@@ -384,7 +384,7 @@ export interface Connection {
    * @param {Address} [params.tokenAccount] - Direct token account address to check balance for
    * @param {Address} [params.wallet] - Wallet address (required if tokenAccount not provided)
    * @param {Address} [params.mint] - Token mint address (required if tokenAccount not provided)
-   * @param {boolean} [params.useTokenExtensions=false] - Use Token-2022 program instead of Token program
+   * @param {boolean} [params.useTokenExtensions=false] - Use Token Extensions program instead of classic Token program
    * @returns {Promise<{amount: BigInt, decimals: number, uiAmount: number | null, uiAmountString: string}>} Balance information including amount and decimals
    * @throws {Error} If neither tokenAccount nor both wallet and mint are provided
    */
@@ -405,7 +405,7 @@ export interface Connection {
    * Each wallet has a unique storage address for each type of token.
    * @param {Address} wallet - The wallet that owns the tokens
    * @param {Address} mint - The type of token
-   * @param {boolean} [useTokenExtensions=false] - Use Token-2022 program instead of Token program
+   * @param {boolean} [useTokenExtensions=false] - Use Token Extensions program instead of classic Token program
    * @returns {Promise<Address>} The token account address
    */
   getTokenAccountAddress: typeof getTokenAccountAddress;

@@ -18,13 +18,14 @@ import { getCreateAccountInstruction } from "@solana-program/system";
 import {
   getInitializeMintInstruction,
   getMintSize,
-  TOKEN_2022_PROGRAM_ADDRESS,
   extension,
   getInitializeMetadataPointerInstruction,
   getInitializeTokenMetadataInstruction,
   tokenMetadataField,
   getUpdateTokenMetadataFieldInstruction,
 } from "@solana-program/token-2022";
+
+import { TOKEN_EXTENSIONS_PROGRAM } from "./src/lib/constants";
 
 const rpc = createSolanaRpc("http://127.0.0.1:8899");
 const rpcSubscriptions = createSolanaRpcSubscriptions("ws://127.0.0.1:8900");
@@ -67,7 +68,7 @@ const createAccountInstruction = getCreateAccountInstruction({
   newAccount: mint,
   lamports: rent,
   space: spaceWithoutMetadata,
-  programAddress: TOKEN_2022_PROGRAM_ADDRESS,
+  programAddress: TOKEN_EXTENSIONS_PROGRAM,
 });
 
 const initializeMetadataPointerInstruction = getInitializeMetadataPointerInstruction({

@@ -11,7 +11,6 @@ import {
   getMintSize,
   getMintToInstruction,
   getUpdateTokenMetadataFieldInstruction,
-  TOKEN_2022_PROGRAM_ADDRESS,
   tokenMetadataField,
   getTransferCheckedInstruction,
   fetchMint,
@@ -128,7 +127,7 @@ export const transferTokensFactory = (
  * Each wallet has a unique storage address for each type of token.
  * @param {Address} wallet - The wallet that owns the tokens
  * @param {Address} mint - The type of token
- * @param {boolean} [useTokenExtensions=false] - Use Token-2022 program instead of Token program
+ * @param {boolean} [useTokenExtensions=false] - Use Token Extensions program instead of classic Token program
  * @returns {Promise<Address>} The token account address
  */
 export const getTokenAccountAddress = async (wallet: Address, mint: Address, useTokenExtensions: boolean = false) => {
@@ -213,7 +212,7 @@ export const createTokenMintFactory = (
     // Calculate rent lamports for mint account with metadata pointer and token metadata extensions
     const rent = await rpc.getMinimumBalanceForRentExemption(spaceWithMetadata).send();
 
-    // Instruction to create new account for mint (token 2022 program)
+    // Instruction to create new account for mint (Token Extensions program)
     // space: only for mint and metadata pointer extension, other wise initialize instruction will fail
     // lamports: for mint, metadata pointer extension, and token metadata extension (paying up front for simplicity)
     const createAccountInstruction = getCreateAccountInstruction({
@@ -221,7 +220,7 @@ export const createTokenMintFactory = (
       newAccount: mint,
       lamports: rent,
       space: spaceWithoutMetadata,
-      programAddress: TOKEN_2022_PROGRAM_ADDRESS,
+      programAddress: TOKEN_EXTENSIONS_PROGRAM,
     });
 
     // Instruction to initialize metadata pointer extension
