@@ -5,6 +5,7 @@ import {
   sendAndConfirmTransactionFactory,
   KeyPairSigner,
   Address,
+  RpcTransport,
 } from "@solana/kit";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 
@@ -184,7 +185,7 @@ export interface Connection {
    * The core RPC client for making direct Solana API calls. Use this when you need
    * access to raw Solana JSON RPC methods not covered by helper functions.
    */
-  rpc: ReturnType<typeof createSolanaRpcFromTransport>;
+  rpc: ReturnType<typeof createSolanaRpcFromTransport<RpcTransport>>;
 
   /**
    * The WebSocket client for real-time Solana event subscriptions like new blocks,

@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.2.4
+
+### Bug fixes
+
+- Update `connection.rpc` type to better reflect Solana Kit.
+
 ## Kite version 1.2.3
 
 ### Additions
