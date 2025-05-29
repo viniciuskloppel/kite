@@ -33,95 +33,123 @@ import { getAccountsFactoryFactory } from "./accounts";
 
 /**
  * Creates a connection to a Solana cluster with all helper functions pre-configured.
- * @param {string} [clusterNameOrURL="localnet"] - Either a known cluster name or an HTTP URL
- *                 Known names: "mainnet-beta"/"mainnet", "testnet", "devnet", "localnet",
- *                 "helius-mainnet", "helius-testnet", "helius-devnet"
- * @param {string | null} [clusterWebSocketURL=null] - WebSocket URL for subscriptions. Required if using custom HTTP URL
+ * @param {string | ReturnType<typeof createSolanaRpcFromTransport>} [clusterNameOrURLOrRpc="localnet"] - Either:
+ *                 - A known cluster name ("mainnet-beta"/"mainnet", "testnet", "devnet", "localnet",
+ *                   "helius-mainnet", "helius-testnet", "helius-devnet")
+ *                 - An HTTP URL
+ *                 - A pre-configured RPC client
+ * @param {string | ReturnType<typeof createSolanaRpcSubscriptions> | null} [clusterWebSocketURLOrRpcSubscriptions=null] - Either:
+ *                 - WebSocket URL for subscriptions (required if using custom HTTP URL)
+ *                 - A pre-configured RPC subscriptions client
  * @returns {Connection} Connection object with all helper functions configured
  * @throws {Error} If using Helius cluster without HELIUS_API_KEY environment variable set
  * @throws {Error} If using custom HTTP URL without WebSocket URL
  * @throws {Error} If cluster name is invalid
  */
 export const connect = (
-  clusterNameOrURL: string = "localnet",
-  clusterWebSocketURL: string | null = null,
+  clusterNameOrURLOrRpc: string | ReturnType<typeof createSolanaRpcFromTransport<RpcTransport>> = "localnet",
+  clusterWebSocketURLOrRpcSubscriptions: string | ReturnType<typeof createSolanaRpcSubscriptions> | null = null,
 ): Connection => {
-  let httpURL: string | null = null;
-  let webSocketURL: string | null = null;
+  let rpc: ReturnType<typeof createSolanaRpcFromTransport<RpcTransport>>;
+  let rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
   let supportsGetPriorityFeeEstimate: boolean = false;
   let needsPriorityFees: boolean = false;
   let enableClientSideRetries: boolean = false;
-  // Postel's law: be liberal in what you accept - so include 'mainnet' as well as 'mainnet-beta'
-  if (clusterNameOrURL === "mainnet") {
-    clusterNameOrURL = "mainnet-beta";
-  }
+  let clusterNameOrURL: string;
 
-  if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
-    const clusterDetails = CLUSTERS[clusterNameOrURL];
-
-    if (clusterDetails.features.supportsGetPriorityFeeEstimate) {
-      supportsGetPriorityFeeEstimate = true;
+  // Check if first argument is an RPC client
+  if (typeof clusterNameOrURLOrRpc !== 'string') {
+    rpc = clusterNameOrURLOrRpc;
+    if (!clusterWebSocketURLOrRpcSubscriptions || typeof clusterWebSocketURLOrRpcSubscriptions === 'string') {
+      throw new Error('When providing an RPC client, you must also provide an RPC subscriptions client');
     }
-
-    if (clusterDetails.features.needsPriorityFees) {
-      needsPriorityFees = true;
-    }
-
-    enableClientSideRetries = clusterDetails.features.enableClientSideRetries;
-
-    if (clusterDetails.requiredParamEnvironmentVariable) {
-      const requiredParamEnvironmentVariable = process.env[clusterDetails.requiredParamEnvironmentVariable];
-      if (!requiredParamEnvironmentVariable) {
-        throw new Error(`Environment variable ${clusterDetails.requiredParamEnvironmentVariable} is not set.`);
-      }
-      // Add the URL param 'api-key' with the value of the environment variable
-      // using a URLSearchParams object
-      const queryParamsString = new URLSearchParams({
-        "api-key": requiredParamEnvironmentVariable,
-      });
-      httpURL = `${clusterDetails.httpURL}?${queryParamsString}`;
-      webSocketURL = `${clusterDetails.webSocketURL}?${queryParamsString}`;
-    } else {
-      httpURL = clusterDetails.httpURL;
-      webSocketURL = clusterDetails.webSocketURL;
-    }
+    rpcSubscriptions = clusterWebSocketURLOrRpcSubscriptions;
+    clusterNameOrURL = "custom"; // Use a default name for explorer links
   } else {
-    if (!clusterWebSocketURL) {
-      throw new Error(
-        `Missing clusterWebSocketURL. Either provide a valid cluster name (${KNOWN_CLUSTER_NAMES_STRING}) or two valid URLs.`,
-      );
+    clusterNameOrURL = clusterNameOrURLOrRpc;
+    // Postel's law: be liberal in what you accept - so include 'mainnet' as well as 'mainnet-beta'
+    if (clusterNameOrURL === "mainnet") {
+      clusterNameOrURL = "mainnet-beta";
     }
-    if (checkIsValidURL(clusterNameOrURL) && checkIsValidURL(clusterWebSocketURL)) {
-      httpURL = clusterNameOrURL;
-      webSocketURL = clusterWebSocketURL;
+
+    if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
+      const clusterDetails = CLUSTERS[clusterNameOrURL];
+
+      if (clusterDetails.features.supportsGetPriorityFeeEstimate) {
+        supportsGetPriorityFeeEstimate = true;
+      }
+
+      if (clusterDetails.features.needsPriorityFees) {
+        needsPriorityFees = true;
+      }
+
+      enableClientSideRetries = clusterDetails.features.enableClientSideRetries;
+
+      let httpURL: string;
+      let webSocketURL: string;
+
+      if (clusterDetails.requiredParamEnvironmentVariable) {
+        const requiredParamEnvironmentVariable = process.env[clusterDetails.requiredParamEnvironmentVariable];
+        if (!requiredParamEnvironmentVariable) {
+          throw new Error(`Environment variable ${clusterDetails.requiredParamEnvironmentVariable} is not set.`);
+        }
+        // Add the URL param 'api-key' with the value of the environment variable
+        const queryParamsString = new URLSearchParams({
+          "api-key": requiredParamEnvironmentVariable,
+        });
+        httpURL = `${clusterDetails.httpURL}?${queryParamsString}`;
+        webSocketURL = `${clusterDetails.webSocketURL}?${queryParamsString}`;
+      } else {
+        httpURL = clusterDetails.httpURL;
+        webSocketURL = clusterDetails.webSocketURL;
+      }
+
+      const transport = createDefaultRpcTransport({
+        url: httpURL,
+      });
+
+      rpc = createSolanaRpcFromTransport(transport);
+      rpcSubscriptions = createSolanaRpcSubscriptions(webSocketURL);
     } else {
-      throw new Error(
-        `Unsupported cluster name (valid options are ${KNOWN_CLUSTER_NAMES_STRING}) or URL: ${clusterNameOrURL}. `,
-      );
+      if (!clusterWebSocketURLOrRpcSubscriptions || typeof clusterWebSocketURLOrRpcSubscriptions !== 'string') {
+        throw new Error(
+          `Missing clusterWebSocketURL. Either provide a valid cluster name (${KNOWN_CLUSTER_NAMES_STRING}) or two valid URLs.`,
+        );
+      }
+      if (checkIsValidURL(clusterNameOrURL) && checkIsValidURL(clusterWebSocketURLOrRpcSubscriptions)) {
+        const transport = createDefaultRpcTransport({
+          url: clusterNameOrURL,
+        });
+
+        rpc = createSolanaRpcFromTransport(transport);
+        rpcSubscriptions = createSolanaRpcSubscriptions(clusterWebSocketURLOrRpcSubscriptions);
+      } else {
+        throw new Error(
+          `Unsupported cluster name (valid options are ${KNOWN_CLUSTER_NAMES_STRING}) or URL: ${clusterNameOrURL}. `,
+        );
+      }
     }
   }
 
-  const transport = createDefaultRpcTransport({
-    url: httpURL,
-  });
+  // Use rpcSubscriptions as-is, do not add ~cluster property
+  const typedRpcSubscriptions = rpcSubscriptions as ReturnType<typeof createSolanaRpcSubscriptions>;
 
-  // Create an RPC client using that transport.
-  const rpc = createSolanaRpcFromTransport(transport);
-
-  const rpcSubscriptions = createSolanaRpcSubscriptions(webSocketURL);
-  const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
-    rpc,
-    rpcSubscriptions,
-  });
+  // Create the transaction confirmation functions based on the cluster name
+  const sendAndConfirmTransaction = clusterNameOrURL.includes("mainnet")
+    ? sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
+    : clusterNameOrURL.includes("testnet")
+      ? sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
+      : sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any });
 
   // Let's avoid data types like 'Promise' into the function name
   // we're not using Hungarian notation, this isn't common TS behavior, and it's not necessary to do so
-  const getRecentSignatureConfirmation = createRecentSignatureConfirmationPromiseFactory({
-    rpc,
-    rpcSubscriptions,
-  });
+  const getRecentSignatureConfirmation = clusterNameOrURL.includes("mainnet")
+    ? createRecentSignatureConfirmationPromiseFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
+    : clusterNameOrURL.includes("testnet")
+      ? createRecentSignatureConfirmationPromiseFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
+      : createRecentSignatureConfirmationPromiseFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any });
 
-  const airdropIfRequired = airdropIfRequiredFactory(rpc, rpcSubscriptions);
+  const airdropIfRequired = airdropIfRequiredFactory(rpc, typedRpcSubscriptions);
 
   const createWallet = createWalletFactory(airdropIfRequired);
 

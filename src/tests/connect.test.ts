@@ -1,6 +1,15 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert";
-import { address as toAddress, generateKeyPairSigner, lamports, KeyPairSigner, Address } from "@solana/kit";
+import {
+  address as toAddress,
+  generateKeyPairSigner,
+  lamports,
+  KeyPairSigner,
+  Address,
+  createSolanaRpcFromTransport,
+  createSolanaRpcSubscriptions,
+  createDefaultRpcTransport
+} from "@solana/kit";
 
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
@@ -34,6 +43,49 @@ describe("connect", () => {
 
   test("connect throws an error when an invalid cluster name is provided", () => {
     assert.throws(() => connect("invalid-cluster-name"), Error);
+  });
+
+  describe("with RPC and RPC subscriptions clients", () => {
+    test("connect accepts RPC and RPC subscriptions clients directly", () => {
+      const transport = createDefaultRpcTransport({
+        url: "https://api.mainnet-beta.solana.com",
+      });
+      const rpc = createSolanaRpcFromTransport(transport);
+      const rpcSubscriptions = createSolanaRpcSubscriptions("wss://api.mainnet-beta.solana.com");
+      const connection = connect(rpc, rpcSubscriptions);
+      assert.ok(connection);
+      assert.equal(connection.rpc, rpc);
+      assert.equal(connection.rpcSubscriptions, rpcSubscriptions);
+    });
+
+    test("connect throws error when RPC client is provided without RPC subscriptions client", () => {
+      const transport = createDefaultRpcTransport({
+        url: "https://api.mainnet-beta.solana.com",
+      });
+      const rpc = createSolanaRpcFromTransport(transport);
+      assert.throws(() => connect(rpc), Error);
+    });
+
+    test("connect throws error when RPC client is provided with string as second argument", () => {
+      const transport = createDefaultRpcTransport({
+        url: "https://api.mainnet-beta.solana.com",
+      });
+      const rpc = createSolanaRpcFromTransport(transport);
+      assert.throws(() => connect(rpc, "wss://api.mainnet-beta.solana.com"), Error);
+    });
+
+    test("connection with custom RPC clients can perform basic operations", async () => {
+      const transport = createDefaultRpcTransport({
+        url: "https://api.mainnet-beta.solana.com",
+      });
+      const rpc = createSolanaRpcFromTransport(transport);
+      const rpcSubscriptions = createSolanaRpcSubscriptions("wss://api.mainnet-beta.solana.com");
+      const connection = connect(rpc, rpcSubscriptions);
+
+      // Test that we can get the latest blockhash
+      const { value } = await connection.rpc.getLatestBlockhash().send();
+      assert.ok(value.blockhash);
+    });
   });
 });
 
