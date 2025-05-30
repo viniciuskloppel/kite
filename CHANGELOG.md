@@ -1,5 +1,16 @@
 # Kite Changelog
 
+## Kite version 1.3.2
+
+### Additions
+
+- Add `signatureBytesToBase58String()` and `signatureBase58StringToBytes()` utility functions for converting between signature formats
+- Add `sendTransactionFromInstructionsWithWalletApp()` for wallet app integration
+
+### Changes
+
+- Removed using `TransactionSendingSigner` from `sendTransactionFromInstructions()`. This wasn't the right approach, browser apps should use `sendTransactionFromInstructionsWithWalletApp()`
+
 ## Kite version 1.3.1
 
 ### Additions
