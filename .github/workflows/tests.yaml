@@ -13,15 +13,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: metadaoproject/setup-solana@v1.0
+      - uses: metadaoproject/setup-anchor@v3.1
         with:
-          # Install Solana CLI (beta, required to fix 'ahash' issue)
-          solana-cli-version: "1.18.5"
-
-      - name: Setup Node.js version
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
+          anchor-version: '0.31.1'
+          solana-cli-version: '2.1.2' 
+          node-version: '24.1.0'
 
       - name: Run Solana validator (and background it)
         run: solana-test-validator &
