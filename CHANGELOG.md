@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.3.0
+
+### Additions
+
+- `connect()` now accepts RPC and RPC subscription clients directly as arguments. This allows you to re-use existing connections in browser environments and use Kite with custom RPC transports.
+
 ## Kite version 1.2.5
 
 ### Bug fixes
