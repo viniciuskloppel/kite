@@ -81,7 +81,7 @@ describe("loadWalletFromFile", () => {
   test("getting a keyPair from a file", async () => {
     const TEST_KEY_PAIR_FILE = `${TEMP_DIR}/test-key-pair-file-do-not-use.json`;
     const { stdout } = await exec(`solana-keygen new --force --no-bip39-passphrase -o ${TEST_KEY_PAIR_FILE}`);
-    // Note Azna's web3.js spells keypair as twp words, Anza's Solana CLI spells it as one word
+    // Note Anza's Solana Kit spells key pair as two words, Anza's Solana CLI spells it as one word
     assert(stdout.includes("Wrote new keypair"));
     await loadWalletFromFile(TEST_KEY_PAIR_FILE);
     await deleteFile(TEST_KEY_PAIR_FILE);
