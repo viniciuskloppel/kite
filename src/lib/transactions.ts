@@ -1,8 +1,12 @@
 import {
+  appendTransactionMessageInstruction,
   appendTransactionMessageInstructions,
+  assertIsTransactionMessageWithSingleSendingSigner,
   Commitment,
   createSolanaRpcFromTransport,
   createTransactionMessage,
+  getBase58Decoder,
+  getBase58Encoder,
   getSignatureFromTransaction,
   IInstruction,
   KeyPairSigner,
@@ -10,6 +14,7 @@ import {
   sendAndConfirmTransactionFactory,
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
+  signAndSendTransactionMessageWithSigners,
   signTransactionMessageWithSigners,
   TransactionSendingSigner,
 } from "@solana/kit";
@@ -29,6 +34,46 @@ export interface ErrorWithTransaction extends Error {
   };
 }
 
+export const signatureBytesToBase58String = (signatureBytes: Uint8Array): string => {
+  return getBase58Decoder().decode(signatureBytes);
+};
+
+export const signatureBase58StringToBytes = (base58String: string): Uint8Array => {
+  return new Uint8Array(getBase58Encoder().encode(base58String));
+};
+
+export const sendTransactionFromInstructionsWithWalletAppFactory = (
+  rpc: ReturnType<typeof createSolanaRpcFromTransport>,
+) => {
+  const sendTransactionFromInstructionsWithWalletApp = async ({
+    feePayer,
+    instructions,
+    abortSignal = null,
+  }: {
+    feePayer: TransactionSendingSigner;
+    instructions: Array<IInstruction>;
+    abortSignal?: AbortSignal | null;
+  }) => {
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send({ abortSignal });
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (message) => setTransactionMessageFeePayerSigner(feePayer, message),
+      (message) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, message),
+      (message) =>
+        appendTransactionMessageInstructions(
+          instructions,
+          message,
+        ),
+    );
+    assertIsTransactionMessageWithSingleSendingSigner(transactionMessage);
+    const signatureBytes = await signAndSendTransactionMessageWithSigners(transactionMessage);
+    const signature = signatureBytesToBase58String(signatureBytes);
+    return signature;
+  };
+  return sendTransactionFromInstructionsWithWalletApp;
+};
+
+
 export const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
   needsPriorityFees: boolean,
@@ -44,7 +89,7 @@ export const sendTransactionFromInstructionsFactory = (
     maximumClientSideRetries = enableClientSideRetries ? DEFAULT_TRANSACTION_RETRIES : 0,
     abortSignal = null,
   }: {
-    feePayer: KeyPairSigner | TransactionSendingSigner;
+    feePayer: KeyPairSigner;
     instructions: Array<IInstruction>;
     commitment?: Commitment;
     skipPreflight?: boolean;

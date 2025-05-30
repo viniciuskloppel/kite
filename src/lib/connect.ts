@@ -13,7 +13,12 @@ import { checkIsValidURL, encodeURL } from "./url";
 import { loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
 import { KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./clusters";
 
-import { sendTransactionFromInstructionsFactory } from "./transactions";
+import {
+  sendTransactionFromInstructionsFactory,
+  sendTransactionFromInstructionsWithWalletAppFactory,
+  signatureBytesToBase58String,
+  signatureBase58StringToBytes,
+} from "./transactions";
 import { createWalletFactory, createWalletsFactory } from "./wallets";
 import {
   getMintFactory,
@@ -205,6 +210,9 @@ export const connect = (
     getPDAAndBump,
     checkTokenAccountIsClosed,
     getAccountsFactory,
+    signatureBytesToBase58String,
+    signatureBase58StringToBytes,
+    sendTransactionFromInstructionsWithWalletApp: sendTransactionFromInstructionsWithWalletAppFactory(rpc),
   };
 };
 
@@ -467,4 +475,28 @@ export interface Connection {
    * Creates a factory function for getting program accounts with a specific discriminator.
    */
   getAccountsFactory: ReturnType<typeof getAccountsFactoryFactory>;
+
+  /**
+   * Converts signature bytes to a base58 string.
+   * @param {Uint8Array} signatureBytes - The signature bytes to convert
+   * @returns {string} The base58 encoded signature string
+   */
+  signatureBytesToBase58String: typeof signatureBytesToBase58String;
+
+  /**
+   * Converts a base58 string to signature bytes.
+   * @param {string} base58String - The base58 encoded signature string
+   * @returns {Uint8Array} The signature bytes
+   */
+  signatureBase58StringToBytes: typeof signatureBase58StringToBytes;
+
+  /**
+   * Builds, signs and sends a transaction containing multiple instructions using a wallet app.
+   * @param {Object} params - Transaction parameters
+   * @param {TransactionSendingSigner} params.feePayer - Account that will pay the transaction fees
+   * @param {Array<IInstruction>} params.instructions - List of instructions to execute in sequence
+   * @param {AbortSignal | null} [params.abortSignal=null] - Signal to cancel the transaction
+   * @returns {Promise<string>} The transaction signature
+   */
+  sendTransactionFromInstructionsWithWalletApp: ReturnType<typeof sendTransactionFromInstructionsWithWalletAppFactory>;
 }

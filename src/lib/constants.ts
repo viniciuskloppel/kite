@@ -8,6 +8,9 @@ export const TOKEN_PROGRAM = toAddress("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ
 export const TOKEN_EXTENSIONS_PROGRAM = toAddress("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
 export const ASSOCIATED_TOKEN_PROGRAM = toAddress("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
+// All current transactions are version 0 (older one's were unversioned)
+export const SOLANA_TRANSACTION_VERSION = 0;
+
 // Default values for making and loading wallets
 export const SOL = 1_000_000_000n;
 export const SECONDS = 1_000;
