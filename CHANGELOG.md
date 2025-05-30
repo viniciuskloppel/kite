@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.3.1
+
+### Additions
+
+- `sendTransactionFromInstructions()` now supports both `KeyPairSigner` and `TransactionSendingSigner` for wallet integration.
+
 ## Kite version 1.3.0
 
 ### Additions

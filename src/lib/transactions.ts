@@ -11,6 +11,7 @@ import {
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
+  TransactionSendingSigner,
 } from "@solana/kit";
 import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetries } from "./smart-transactions";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
@@ -43,7 +44,7 @@ export const sendTransactionFromInstructionsFactory = (
     maximumClientSideRetries = enableClientSideRetries ? DEFAULT_TRANSACTION_RETRIES : 0,
     abortSignal = null,
   }: {
-    feePayer: KeyPairSigner;
+    feePayer: KeyPairSigner | TransactionSendingSigner;
     instructions: Array<IInstruction>;
     commitment?: Commitment;
     skipPreflight?: boolean;
