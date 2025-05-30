@@ -25,7 +25,7 @@ jobs:
       - name: Install everything
         run: npm ci
 
-      - name: Check Solana keygen is installed
+      - name: Check Solana keygen is installed (we use this in some tests)
         run: echo $PATH; which solana-keygen
 
       - name: Run tests
