@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.3.4
+
+### Changes
+
+- You no longer need to specify any options when using `createWallets()` with just a number parameter.
+
 ## Kite version 1.3.3
 
 ### Additions

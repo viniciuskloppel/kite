@@ -199,4 +199,26 @@ describe("createWallets", () => {
     const uniqueAddresses = new Set(addresses);
     assert.equal(uniqueAddresses.size, numberOfWallets, "All wallet addresses should be unique");
   });
+
+  test("creates multiple wallets with just a number parameter", async () => {
+    const connection = connect();
+    const numberOfWallets = 3;
+
+    const walletPromises = await connection.createWallets(numberOfWallets);
+
+    assert.equal(walletPromises.length, numberOfWallets, "Should return correct number of wallet promises");
+
+    const wallets = await Promise.all(walletPromises);
+
+    // Check each wallet was created correctly
+    for (const wallet of wallets) {
+      assert.ok(wallet.address, "Wallet should have an address");
+      assert.ok(wallet.keyPair.privateKey, "Wallet should have a private key");
+    }
+
+    // Verify all addresses are unique
+    const addresses = wallets.map((wallet) => wallet.address);
+    const uniqueAddresses = new Set(addresses);
+    assert.equal(uniqueAddresses.size, numberOfWallets, "All wallet addresses should be unique");
+  });
 });

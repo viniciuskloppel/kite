@@ -68,7 +68,7 @@ export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdrop
 export const createWalletsFactory = (createWallet: ReturnType<typeof createWalletFactory>) => {
   const createWallets = (
     amount: number,
-    options: Parameters<ReturnType<typeof createWalletFactory>>[0],
+    options: Parameters<ReturnType<typeof createWalletFactory>>[0] = {},
   ): Promise<Array<KeyPairSigner>> => {
     const walletPromises = Array.from({ length: amount }, () => createWallet(options));
     return Promise.all(walletPromises);
