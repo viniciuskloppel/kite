@@ -35,6 +35,7 @@ import { getExplorerLinkFactory } from "./explorer";
 import { airdropIfRequiredFactory, getLamportBalanceFactory } from "./sol";
 import { getPDAAndBump } from "./pdas";
 import { getAccountsFactoryFactory } from "./accounts";
+import { signMessageFromWalletApp } from "./messages";
 
 /**
  * Creates a connection to a Solana cluster with all helper functions pre-configured.
@@ -213,6 +214,7 @@ export const connect = (
     signatureBytesToBase58String,
     signatureBase58StringToBytes,
     sendTransactionFromInstructionsWithWalletApp: sendTransactionFromInstructionsWithWalletAppFactory(rpc),
+    signMessageFromWalletApp,
   };
 };
 
@@ -499,4 +501,12 @@ export interface Connection {
    * @returns {Promise<string>} The transaction signature
    */
   sendTransactionFromInstructionsWithWalletApp: ReturnType<typeof sendTransactionFromInstructionsWithWalletAppFactory>;
+
+  /**
+   * Signs a message using a wallet app.
+   * @param {string} message - The message to sign
+   * @param {MessageModifyingSigner} messageSigner - The signer that will sign the message
+   * @returns {Promise<string>} The base58 encoded signature
+   */
+  signMessageFromWalletApp: typeof signMessageFromWalletApp;
 }
