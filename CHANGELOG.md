@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.3.3
+
+### Additions
+
+- Add `signMessageFromWalletApp()` for signing messages using a wallet app
+
 ## Kite version 1.3.2
 
 ### Additions
