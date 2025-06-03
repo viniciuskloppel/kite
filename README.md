@@ -2,4 +2,9 @@
 
 [![Tests](https://github.com/mikemaccana/kite/actions/workflows/tests.yaml/badge.svg)](https://github.com/mikemaccana/kite/actions/workflows/tests.yaml)
 
-Visit [solanakite.org](https://solanakite.org) for extensive documentation!
+- [Solana Kite official website](https://solanakite.org)
+- [Extensive documentation](https://solanakite.org)
+- [Solana Kite on Solana Stack Exchange](https://solana.stackexchange.com/search?q=kite)
+- [Solana Kite - Solana Kit and Anchor Example 1 - Escrow](https://github.com/solanakite/anchor-escrow-2025)
+- [Solana Kite - Solana Kit and Anchor Example 2 - Election](https://github.com/solanakite/anchor-election-2025)
+- [Solana Kit in the browser demo](https://github.com/solanakite/solana-kit-react-app)
