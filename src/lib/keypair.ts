@@ -85,11 +85,11 @@ export const createJSONFromKeyPairSigner = async (keyPairSigner: KeyPairSigner):
   const rawPublicKeyBytes = await exportRawPublicKeyBytes(keyPairSigner.keyPair.publicKey);
 
   // Concatenate the raw private and public keys
-  const combinedArrayBuffer = new Uint8Array(KEYPAIR_LENGTH);
-  combinedArrayBuffer.set(new Uint8Array(rawPrivateKeyBytes), 0);
-  combinedArrayBuffer.set(new Uint8Array(rawPublicKeyBytes), KEYPAIR_PUBLIC_KEY_OFFSET);
+  const combinedUint8Array = new Uint8Array(KEYPAIR_LENGTH);
+  combinedUint8Array.set(new Uint8Array(rawPrivateKeyBytes), 0);
+  combinedUint8Array.set(new Uint8Array(rawPublicKeyBytes), KEYPAIR_PUBLIC_KEY_OFFSET);
 
-  return JSON.stringify(Array.from(combinedArrayBuffer));
+  return JSON.stringify(Array.from(combinedUint8Array));
 };
 
 /**
@@ -115,6 +115,9 @@ export const loadWalletFromFile = async (filepath?: string): Promise<KeyPairSign
   // Get contents of file
   let fileContents: string;
   try {
+    // This a Buffer, not a Uint8Array
+    // (which doesn't work in browser)
+    // but that's ok because we're not using it in the browser
     const fileContentsBuffer = await readFile(filepath);
     fileContents = fileContentsBuffer.toString();
   } catch (thrownObject) {

@@ -43,7 +43,7 @@ export const getAccountsFactoryFactory = (rpc: ReturnType<typeof createSolanaRpc
             {
               memcmp: {
                 offset: 0,
-                bytes: bs58.encode(Buffer.from(discriminator)),
+                bytes: bs58.encode(discriminator),
               },
             },
           ],
@@ -56,7 +56,7 @@ export const getAccountsFactoryFactory = (rpc: ReturnType<typeof createSolanaRpc
         const account = parseBase64RpcAccount(result.pubkey, result.account);
         return {
           ...account,
-          data: Buffer.from(account.data),
+          data: Uint8Array.from(account.data),
           exists: true,
         };
       });
