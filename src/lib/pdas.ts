@@ -22,7 +22,7 @@ const bigIntToSeed = (bigInt: bigint, byteLength: number): Uint8Array => {
  * @returns {Promise<{pda: Address, bump: number}>} The derived PDA and its bump seed
  */
 export const getPDAAndBump = async (programAddress: Address, seeds: Array<String | Address | BigInt>) => {
-  const bufferSeeds = seeds.map((seed) => {
+  const seedsUint8Array = seeds.map((seed) => {
     if (typeof seed === "bigint") {
       return bigIntToSeed(seed, 8);
     }
@@ -37,7 +37,7 @@ export const getPDAAndBump = async (programAddress: Address, seeds: Array<String
     }
   });
   const [pda, bump] = await getProgramDerivedAddress({
-    seeds: bufferSeeds,
+    seeds: seedsUint8Array,
     programAddress,
   });
   return { pda, bump };
