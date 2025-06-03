@@ -5,13 +5,13 @@ const addressEncoder = getAddressEncoder();
 // The web3.js c2 equivalent of
 //    bigNumber.toArrayLike(Buffer, "le", 8),
 // from web3.js v1
-const bigIntToSeed = (bigInt: bigint, byteLength: number): Buffer => {
-  const arr = new Uint8Array(byteLength);
+const bigIntToSeed = (bigInt: bigint, byteLength: number): Uint8Array => {
+  const bytes = new Uint8Array(byteLength);
   for (let i = 0; i < byteLength && bigInt > 0n; i++) {
-    arr[i] = Number(bigInt & 0xffn); // Get least significant byte
+    bytes[i] = Number(bigInt & 0xffn); // Get least significant byte
     bigInt >>= 8n; // Shift right by 8 bits
   }
-  return Buffer.from(arr); // Convert to Buffer for Solana
+  return bytes;
 };
 
 /**
@@ -33,7 +33,7 @@ export const getPDAAndBump = async (programAddress: Address, seeds: Array<String
       const encoded = addressEncoder.encode(seed as Address);
       return encoded;
     } catch {
-      return Buffer.from(seed as string);
+      return new TextEncoder().encode(seed as string);
     }
   });
   const [pda, bump] = await getProgramDerivedAddress({
