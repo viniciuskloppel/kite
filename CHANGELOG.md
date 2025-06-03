@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.4.0
+
+### Changes
+
+- Use Uint8Array rather than Buffer for improved browser compatibility
+
 ## Kite version 1.3.4
 
 ### Changes
