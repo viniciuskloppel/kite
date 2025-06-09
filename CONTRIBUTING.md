@@ -1,4 +1,4 @@
-## Helius Styleguide
+## Styleguide
 
 To kee content consistent and high-quality experience, here's a styleguide,
 based on the [Solana Foundation styleguide](https://github.com/solana-foundation/developer-content/blob/main/CONTRIBUTING.md).
