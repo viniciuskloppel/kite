@@ -64,10 +64,10 @@ export const connect = (
   let clusterNameOrURL: string;
 
   // Check if first argument is an RPC client
-  if (typeof clusterNameOrURLOrRpc !== 'string') {
+  if (typeof clusterNameOrURLOrRpc !== "string") {
     rpc = clusterNameOrURLOrRpc;
-    if (!clusterWebSocketURLOrRpcSubscriptions || typeof clusterWebSocketURLOrRpcSubscriptions === 'string') {
-      throw new Error('When providing an RPC client, you must also provide an RPC subscriptions client');
+    if (!clusterWebSocketURLOrRpcSubscriptions || typeof clusterWebSocketURLOrRpcSubscriptions === "string") {
+      throw new Error("When providing an RPC client, you must also provide an RPC subscriptions client");
     }
     rpcSubscriptions = clusterWebSocketURLOrRpcSubscriptions;
     clusterNameOrURL = "custom"; // Use a default name for explorer links
@@ -117,7 +117,7 @@ export const connect = (
       rpc = createSolanaRpcFromTransport(transport);
       rpcSubscriptions = createSolanaRpcSubscriptions(webSocketURL);
     } else {
-      if (!clusterWebSocketURLOrRpcSubscriptions || typeof clusterWebSocketURLOrRpcSubscriptions !== 'string') {
+      if (!clusterWebSocketURLOrRpcSubscriptions || typeof clusterWebSocketURLOrRpcSubscriptions !== "string") {
         throw new Error(
           `Missing clusterWebSocketURL. Either provide a valid cluster name (${KNOWN_CLUSTER_NAMES_STRING}) or two valid URLs.`,
         );
