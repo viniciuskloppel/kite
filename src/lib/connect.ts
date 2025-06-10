@@ -38,10 +38,36 @@ import { getAccountsFactoryFactory } from "./accounts";
 import { signMessageFromWalletApp } from "./messages";
 
 /**
+ * Converts an HTTP(S) URL to the corresponding WS(S) URL.
+ * @param httpUrl - The HTTP or HTTPS URL string
+ * @returns The corresponding WebSocket URL string
+ */
+export function getWebsocketUrlFromHTTPUrl(httpUrl: string): string {
+  try {
+    const url = new URL(httpUrl);
+    if (url.protocol === "http:") {
+      url.protocol = "ws:";
+    } else if (url.protocol === "https:") {
+      url.protocol = "wss:";
+    } else {
+      throw new Error("URL must start with http:// or https://");
+    }
+    return url.toString();
+  } catch (thrownObject) {
+    throw new Error(`Invalid HTTP URL: ${httpUrl}`);
+  }
+}
+
+/**
  * Creates a connection to a Solana cluster with all helper functions pre-configured.
  * @param {string | ReturnType<typeof createSolanaRpcFromTransport>} [clusterNameOrURLOrRpc="localnet"] - Either:
- *                 - A known cluster name ("mainnet-beta"/"mainnet", "testnet", "devnet", "localnet",
- *                   "helius-mainnet", "helius-testnet", "helius-devnet")
+ *                 - A cluster name, from this list:
+ *                   Public clusters (note these are rate limited, you should use a commercial RPCp provider for production apps)
+ *                     "mainnet", "testnet", "devnet", "localnet"
+ *                   QuickNode:
+ *                     "quicknode-mainnet", "quicknode-devnet", "quicknode-testnet"
+ *                   Helius:
+ *                     "helius-mainnet" or "helius-devnet" (Helius does not have testnet)
  *                 - An HTTP URL
  *                 - A pre-configured RPC client
  * @param {string | ReturnType<typeof createSolanaRpcSubscriptions> | null} [clusterWebSocketURLOrRpcSubscriptions=null] - Either:
@@ -94,7 +120,18 @@ export const connect = (
       let httpURL: string;
       let webSocketURL: string;
 
-      if (clusterDetails.requiredParamEnvironmentVariable) {
+      // If URLs are null, we need to get them from the environment variable
+      if (clusterDetails.httpURL === null || clusterDetails.webSocketURL === null) {
+        if (!clusterDetails.requiredRpcEnvironmentVariable) {
+          throw new Error(`Cluster ${clusterNameOrURL} has null URLs but no requiredRpcEnvironmentVariable specified.`);
+        }
+        const rpcEndpoint = process.env[clusterDetails.requiredRpcEnvironmentVariable];
+        if (!rpcEndpoint) {
+          throw new Error(`Environment variable ${clusterDetails.requiredRpcEnvironmentVariable} is not set.`);
+        }
+        httpURL = rpcEndpoint;
+        webSocketURL = getWebsocketUrlFromHTTPUrl(rpcEndpoint);
+      } else if (clusterDetails.requiredParamEnvironmentVariable) {
         const requiredParamEnvironmentVariable = process.env[clusterDetails.requiredParamEnvironmentVariable];
         if (!requiredParamEnvironmentVariable) {
           throw new Error(`Environment variable ${clusterDetails.requiredParamEnvironmentVariable} is not set.`);

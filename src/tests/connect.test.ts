@@ -8,13 +8,14 @@ import {
   Address,
   createSolanaRpcFromTransport,
   createSolanaRpcSubscriptions,
-  createDefaultRpcTransport
+  createDefaultRpcTransport,
 } from "@solana/kit";
 
 import dotenv from "dotenv";
 import { unlink as deleteFile } from "node:fs/promises";
 import { DEFAULT_AIRDROP_AMOUNT, SOL } from "../lib/constants";
-import { connect, Connection } from "../lib/connect";
+import { connect, Connection, getWebsocketUrlFromHTTPUrl } from "../lib/connect";
+import { CLUSTERS } from "../lib/clusters";
 
 describe("connect", () => {
   test("connect returns a connection object", () => {
@@ -43,6 +44,25 @@ describe("connect", () => {
 
   test("connect throws an error when an invalid cluster name is provided", () => {
     assert.throws(() => connect("invalid-cluster-name"), Error);
+  });
+
+  test("connect throws an error when Quicknode cluster is used without environment variable", () => {
+    assert.throws(() => connect("QuickNode-mainnet"), Error);
+  });
+
+  test("connect works with Quicknode when environment variable is set", () => {
+    // Set up a test endpoint that will be used for both HTTP and WebSocket
+    const testEndpoint = "https://example.quiknode.pro/123";
+    process.env.QUICKNODE_SOLANA_MAINNET_ENDPOINT = testEndpoint;
+
+    // Create the connection
+    const connection = connect("quicknode-mainnet");
+
+    // Verify the connection was created successfully
+    assert.ok(connection);
+
+    // Clean up
+    delete process.env.QUICKNODE_SOLANA_MAINNET_ENDPOINT;
   });
 
   describe("with RPC and RPC subscriptions clients", () => {
@@ -104,5 +124,25 @@ describe("getLogs", () => {
       "Program 11111111111111111111111111111111 invoke [1]",
       "Program 11111111111111111111111111111111 success",
     ]);
+  });
+});
+
+describe("getWebsocketUrlFromHTTPUrl", () => {
+  test("converts http to ws", () => {
+    const wsUrl = getWebsocketUrlFromHTTPUrl("http://example.com:8899");
+    assert.equal(wsUrl, "ws://example.com:8899/");
+  });
+  test("converts https to wss", () => {
+    const wsUrl = getWebsocketUrlFromHTTPUrl("https://example.com:8899");
+    assert.equal(wsUrl, "wss://example.com:8899/");
+  });
+  test("throws on non-http(s) url", () => {
+    assert.throws(
+      () => getWebsocketUrlFromHTTPUrl("ftp://example.com:8899"),
+      /Invalid HTTP URL: ftp:\/\/example.com:8899/,
+    );
+  });
+  test("throws on invalid url", () => {
+    assert.throws(() => getWebsocketUrlFromHTTPUrl("not-a-url"), /Invalid HTTP URL/);
   });
 });

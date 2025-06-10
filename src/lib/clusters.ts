@@ -2,13 +2,18 @@
 export const CLUSTERS: Record<
   string,
   {
-    httpURL: string;
-    webSocketURL: string;
+    // Some RPC providers (ie, QuickNode) use a different URL for each endpoint
+    // Eg, the QuickNode dashboard will show https://three-random-words.solana-devnet.quiknode.pro/some-uuid/
+    // In this case, the URLs are null and we will get the from requiredRpcEnvironmentVariable
+    httpURL: string | null;
+    webSocketURL: string | null;
 
     // The URL param name required for this cluster (eg for API keys)
     requiredParam: string | null;
     // The environment variable name used for requiredParam above.
     requiredParamEnvironmentVariable: string | null;
+    // The environment variable name for the RPC endpoint (if httpURL and webSocketURL is blank)
+    requiredRpcEnvironmentVariable: string | null;
 
     features: {
       // Whether this is the default cluster for the Solana Explorer
@@ -28,11 +33,13 @@ export const CLUSTERS: Record<
   // Solana Labs RPCs
   // Don't add a seperate entry for 'mainnet'. Instead, we'll correct the cluster name to 'mainnet-beta'
   // in the connect function, and avoid making a duplicate entry.
+  // Note these are rate-limited public RPCs, you should use a commercial RPC provider for production apps.
   "mainnet-beta": {
     httpURL: "https://api.mainnet-beta.solana.com",
     webSocketURL: "wss://api.mainnet-beta.solana.com",
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    requiredRpcEnvironmentVariable: null,
     features: {
       isExplorerDefault: true,
       isNameKnownToSolanaExplorer: true,
@@ -46,6 +53,7 @@ export const CLUSTERS: Record<
     webSocketURL: "wss://api.testnet.solana.com",
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    requiredRpcEnvironmentVariable: null,
     features: {
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: true,
@@ -59,9 +67,59 @@ export const CLUSTERS: Record<
     webSocketURL: "wss://api.devnet.solana.com",
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    requiredRpcEnvironmentVariable: null,
     features: {
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: true,
+      supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
+      needsPriorityFees: true,
+    },
+  },
+  // Quicknode RPCs
+  "quicknode-mainnet": {
+    // These endpoints are configured at https://dashboard.quicknode.com/endpoints
+    httpURL: null,
+    webSocketURL: null,
+    requiredParam: null,
+    requiredParamEnvironmentVariable: null,
+    requiredRpcEnvironmentVariable: "QUICKNODE_SOLANA_MAINNET_ENDPOINT",
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: false,
+      // TODO: add support for QuickNode priority fee API
+      supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
+      needsPriorityFees: true,
+    },
+  },
+  "quicknode-devnet": {
+    // These endpoints are configured at https://dashboard.quicknode.com/endpoints
+    httpURL: null,
+    webSocketURL: null,
+    requiredParam: null,
+    requiredParamEnvironmentVariable: null,
+    requiredRpcEnvironmentVariable: "QUICKNODE_SOLANA_DEVNET_ENDPOINT",
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: false,
+      // TODO: add support for QuickNode priority fee API
+      supportsGetPriorityFeeEstimate: false,
+      enableClientSideRetries: true,
+      needsPriorityFees: true,
+    },
+  },
+  "quicknode-testnet": {
+    // These endpoints are configured at https://dashboard.quicknode.com/endpoints
+    httpURL: null,
+    webSocketURL: null,
+    requiredParam: null,
+    requiredParamEnvironmentVariable: null,
+    requiredRpcEnvironmentVariable: "QUICKNODE_SOLANA_TESTNET_ENDPOINT",
+    features: {
+      isExplorerDefault: false,
+      isNameKnownToSolanaExplorer: false,
+      // TODO: add support for QuickNode priority fee API
       supportsGetPriorityFeeEstimate: false,
       enableClientSideRetries: true,
       needsPriorityFees: true,
@@ -73,6 +131,7 @@ export const CLUSTERS: Record<
     webSocketURL: "wss://mainnet.helius-rpc.com/",
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+    requiredRpcEnvironmentVariable: null,
     features: {
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: false,
@@ -86,6 +145,7 @@ export const CLUSTERS: Record<
     webSocketURL: "wss://devnet.helius-rpc.com/",
     requiredParam: "api-key",
     requiredParamEnvironmentVariable: "HELIUS_API_KEY",
+    requiredRpcEnvironmentVariable: null,
     features: {
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: false,
@@ -94,12 +154,14 @@ export const CLUSTERS: Record<
       needsPriorityFees: true,
     },
   },
+
   // Localnet
   localnet: {
     httpURL: "http://localhost:8899",
     webSocketURL: "ws://localhost:8900",
     requiredParam: null,
     requiredParamEnvironmentVariable: null,
+    requiredRpcEnvironmentVariable: null,
     features: {
       isExplorerDefault: false,
       isNameKnownToSolanaExplorer: false,
