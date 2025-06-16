@@ -11,10 +11,13 @@ import {
 const ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE =
   "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file";
 
+// TODO: we should rename this
+// 'Grind' a keypair means making keypairs repeatedly until we match a vanity name.
 export const grindKeyPair = async (options: {
   prefix?: string | null;
   suffix?: string | null;
   silenceGrindProgress?: boolean;
+  // We have no choice but to makeextractable keypairs here, since we need to write the private key to a file
   isPrivateKeyExtractable?: false | typeof ALLOW_EXTRACTABLE_PRIVATE_KEY_MESSAGE;
 }): Promise<CryptoKeyPair> => {
   await assertKeyGenerationIsAvailable();
@@ -30,9 +33,9 @@ export const grindKeyPair = async (options: {
     throw new Error("Suffix must contain only base58 characters.");
   }
 
-  // Add the total length of the prefix and suffix
-  const keypairGrindComplexity = (options.prefix?.length || 0) + (options.suffix?.length || 0);
   // Throw a warning if keypairGrindComplexity is greater than GRIND_COMPLEXITY_THRESHOLD
+  // First, add the total length of the prefix and suffix
+  const keypairGrindComplexity = (options.prefix?.length || 0) + (options.suffix?.length || 0);
   if (keypairGrindComplexity > GRIND_COMPLEXITY_THRESHOLD) {
     console.warn(
       `Generating a keyPair with a prefix and suffix of ${keypairGrindComplexity} characters, this may take some time.`,
@@ -50,9 +53,12 @@ export const grindKeyPair = async (options: {
     }
 
     const keyPair = await crypto.subtle.generateKey(
-      "Ed25519", // Algorithm. Native implementation status: https://github.com/WICG/webcrypto-secure-curves/issues/20
-      allowExtractablePrivateKey, // Allows the private key to be exported (eg for saving it to a file) - public key is always extractable see https://wicg.github.io/webcrypto-secure-curves/#ed25519-operations
-      ["sign", "verify"], // Allowed uses
+      // Algorithm. Native implementation status: https://github.com/WICG/webcrypto-secure-curves/issues/20
+      "Ed25519",
+      // Allows the private key to be exported (eg for saving it to a file) - public key is always extractable see https://wicg.github.io/webcrypto-secure-curves/#ed25519-operations
+      allowExtractablePrivateKey,
+      // Allowed uses
+      ["sign", "verify"],
     );
 
     const publicKeyString = await getBase58AddressFromPublicKey(keyPair.publicKey);
