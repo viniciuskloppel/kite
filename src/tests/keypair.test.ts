@@ -6,7 +6,9 @@ import {
   grindKeyPair,
   loadWalletFromEnvironment,
   loadWalletFromFile,
+  checkAddressMatchesPrivateKey,
 } from "../lib/keypair";
+import { exportRawPrivateKeyBytes } from "../lib/crypto";
 // See https://m.media-amazon.com/images/I/51TJeGHxyTL._SY445_SX342_.jpg
 import { exec as execNoPromises } from "node:child_process";
 import { promisify } from "node:util";
@@ -17,6 +19,16 @@ import { log } from "../lib/serializer";
 
 const exec = promisify(execNoPromises);
 const TEMP_DIR = "temp";
+
+// Use this for tests only. Extractable keypairs suck.
+const makeExtractableKeyPairForTests = async () => {
+  return crypto.subtle.generateKey(
+    "Ed25519",
+    // Remember these should be deleted or removed from scope
+    true,
+    ["sign", "verify"],
+  );
+};
 
 describe("bytesToCryptoKeyPair", () => {
   test("converts a byte array to a keyPairSigner and back", async () => {
@@ -39,13 +51,7 @@ describe("addKeyPairSignerToEnvFile", () => {
   let testKeyPairSigner: KeyPairSigner;
 
   before(async () => {
-    const testCryptoKeyPair = await grindKeyPair({
-      prefix: null,
-      suffix: null,
-      silenceGrindProgress: true,
-      isPrivateKeyExtractable:
-        "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
-    });
+    const testCryptoKeyPair = await makeExtractableKeyPairForTests();
     testKeyPairSigner = await createSignerFromKeyPair(testCryptoKeyPair);
 
     const testCryptoKeyPairString = await createJSONFromKeyPairSigner(testKeyPairSigner);
@@ -109,13 +115,7 @@ describe("loadWalletFromEnvironment", () => {
   const TEST_ENV_VAR_WITH_BAD_VALUE = "TEST_ENV_VAR_WITH_BAD_VALUE";
 
   before(async () => {
-    const randomCryptoKeyPair = await grindKeyPair({
-      prefix: null,
-      suffix: null,
-      silenceGrindProgress: true,
-      isPrivateKeyExtractable:
-        "yes I understand the risk of extractable private keys and will delete this keypair shortly after saving it to a file",
-    });
+    const randomCryptoKeyPair = await makeExtractableKeyPairForTests();
     const randomKeyPairSigner = await createSignerFromKeyPair(randomCryptoKeyPair);
 
     process.env[TEST_ENV_VAR_ARRAY_OF_NUMBERS] = await createJSONFromKeyPairSigner(randomKeyPairSigner);
@@ -137,5 +137,29 @@ describe("loadWalletFromEnvironment", () => {
     assert.throws(() => loadWalletFromEnvironment("TEST_ENV_VAR_WITH_BAD_VALUE"), {
       message: `Invalid private key in environment variable 'TEST_ENV_VAR_WITH_BAD_VALUE'!`,
     });
+  });
+});
+
+describe("checkAddressMatchesPrivateKey", () => {
+  test("returns true when address matches secret key", async () => {
+    // Make a temporary keypair
+    const keyPair = await makeExtractableKeyPairForTests();
+    const keyPairSigner = await createSignerFromKeyPair(keyPair);
+
+    // Convert keyPair.privateKey into a Uint8Array
+    const privateKeyBytes = await exportRawPrivateKeyBytes(keyPair.privateKey);
+
+    const result = await checkAddressMatchesPrivateKey(keyPairSigner.address, privateKeyBytes);
+    assert.equal(result, true);
+  });
+
+  test("returns false when address does not match secret key", async () => {
+    const keyPair1 = await makeExtractableKeyPairForTests();
+    const keyPair2 = await makeExtractableKeyPairForTests();
+    const keyPairSigner1 = await createSignerFromKeyPair(keyPair1);
+    const privateKeyBytes2 = await exportRawPrivateKeyBytes(keyPair2.privateKey);
+
+    const result = await checkAddressMatchesPrivateKey(keyPairSigner1.address, privateKeyBytes2);
+    assert.equal(result, false);
   });
 });

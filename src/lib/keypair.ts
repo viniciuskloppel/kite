@@ -1,4 +1,10 @@
-import { createKeyPairSignerFromBytes, generateKeyPairSigner, KeyPairSigner } from "@solana/kit";
+import {
+  createKeyPairSignerFromBytes,
+  KeyPairSigner,
+  address,
+  Address,
+  createKeyPairSignerFromPrivateKeyBytes,
+} from "@solana/kit";
 import { assertKeyGenerationIsAvailable } from "@solana/assertions";
 import { exportRawPrivateKeyBytes, exportRawPublicKeyBytes, getBase58AddressFromPublicKey } from "./crypto";
 import {
@@ -181,4 +187,9 @@ export const addKeyPairSignerToEnvFile = async (
   }
   const privateKeyString = await createJSONFromKeyPairSigner(keyPairSigner);
   await appendFile(envFileName, `\n# Solana Address: ${keyPairSigner.address}\n${variableName}=${privateKeyString}`);
+};
+
+export const checkAddressMatchesPrivateKey = async (address: Address, privateKey: Uint8Array) => {
+  const temporarySigner = await createKeyPairSignerFromPrivateKeyBytes(privateKey);
+  return temporarySigner.address === address;
 };

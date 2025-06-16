@@ -6,6 +6,9 @@ import {
   KeyPairSigner,
   Address,
   RpcTransport,
+  createKeyPairSignerFromBytes,
+  address,
+  createKeyPairSignerFromPrivateKeyBytes,
 } from "@solana/kit";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 
@@ -36,6 +39,7 @@ import { airdropIfRequiredFactory, getLamportBalanceFactory } from "./sol";
 import { getPDAAndBump } from "./pdas";
 import { getAccountsFactoryFactory } from "./accounts";
 import { signMessageFromWalletApp } from "./messages";
+import { checkAddressMatchesPrivateKey } from "./keypair";
 
 /**
  * Converts an HTTP(S) URL to the corresponding WS(S) URL.
@@ -252,6 +256,7 @@ export const connect = (
     signatureBase58StringToBytes,
     sendTransactionFromInstructionsWithWalletApp: sendTransactionFromInstructionsWithWalletAppFactory(rpc),
     signMessageFromWalletApp,
+    checkAddressMatchesPrivateKey,
   };
 };
 
@@ -546,4 +551,15 @@ export interface Connection {
    * @returns {Promise<string>} The base58 encoded signature
    */
   signMessageFromWalletApp: typeof signMessageFromWalletApp;
+
+  /**
+   * Verifies if a given private key corresponds to a specific Solana address.
+   * This is useful for validating that a private key matches an expected address
+   * without exposing the private key in the process.
+   *
+   * @param {Address} address - The Solana address to verify against
+   * @param {Uint8Array} privateKey - The raw private key bytes to check
+   * @returns {Promise<boolean>} True if the private key corresponds to the address, false otherwise
+   */
+  checkAddressMatchesPrivateKey: typeof checkAddressMatchesPrivateKey;
 }
