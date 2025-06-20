@@ -8,7 +8,14 @@ import {
   loadWalletFromFile,
   checkAddressMatchesPrivateKey,
 } from "../lib/keypair";
-import { exportRawPrivateKeyBytes } from "../lib/crypto";
+import {
+  exportRawPrivateKeyBytes,
+  exportRawPublicKeyBytes,
+  getBase58AddressFromPublicKey,
+  checkIfAddressIsPublicKey,
+} from "../lib/crypto";
+import { address, Address } from "@solana/kit";
+import { getPDAAndBump } from "../lib/pdas";
 // See https://m.media-amazon.com/images/I/51TJeGHxyTL._SY445_SX342_.jpg
 import { exec as execNoPromises } from "node:child_process";
 import { promisify } from "node:util";
@@ -16,6 +23,7 @@ import { writeFile, unlink as deleteFile } from "node:fs/promises";
 import dotenv from "dotenv";
 import { createSignerFromKeyPair, KeyPairSigner, createKeyPairSignerFromBytes } from "@solana/kit";
 import { log } from "../lib/serializer";
+import bs58 from "bs58";
 
 const exec = promisify(execNoPromises);
 const TEMP_DIR = "temp";
@@ -161,5 +169,70 @@ describe("checkAddressMatchesPrivateKey", () => {
 
     const result = await checkAddressMatchesPrivateKey(keyPairSigner1.address, privateKeyBytes2);
     assert.equal(result, false);
+  });
+});
+
+describe("checkIfAddressIsPublicKey", () => {
+  let keyPair: CryptoKeyPair;
+  let publicKeyBytes: Uint8Array;
+  let publicKeyString: string;
+
+  before(async () => {
+    keyPair = await makeExtractableKeyPairForTests();
+    publicKeyBytes = await exportRawPublicKeyBytes(keyPair.publicKey);
+    publicKeyString = bs58.encode(publicKeyBytes);
+  });
+
+  test("returns true for valid Ed25519 public key bytes", async () => {
+    assert.equal(await checkIfAddressIsPublicKey(publicKeyBytes), true);
+  });
+
+  test("returns true for valid base58 encoded public key", async () => {
+    assert.equal(await checkIfAddressIsPublicKey(publicKeyString), true);
+  });
+
+  test("returns false for a Program Derived Address", async () => {
+    const programAddress = address("11111111111111111111111111111111");
+    const { pda } = await getPDAAndBump(programAddress, ["test-seed"]);
+    assert.equal(await checkIfAddressIsPublicKey(pda), false);
+  });
+
+  test("returns true for valid Address type", async () => {
+    const publicKeyString = await getBase58AddressFromPublicKey(keyPair.publicKey);
+    // Solana kit uses the name 'address' for a function, so we use address1 here.
+    const address1 = address(publicKeyString);
+    assert.equal(await checkIfAddressIsPublicKey(address1), true);
+  });
+
+  test("returns false for invalid length bytes", async () => {
+    const invalidKey = new Uint8Array(31); // Too short
+    assert.equal(await checkIfAddressIsPublicKey(invalidKey), false);
+  });
+
+  test("returns false for invalid base58 string", async () => {
+    assert.equal(await checkIfAddressIsPublicKey("invalid-base58"), false);
+  });
+
+  test("returns false for invalid public key bytes", async () => {
+    const invalidKey = new Uint8Array(32).fill(0); // All zeros is not a valid public key
+    assert.equal(await checkIfAddressIsPublicKey(invalidKey), false);
+  });
+
+  test("returns false for non-base58 string", async () => {
+    assert.equal(await checkIfAddressIsPublicKey("not-a-base58-string!"), false);
+  });
+
+  test("returns false for empty string", async () => {
+    assert.equal(await checkIfAddressIsPublicKey(""), false);
+  });
+
+  test("returns false for null", async () => {
+    // @ts-expect-error Testing invalid input
+    assert.equal(await checkIfAddressIsPublicKey(null), false);
+  });
+
+  test("returns false for undefined", async () => {
+    // @ts-expect-error Testing invalid input
+    assert.equal(await checkIfAddressIsPublicKey(undefined), false);
   });
 });
