@@ -1,5 +1,18 @@
 # Kite Changelog
 
+## Kite version 1.5.0
+
+### Additions
+
+- Add `checkIfAddressIsPublicKey()` function to validate if an address is a valid Ed25519 public key
+- Add `checkAddressMatchesPrivateKey()` function to verify if a private key matches a given address
+- Add QuickNode cluster support with "quicknode-mainnet", "quicknode-devnet", and "quicknode-testnet" options in `connect()`
+
+### Changes
+
+- Improve browser compatibility by using Uint8Array instead of Buffer throughout the codebase
+- Documentation improvements and typo fixes
+
 ## Kite version 1.4.0
 
 ### Changes
