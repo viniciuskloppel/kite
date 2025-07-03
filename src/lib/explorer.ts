@@ -23,6 +23,7 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
         }
         // We don't have to set searchParams["customUrl"] for localnet - Explorer will connect to localnet by default
         if (clusterNameOrURL !== "localnet") {
+          // set requiredParam=requiredParamEnvironmentVariable if we need to
           if (clusterDetails.requiredParam) {
             const requiredParamEnvironmentVariable = clusterDetails.requiredParamEnvironmentVariable;
             if (!requiredParamEnvironmentVariable) {
@@ -38,6 +39,12 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
             });
             const urlWithParams = `${clusterDetails.httpURL}?${params.toString()}`;
             searchParams["customUrl"] = urlWithParams;
+          }
+          // If we don't have a param to know the URL, we need to set the custom URL
+          if (!clusterDetails.httpURL) {
+            throw new Error(
+              `Please set either httpUrl or requiredParam for cluster ${clusterNameOrURL} in clusters.ts`,
+            );
           } else {
             if (!clusterDetails.features.isNameKnownToSolanaExplorer) {
               searchParams["customUrl"] = clusterDetails.httpURL;
