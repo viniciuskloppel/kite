@@ -5,8 +5,8 @@ import {
   parseBase64RpcAccount,
   type Decoder,
   createSolanaRpcFromTransport,
+  getBase58Decoder,
 } from "@solana/kit";
-import bs58 from "bs58";
 
 // OK brother hear me out
 // 'FactoryFactory' seems weird but:
@@ -36,6 +36,7 @@ export const getAccountsFactoryFactory = (rpc: ReturnType<typeof createSolanaRpc
   ) => {
     return async () => {
       // See https://solana.com/docs/rpc/http/getprogramaccounts
+      const base58Decoder = getBase58Decoder()
       const getProgramAccountsResults = await rpc
         .getProgramAccounts(programAddress, {
           encoding: "jsonParsed",
@@ -43,7 +44,7 @@ export const getAccountsFactoryFactory = (rpc: ReturnType<typeof createSolanaRpc
             {
               memcmp: {
                 offset: 0,
-                bytes: bs58.encode(discriminator),
+                bytes: base58Decoder.decode(discriminator),
               },
             },
           ],
