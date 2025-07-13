@@ -1,6 +1,5 @@
 import { PKCS_8_PREFIX_LENGTH } from "./constants";
-import bs58 from "bs58";
-import { Address } from "@solana/kit";
+import { Address, getBase58Decoder, getBase58Encoder, ReadonlyUint8Array } from "@solana/kit";
 // Fixes "Value of "this" must be of type SubtleCrypto" errors
 const exportKey = crypto.subtle.exportKey.bind(crypto.subtle);
 
@@ -31,7 +30,7 @@ const D = (-121665n * modInverse(121666n, P)) % P; // Curve parameter d
  * @param publicKeyBytes - 32-byte public key
  * @returns boolean indicating if the point is on the curve
  */
-const isOnEd25519Curve = (publicKeyBytes: Uint8Array): boolean => {
+const isOnEd25519Curve = (publicKeyBytes: ReadonlyUint8Array): boolean => {
   try {
     // Extract y from bytes (little-endian, last byte's high bit is x sign)
     let y = 0n;
@@ -100,8 +99,9 @@ export const exportRawPublicKeyBytes = async (publicKey: CryptoKey): Promise<Uin
 };
 
 export const getBase58AddressFromPublicKey = async (publicKey: CryptoKey): Promise<string> => {
+  const base58Decoder = getBase58Decoder();
   const publicKeyBytes = await exportRawPublicKeyBytes(publicKey);
-  const publicKeyString = bs58.encode(publicKeyBytes);
+  const publicKeyString = base58Decoder.decode(publicKeyBytes);
   return publicKeyString;
 };
 
@@ -111,14 +111,15 @@ export const getBase58AddressFromPublicKey = async (publicKey: CryptoKey): Promi
  * @returns boolean indicating if the public key is valid
  */
 export const checkIfAddressIsPublicKey = async (address: Uint8Array | string | Address): Promise<boolean> => {
+  const base58Encoder = getBase58Encoder();
   try {
-    let publicKeyBytes: Uint8Array;
+    let publicKeyBytes: ReadonlyUint8Array;
     if (typeof address === "string") {
-      publicKeyBytes = bs58.decode(address);
+      publicKeyBytes = base58Encoder.encode(address);
     } else if (address instanceof Uint8Array) {
       publicKeyBytes = address;
     } else if (typeof address === "object" && address !== null && typeof (address as Address).toString === "function") {
-      publicKeyBytes = bs58.decode((address as Address).toString());
+      publicKeyBytes = base58Encoder.encode((address as Address).toString());
     } else {
       return false;
     }
