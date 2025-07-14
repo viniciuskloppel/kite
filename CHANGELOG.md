@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.5.1
+
+### Changes
+
+- Replace bs58 library with Solana Kit's native Base58 codec reduced dependencies
+
 ## Kite version 1.5.0
 
 ### Additions
