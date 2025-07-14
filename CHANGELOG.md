@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.5.2
+
+### Bug fixes
+
+- Fix issue with explorer URLs when using Helius clusters
+
 ## Kite version 1.5.1
 
 ### Changes
