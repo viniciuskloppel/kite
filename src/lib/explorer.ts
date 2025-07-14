@@ -39,16 +39,14 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
             });
             const urlWithParams = `${clusterDetails.httpURL}?${params.toString()}`;
             searchParams["customUrl"] = urlWithParams;
-          }
-          // If we don't have a param to know the URL, we need to set the custom URL
-          if (!clusterDetails.httpURL) {
+          } else if (!clusterDetails.httpURL) {
+            // If we don't have a param to know the URL, we need to set the custom URL
             throw new Error(
               `Please set either httpUrl or requiredParam for cluster ${clusterNameOrURL} in clusters.ts`,
             );
-          } else {
-            if (!clusterDetails.features.isNameKnownToSolanaExplorer) {
-              searchParams["customUrl"] = clusterDetails.httpURL;
-            }
+          } else if (!clusterDetails.features.isNameKnownToSolanaExplorer) {
+            // Only set customUrl if we don't have a requiredParam and the cluster is not known to Solana Explorer
+            searchParams["customUrl"] = clusterDetails.httpURL;
           }
         }
       }
