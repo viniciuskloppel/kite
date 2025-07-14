@@ -14,7 +14,7 @@ import {
   getBase58AddressFromPublicKey,
   checkIfAddressIsPublicKey,
 } from "../lib/crypto";
-import { address, Address } from "@solana/kit";
+import { address, Address, getBase58Decoder } from "@solana/kit";
 import { getPDAAndBump } from "../lib/pdas";
 // See https://m.media-amazon.com/images/I/51TJeGHxyTL._SY445_SX342_.jpg
 import { exec as execNoPromises } from "node:child_process";
@@ -23,7 +23,6 @@ import { writeFile, unlink as deleteFile } from "node:fs/promises";
 import dotenv from "dotenv";
 import { createSignerFromKeyPair, KeyPairSigner, createKeyPairSignerFromBytes } from "@solana/kit";
 import { log } from "../lib/serializer";
-import bs58 from "bs58";
 
 const exec = promisify(execNoPromises);
 const TEMP_DIR = "temp";
@@ -178,9 +177,10 @@ describe("checkIfAddressIsPublicKey", () => {
   let publicKeyString: string;
 
   before(async () => {
+    const base58Decoder = getBase58Decoder();
     keyPair = await makeExtractableKeyPairForTests();
     publicKeyBytes = await exportRawPublicKeyBytes(keyPair.publicKey);
-    publicKeyString = bs58.encode(publicKeyBytes);
+    publicKeyString = base58Decoder.decode(publicKeyBytes);
   });
 
   test("returns true for valid Ed25519 public key bytes", async () => {

@@ -1,11 +1,10 @@
-import { MessageModifyingSigner } from "@solana/kit";
-import { createSignableMessage } from '@solana/signers';
-import bs58 from "bs58";
+import { getBase58Decoder, MessageModifyingSigner } from "@solana/kit";
 
 export const signMessageFromWalletApp = async (
   message: string,
   messageSigner: MessageModifyingSigner,
 ): Promise<string> => {
+  const base58Decoder = getBase58Decoder();
   const encodedMessage = new TextEncoder().encode(message);
   // Oddly, there's only a modifyAndSignMessages (which accepts an array of messages and returns an array of results) 
   // but no singular modifyAndSignMessage. 
@@ -23,5 +22,5 @@ export const signMessageFromWalletApp = async (
   if (!signature) {
     throw new Error('Could not find signature in the result');
   }
-  return bs58.encode(signature);
+  return base58Decoder.decode(signature);
 }
