@@ -58,8 +58,8 @@ describe("getPDAAndBump", () => {
     try {
       await getPDAAndBump(programAddress, []);
       // If no error, that's fine, just check output type
-    } catch (e) {
-      assert.ok(e instanceof Error);
+    } catch (error) {
+      assert.ok(error instanceof Error);
     }
   });
 });
