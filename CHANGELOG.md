@@ -1,5 +1,12 @@
 # Kite Changelog
 
+## Kite version 1.5.3
+
+### Changes
+
+- Allow `Uint8Array` to be specified for `getPDAAndBump` for situations where people have their own encoding strategies.
+- Bump solana kit to 2.3.0
+
 ## Kite version 1.5.2
 
 ### Bug fixes

@@ -1,7 +1,7 @@
 {
   "name": "solana-kite",
-  "version": "1.5.2",
-  "description": "A modern Solana framework for TypeScript.",
+  "version": "1.5.3",
+  "description": "The modern Solana framework for TypeScript.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -57,7 +57,7 @@
     "@solana-program/token-2022": "^0.4.0",
     "@solana/assertions": "^2.0.1-canary-20241114225255",
     "@solana/errors": "^2.0.1-canary-20241114225255",
-    "@solana/kit": "^2.1.0",
+    "@solana/kit": "^2.3.0",
     "@solana/transaction-confirmation": "^2.0.0",
     "dotenv": "^16.4.5"
   },
