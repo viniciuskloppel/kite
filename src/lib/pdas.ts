@@ -16,13 +16,21 @@ const bigIntToSeed = (bigInt: bigint, byteLength: number): Uint8Array => {
 
 /**
  * Calculates a Program Derived Address (PDA) and its bump seed from a program address and seeds.
- * Automatically handles encoding of different seed types (strings, addresses, and bigints).
+ * Handles encoding of different seed types:
+ *   - Strings: encoded as UTF-8
+ *   - Addresses: encoded using the address encoder
+ *   - BigInts: encoded as 8-byte little-endian Uint8Array
+ *   - Uint8Array: used as-is
+ *
  * @param {Address} programAddress - The program address to derive the PDA from
- * @param {Array<String | Address | BigInt>} seeds - Array of seeds to derive the PDA
+ * @param {Array<String | Address | BigInt | Uint8Array>} seeds - Array of seeds to derive the PDA
  * @returns {Promise<{pda: Address, bump: number}>} The derived PDA and its bump seed
  */
-export const getPDAAndBump = async (programAddress: Address, seeds: Array<String | Address | BigInt>) => {
+export const getPDAAndBump = async (programAddress: Address, seeds: Array<String | Address | BigInt | Uint8Array>) => {
   const seedsUint8Array = seeds.map((seed) => {
+    if (seed instanceof Uint8Array) {
+      return seed; // Pass through unchanged
+    }
     if (typeof seed === "bigint") {
       return bigIntToSeed(seed, 8);
     }
