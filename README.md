@@ -1,6 +1,6 @@
 # Kite: the modern TypeScript framework for Solana 🪁
 
-[![Tests](https://github.com/mikemaccana/kite/actions/workflows/tests.yaml/badge.svg)](https://github.com/mikemaccana/kite/actions/workflows/tests.yaml)
+[![Tests](https://github.com/solanakite/kite/actions/workflows/tests.yaml/badge.svg)](https://github.com/solanakite/kite/actions/workflows/tests.yaml)
 
 - [Solana Kite official website](https://solanakite.org)
 - [Extensive documentation](https://solanakite.org/docs)
