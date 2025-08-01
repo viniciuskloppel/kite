@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version 1.5.4
+
+### Changes
+
+- Fix URLs in docs
+
 ## Kite version 1.5.3
 
 ### Changes
