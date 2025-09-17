@@ -1,10 +1,14 @@
 # Kite Changelog
 
-## Kite version next
+## Kite version 1.5.5
+
+### Additions
+
+- Add `useBigEndian` option to `getPDAAndBump()`
 
 ### Bug fixes
 
-- Fix 'Please set either httpUrl or requiredParam for cluster quicknode-devnet in clusters.ts' when getting Explorer URLs. Getting Explorer URLs now uses the same logic as connect().
+- Fix 'Please set either httpUrl or requiredParam for cluster quicknode-devnet in clusters.ts' to `getExplorerLink()`. Getting Explorer URLs now uses the same logic as `connect()`.
 
 ## Kite version 1.5.4
 
