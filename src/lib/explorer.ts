@@ -1,4 +1,5 @@
 import { KNOWN_CLUSTER_NAMES, CLUSTERS } from "./clusters";
+import { getClusterDetailsFromClusterConfig } from "./connect";
 import { checkIsValidURL, encodeURL } from "./url";
 
 export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
@@ -12,7 +13,8 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
   const getExplorerLink = (linkType: "transaction" | "tx" | "address" | "block", id: string): string => {
     const searchParams: Record<string, string> = {};
     if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
-      const clusterDetails = CLUSTERS[clusterNameOrURL];
+      const clusterConfig = CLUSTERS[clusterNameOrURL];
+      const clusterDetails = getClusterDetailsFromClusterConfig(clusterNameOrURL, clusterConfig);
       // If they're using Solana Labs mainnet-beta, we don't need to include the cluster name in the Solana Explorer URL
       // because it's the default
       if (!clusterDetails.features.isExplorerDefault) {
@@ -21,33 +23,10 @@ export const getExplorerLinkFactory = (clusterNameOrURL: string) => {
         } else {
           searchParams["cluster"] = "custom";
         }
-        // We don't have to set searchParams["customUrl"] for localnet - Explorer will connect to localnet by default
-        if (clusterNameOrURL !== "localnet") {
-          // set requiredParam=requiredParamEnvironmentVariable if we need to
-          if (clusterDetails.requiredParam) {
-            const requiredParamEnvironmentVariable = clusterDetails.requiredParamEnvironmentVariable;
-            if (!requiredParamEnvironmentVariable) {
-              throw new Error(`Required param environment variable is not set for cluster ${clusterNameOrURL}`);
-            }
-            if (!process.env[requiredParamEnvironmentVariable]) {
-              throw new Error(`Environment variable '${requiredParamEnvironmentVariable}' is not set.`);
-            }
-            const apiKey = process.env[requiredParamEnvironmentVariable];
-
-            const params = new URLSearchParams({
-              [clusterDetails.requiredParam]: apiKey,
-            });
-            const urlWithParams = `${clusterDetails.httpURL}?${params.toString()}`;
-            searchParams["customUrl"] = urlWithParams;
-          } else if (!clusterDetails.httpURL) {
-            // If we don't have a param to know the URL, we need to set the custom URL
-            throw new Error(
-              `Please set either httpUrl or requiredParam for cluster ${clusterNameOrURL} in clusters.ts`,
-            );
-          } else if (!clusterDetails.features.isNameKnownToSolanaExplorer) {
-            // Only set customUrl if we don't have a requiredParam and the cluster is not known to Solana Explorer
-            searchParams["customUrl"] = clusterDetails.httpURL;
-          }
+        // Only set customUrl if the cluster is not known to Solana Explorer
+        // We don't have to set searchParams["customUrl"] for localnet - Explorer will connect to localnet by default when the cluster is custom
+        if (!clusterDetails.features.isNameKnownToSolanaExplorer && clusterNameOrURL !== "localnet") {
+          searchParams["customUrl"] = clusterDetails.httpURL;
         }
       }
     } else {

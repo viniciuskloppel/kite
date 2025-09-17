@@ -14,7 +14,7 @@ import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transac
 
 import { checkIsValidURL, encodeURL } from "./url";
 import { loadWalletFromEnvironment, loadWalletFromFile } from "./keypair";
-import { KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING } from "./clusters";
+import { KNOWN_CLUSTER_NAMES, CLUSTERS, KNOWN_CLUSTER_NAMES_STRING, ClusterConfig } from "./clusters";
 
 import {
   sendTransactionFromInstructionsFactory,
@@ -60,6 +60,66 @@ export function getWebsocketUrlFromHTTPUrl(httpUrl: string): string {
   } catch (thrownObject) {
     throw new Error(`Invalid HTTP URL: ${httpUrl}`);
   }
+}
+
+export interface ClusterDetails {
+  httpURL: string;
+  webSocketURL: string;
+  features: {
+    supportsGetPriorityFeeEstimate: boolean;
+    needsPriorityFees: boolean;
+    enableClientSideRetries: boolean;
+    isNameKnownToSolanaExplorer: boolean;
+    isExplorerDefault: boolean;
+  },
+}
+
+// Our cluster config doesn't have everything we need, so we need to get the rest of the details from the environment
+export const getClusterDetailsFromClusterConfig = (clusterName: string, clusterConfig: ClusterConfig): ClusterDetails => {
+  let features = clusterConfig.features;
+
+  if (clusterConfig.httpURL && clusterConfig.webSocketURL) {
+    // For RPC providers like Helius, the endpoint is constant, but we need to set the API key in an environment variable
+    const requiredParamEnvironmentVariable = clusterConfig.requiredParamEnvironmentVariable;
+    // Reminder: requiredParam is the URL param name like 'api-key', requiredParamEnvironmentVariable is the environment variable we're going to look to find the value, like 'HELIUS_API_KEY'
+    if (clusterConfig.requiredParam && requiredParamEnvironmentVariable) {
+      const requiredParamValue = process.env[requiredParamEnvironmentVariable];
+      if (!requiredParamValue) {
+        throw new Error(`Environment variable '${requiredParamEnvironmentVariable}' is not set.`);
+      }
+      // Add the URL param 'api-key' with the value of the environment variable
+      const queryParams = new URLSearchParams();
+      queryParams.set(clusterConfig.requiredParam, requiredParamValue);
+
+      return {
+        httpURL: `${clusterConfig.httpURL}?${queryParams}`,
+        webSocketURL: `${clusterConfig.webSocketURL}?${queryParams}`,
+        features,
+      };
+    }
+    // Otherwise just use the cluster config URLs
+    return {
+      httpURL: clusterConfig.httpURL,
+      webSocketURL: clusterConfig.webSocketURL,
+      features,
+    };
+  }
+
+  // For RPC providers like QuickNode, we need to get the endpoint from an environment variable
+  const requiredRpcEnvironmentVariable = clusterConfig.requiredRpcEnvironmentVariable;
+  if (requiredRpcEnvironmentVariable) {
+    const rpcEndpoint = process.env[requiredRpcEnvironmentVariable];
+    if (!rpcEndpoint) {
+      throw new Error(`Environment variable '${requiredRpcEnvironmentVariable}' is not set.`);
+    }
+    return {
+      httpURL: rpcEndpoint,
+      webSocketURL: getWebsocketUrlFromHTTPUrl(rpcEndpoint),
+      features,
+    };
+  }
+
+  throw new Error(`Cluster ${clusterName} has null URLs but no requiredRpcEnvironmentVariable specified.`);
 }
 
 /**
@@ -111,45 +171,7 @@ export const connect = (
     if (KNOWN_CLUSTER_NAMES.includes(clusterNameOrURL)) {
       const clusterDetails = CLUSTERS[clusterNameOrURL];
 
-      if (clusterDetails.features.supportsGetPriorityFeeEstimate) {
-        supportsGetPriorityFeeEstimate = true;
-      }
-
-      if (clusterDetails.features.needsPriorityFees) {
-        needsPriorityFees = true;
-      }
-
-      enableClientSideRetries = clusterDetails.features.enableClientSideRetries;
-
-      let httpURL: string;
-      let webSocketURL: string;
-
-      // If URLs are null, we need to get them from the environment variable
-      if (clusterDetails.httpURL === null || clusterDetails.webSocketURL === null) {
-        if (!clusterDetails.requiredRpcEnvironmentVariable) {
-          throw new Error(`Cluster ${clusterNameOrURL} has null URLs but no requiredRpcEnvironmentVariable specified.`);
-        }
-        const rpcEndpoint = process.env[clusterDetails.requiredRpcEnvironmentVariable];
-        if (!rpcEndpoint) {
-          throw new Error(`Environment variable ${clusterDetails.requiredRpcEnvironmentVariable} is not set.`);
-        }
-        httpURL = rpcEndpoint;
-        webSocketURL = getWebsocketUrlFromHTTPUrl(rpcEndpoint);
-      } else if (clusterDetails.requiredParamEnvironmentVariable) {
-        const requiredParamEnvironmentVariable = process.env[clusterDetails.requiredParamEnvironmentVariable];
-        if (!requiredParamEnvironmentVariable) {
-          throw new Error(`Environment variable ${clusterDetails.requiredParamEnvironmentVariable} is not set.`);
-        }
-        // Add the URL param 'api-key' with the value of the environment variable
-        const queryParamsString = new URLSearchParams({
-          "api-key": requiredParamEnvironmentVariable,
-        });
-        httpURL = `${clusterDetails.httpURL}?${queryParamsString}`;
-        webSocketURL = `${clusterDetails.webSocketURL}?${queryParamsString}`;
-      } else {
-        httpURL = clusterDetails.httpURL;
-        webSocketURL = clusterDetails.webSocketURL;
-      }
+      const { httpURL, webSocketURL, features } = getClusterDetailsFromClusterConfig(clusterNameOrURL, clusterDetails);
 
       const transport = createDefaultRpcTransport({
         url: httpURL,

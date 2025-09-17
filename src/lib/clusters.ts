@@ -1,34 +1,37 @@
+export interface ClusterConfig {
+  // Some RPC providers (ie, QuickNode) use a different URL for each endpoint
+  // Eg, the QuickNode dashboard will show https://three-random-words.solana-devnet.quiknode.pro/some-uuid/
+  // In this case, the URLs are null and we will get the from requiredRpcEnvironmentVariable
+  httpURL: string | null;
+  webSocketURL: string | null;
+
+  // The URL param name required for this cluster (eg for API keys)
+  requiredParam: string | null;
+  // The environment variable name used for requiredParam above.
+  requiredParamEnvironmentVariable: string | null;
+  // The environment variable name for the RPC endpoint (if httpURL and webSocketURL is blank)
+  requiredRpcEnvironmentVariable: string | null;
+
+  features: {
+    // Whether this is the default cluster for the Solana Explorer
+    isExplorerDefault: boolean;
+    // Whether this cluster name is known to the Solana Explorer
+    isNameKnownToSolanaExplorer: boolean;
+    // Whether this cluster supports Helius priority fee estimate instruction
+    // See https://docs.helius.dev/solana-apis/priority-fee-api
+    supportsGetPriorityFeeEstimate: boolean;
+    // Enable retries on the client side
+    enableClientSideRetries: boolean;
+    // Whether this cluster needs priority fees
+    needsPriorityFees: boolean;
+  };
+}
+
+
 // Make an object with a map of solana cluster names to subobjects, with the subobjects containing the URL and websocket URL
 export const CLUSTERS: Record<
   string,
-  {
-    // Some RPC providers (ie, QuickNode) use a different URL for each endpoint
-    // Eg, the QuickNode dashboard will show https://three-random-words.solana-devnet.quiknode.pro/some-uuid/
-    // In this case, the URLs are null and we will get the from requiredRpcEnvironmentVariable
-    httpURL: string | null;
-    webSocketURL: string | null;
-
-    // The URL param name required for this cluster (eg for API keys)
-    requiredParam: string | null;
-    // The environment variable name used for requiredParam above.
-    requiredParamEnvironmentVariable: string | null;
-    // The environment variable name for the RPC endpoint (if httpURL and webSocketURL is blank)
-    requiredRpcEnvironmentVariable: string | null;
-
-    features: {
-      // Whether this is the default cluster for the Solana Explorer
-      isExplorerDefault: boolean;
-      // Whether this cluster name is known to the Solana Explorer
-      isNameKnownToSolanaExplorer: boolean;
-      // Whether this cluster supports Helius priority fee estimate instruction
-      // See https://docs.helius.dev/solana-apis/priority-fee-api
-      supportsGetPriorityFeeEstimate: boolean;
-      // Enable retries on the client side
-      enableClientSideRetries: boolean;
-      // Whether this cluster needs priority fees
-      needsPriorityFees: boolean;
-    };
-  }
+  ClusterConfig
 > = {
   // Solana Labs RPCs
   // Don't add a seperate entry for 'mainnet'. Instead, we'll correct the cluster name to 'mainnet-beta'

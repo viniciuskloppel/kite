@@ -1,5 +1,11 @@
 # Kite Changelog
 
+## Kite version next
+
+### Bug fixes
+
+- Fix 'Please set either httpUrl or requiredParam for cluster quicknode-devnet in clusters.ts' when getting Explorer URLs. Getting Explorer URLs now uses the same logic as connect().
+
 ## Kite version 1.5.4
 
 ### Changes
