@@ -32,6 +32,7 @@ import {
   transferTokensFactory,
   getTokenAccountBalanceFactory,
   checkTokenAccountIsClosedFactory,
+  getTokenMetadataFactory,
 } from "./tokens";
 import { getLogsFactory } from "./logs";
 import { getExplorerLinkFactory } from "./explorer";
@@ -248,6 +249,8 @@ export const connect = (
 
   const checkTokenAccountIsClosed = checkTokenAccountIsClosedFactory(getTokenAccountBalance);
 
+  const getTokenMetadata = getTokenMetadataFactory(rpc);
+
   const getAccountsFactory = getAccountsFactoryFactory(rpc);
 
   return {
@@ -273,6 +276,7 @@ export const connect = (
     getTokenAccountBalance,
     getPDAAndBump,
     checkTokenAccountIsClosed,
+    getTokenMetadata,
     getAccountsFactory,
     signatureBytesToBase58String,
     signatureBase58StringToBytes,
@@ -365,6 +369,14 @@ export interface Connection {
    * @throws {Error} If there's an error checking the account that isn't related to the account not existing
    */
   checkTokenAccountIsClosed: ReturnType<typeof checkTokenAccountIsClosedFactory>;
+
+  /**
+   * Gets token metadata using the metadata pointer extension.
+   * @param {Address} mintAddress - The token mint address
+   * @param {Commitment} [commitment="confirmed"] - Confirmation level to wait for
+   * @returns {Promise<Object>} The token metadata including name, symbol, uri, and additional metadata
+   */
+  getTokenMetadata: ReturnType<typeof getTokenMetadataFactory>;
 
   /**
    * Requests free test SOL from a faucet if an account's balance is too low.

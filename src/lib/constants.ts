@@ -37,3 +37,8 @@ const PKCS_8_PREFIX = new Uint8Array([48, 46, 2, 1, 0, 48, 5, 6, 3, 43, 101, 112
 export const PKCS_8_PREFIX_LENGTH = PKCS_8_PREFIX.length;
 
 export const GRIND_COMPLEXITY_THRESHOLD = 5;
+
+// Token metadata parsing constants
+export const DISCRIMINATOR_SIZE = 8;
+export const PUBLIC_KEY_SIZE = 32;
+export const LENGTH_FIELD_SIZE = 4;

@@ -1,5 +1,5 @@
 import { Commitment, generateKeyPairSigner, Lamports, some } from "@solana/kit";
-import { Address } from "@solana/kit";
+import { Address, address as toAddress } from "@solana/kit";
 import {
   // This is badly named. It's a function that returns an object.
   extension as getExtensionData,
@@ -19,8 +19,7 @@ import {
 import { createSolanaRpcFromTransport, KeyPairSigner } from "@solana/kit";
 import { sendTransactionFromInstructionsFactory } from "./transactions";
 import { getCreateAccountInstruction, getTransferSolInstruction } from "@solana-program/system";
-import { TOKEN_PROGRAM } from "./constants";
-import { TOKEN_EXTENSIONS_PROGRAM } from "./constants";
+import { TOKEN_PROGRAM, TOKEN_EXTENSIONS_PROGRAM, DISCRIMINATOR_SIZE, PUBLIC_KEY_SIZE, LENGTH_FIELD_SIZE } from "./constants";
 
 export const transferLamportsFactory = (
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>,
@@ -375,4 +374,163 @@ export const checkTokenAccountIsClosedFactory = (
     }
   };
   return checkTokenAccountIsClosed;
+};
+
+export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
+  const getTokenMetadata = async (mintAddress: Address, commitment: Commitment = "confirmed") => {
+    // First, try to get the mint account using Token-2022
+    let mint;
+    try {
+      mint = await fetchMint(rpc, mintAddress, { commitment });
+    } catch (error: unknown) {
+      // If Token Extensions fails, try classic Token program
+      const { fetchMint: fetchClassicMint } = await import("@solana-program/token");
+      try {
+        mint = await fetchClassicMint(rpc, mintAddress, { commitment });
+        // Classic Token program doesn't have metadata extensions
+        throw new Error(`Mint ${mintAddress} uses classic Token program which doesn't support metadata extensions`);
+      } catch (classicError) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`Mint not found: ${mintAddress}. Neither Token Extensions nor classic Token program could decode this mint. Original error: ${errorMessage}`);
+      }
+    }
+
+    if (!mint) {
+      throw new Error(`Mint not found: ${mintAddress}`);
+    }
+
+    // Extract extensions from the mint account data
+    const extensions = mint.data?.extensions?.__option === "Some" ? mint.data.extensions.value : [];
+
+    // Find the metadata pointer extension
+    const metadataPointerExtension = extensions.find((extension: any) => extension.__kind === "MetadataPointer");
+
+    if (!metadataPointerExtension) {
+      throw new Error(`No metadata pointer extension found for mint: ${mintAddress}`);
+    }
+
+    // Get the metadata address from the extension
+    const metadataAddress = (metadataPointerExtension as any).metadataAddress?.value;
+
+    if (!metadataAddress) {
+      throw new Error(`No metadata address found in metadata pointer extension for mint: ${mintAddress}`);
+    }
+
+    // Check if metadata is stored directly in the mint account
+    if (metadataAddress.toString() === mintAddress.toString()) {
+      // Metadata is stored directly in the mint account
+      // Find the TokenMetadata extension
+      const tokenMetadataExtension = extensions.find((extension: any) => extension.__kind === "TokenMetadata");
+
+      if (!tokenMetadataExtension) {
+        throw new Error(`TokenMetadata extension not found in mint account: ${mintAddress}`);
+      }
+
+      // Extract metadata from the TokenMetadata extension
+      const tokenMetadata = tokenMetadataExtension as any;
+      const additionalMetadata: Record<string, string> = {};
+      if (tokenMetadata.additionalMetadata instanceof Map) {
+        for (const [key, value] of tokenMetadata.additionalMetadata) {
+          additionalMetadata[key] = value;
+        }
+      }
+
+      return {
+        updateAuthority: tokenMetadata.updateAuthority?.value,
+        mint: tokenMetadata.mint,
+        name: tokenMetadata.name,
+        symbol: tokenMetadata.symbol,
+        uri: tokenMetadata.uri,
+        additionalMetadata,
+      };
+    } else {
+      // Metadata is stored in a separate account
+      const metadataAccount = await rpc.getAccountInfo(metadataAddress, { commitment }).send();
+
+      if (!metadataAccount.value) {
+        throw new Error(`Metadata account not found: ${metadataAddress}`);
+      }
+
+      // Parse the metadata from the separate metadata account
+      const data = metadataAccount.value.data;
+      return parseTokenMetadataAccount(data);
+    }
+  };
+
+
+  // Helper function to parse TokenMetadata account data
+  const parseTokenMetadataAccount = (data: Uint8Array) => {
+
+    // Skip the 8-byte discriminator
+    let offset = DISCRIMINATOR_SIZE;
+
+    // Read update authority (32 bytes)
+    const updateAuthority = data.slice(offset, offset + PUBLIC_KEY_SIZE);
+    offset += PUBLIC_KEY_SIZE;
+
+    // Read mint (32 bytes)
+    const mintAddressFromMetadata = data.slice(offset, offset + PUBLIC_KEY_SIZE);
+    offset += PUBLIC_KEY_SIZE;
+
+    // Read name length (4 bytes, little endian)
+    const nameLength = new DataView(data.buffer, data.byteOffset).getUint32(offset, true);
+    offset += LENGTH_FIELD_SIZE;
+
+    // Read name (variable length)
+    const name = new TextDecoder('utf8').decode(data.slice(offset, offset + nameLength));
+    offset += nameLength;
+
+    // Read symbol length (4 bytes, little endian)
+    const symbolLength = new DataView(data.buffer, data.byteOffset).getUint32(offset, true);
+    offset += LENGTH_FIELD_SIZE;
+
+    // Read symbol (variable length)
+    const symbol = new TextDecoder('utf8').decode(data.slice(offset, offset + symbolLength));
+    offset += symbolLength;
+
+    // Read URI length (4 bytes, little endian)
+    const uriLength = new DataView(data.buffer, data.byteOffset).getUint32(offset, true);
+    offset += LENGTH_FIELD_SIZE;
+
+    // Read URI (variable length)
+    const uri = new TextDecoder('utf8').decode(data.slice(offset, offset + uriLength));
+    offset += uriLength;
+
+    // Read additional metadata count (4 bytes, little endian)
+    const additionalMetadataCount = new DataView(data.buffer, data.byteOffset).getUint32(offset, true);
+    offset += LENGTH_FIELD_SIZE;
+
+    // Parse additional metadata
+    const additionalMetadata: Record<string, string> = {};
+    for (let i = 0; i < additionalMetadataCount; i++) {
+      // Read key length (4 bytes, little endian)
+      const keyLength = new DataView(data.buffer, data.byteOffset).getUint32(offset, true);
+      offset += LENGTH_FIELD_SIZE;
+
+      // Read key (variable length)
+      const key = new TextDecoder('utf8').decode(data.slice(offset, offset + keyLength));
+      offset += keyLength;
+
+      // Read value length (4 bytes, little endian)
+      const valueLength = new DataView(data.buffer, data.byteOffset).getUint32(offset, true);
+      offset += LENGTH_FIELD_SIZE;
+
+      // Read value (variable length)
+      const value = new TextDecoder('utf8').decode(data.slice(offset, offset + valueLength));
+      offset += valueLength;
+
+      additionalMetadata[key] = value;
+    }
+
+    return {
+      updateAuthority: updateAuthority,
+      mint: mintAddressFromMetadata,
+      name,
+      symbol,
+      uri,
+      additionalMetadata,
+    };
+  };
+
+  return getTokenMetadata;
 };

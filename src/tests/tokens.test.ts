@@ -167,3 +167,42 @@ describe("getTokenAccountAddress", () => {
     assert.equal(pyusdTokenAccountAddress, MIKEMACCANA_DOT_SOL_PYUSD_ACCOUNT);
   });
 });
+
+describe("getTokenMetadata", () => {
+  test("getTokenMetadata retrieves metadata for a token with metadata pointer extension", async () => {
+    const connection = connect();
+    const [sender] = await connection.createWallets(1, {
+      airdropAmount: lamports(1n * SOL),
+    });
+
+    // Create a token with metadata
+    const mintAddress = await connection.createTokenMint({
+      mintAuthority: sender,
+      decimals: 9,
+      name: "Unit test token",
+      symbol: "TEST",
+      uri: "https://example.com",
+      additionalMetadata: {
+        keyOne: "valueOne",
+        keyTwo: "valueTwo",
+      },
+    });
+
+    // Now test getting the metadata
+    const metadata = await connection.getTokenMetadata(mintAddress);
+
+    assert.ok(metadata);
+    assert.ok(metadata.name);
+    assert.ok(metadata.symbol);
+    assert.ok(metadata.uri);
+    assert.ok(metadata.updateAuthority);
+    assert.ok(metadata.mint);
+    assert.ok(metadata.additionalMetadata);
+
+    // Verify the metadata contains expected information
+    assert.equal(metadata.symbol, "TEST");
+    assert.equal(metadata.name, "Unit test token");
+    assert.equal(metadata.uri, "https://example.com");
+    assert.equal(metadata.additionalMetadata.description, "Only Possible On Solana");
+  });
+});
