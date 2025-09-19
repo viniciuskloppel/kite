@@ -1,5 +1,5 @@
 import { Commitment, generateKeyPairSigner, Lamports, some } from "@solana/kit";
-import { Address, address as toAddress } from "@solana/kit";
+import { Address } from "@solana/kit";
 import {
   // This is badly named. It's a function that returns an object.
   extension as getExtensionData,
