@@ -444,10 +444,11 @@ export interface Connection {
   createTokenMint: (params: {
     mintAuthority: KeyPairSigner;
     decimals: number;
-    name: string;
-    symbol: string;
-    uri: string;
+    name?: string;
+    symbol?: string;
+    uri?: string;
     additionalMetadata?: Record<string, string> | Map<string, string>;
+    useTokenExtensions?: boolean;
   }) => Promise<Address>;
 
   /**
