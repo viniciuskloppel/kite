@@ -72,6 +72,7 @@ export const transferTokensFactory = (
     amount,
     maximumClientSideRetries = 0,
     abortSignal = null,
+    useTokenExtensions = true,
   }: {
     sender: KeyPairSigner;
     destination: Address;
@@ -79,7 +80,10 @@ export const transferTokensFactory = (
     amount: bigint;
     maximumClientSideRetries?: number;
     abortSignal?: AbortSignal | null;
+    useTokenExtensions?: boolean;
   }) => {
+    const tokenProgram = useTokenExtensions ? TOKEN_EXTENSIONS_PROGRAM : TOKEN_PROGRAM;
+
     const mint = await getMint(mintAddress);
 
     if (!mint) {
@@ -88,9 +92,9 @@ export const transferTokensFactory = (
 
     const decimals = mint.data.decimals;
 
-    const sourceAssociatedTokenAddress = await getTokenAccountAddress(sender.address, mintAddress, true);
+    const sourceAssociatedTokenAddress = await getTokenAccountAddress(sender.address, mintAddress, useTokenExtensions);
 
-    const destinationAssociatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, true);
+    const destinationAssociatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, useTokenExtensions);
 
     // Create an associated token account for the receiver
     const createAssociatedTokenInstruction = getCreateAssociatedTokenInstruction({
@@ -98,6 +102,7 @@ export const transferTokensFactory = (
       mint: mintAddress,
       owner: destination,
       payer: sender,
+      tokenProgram,
     });
 
     const transferInstruction = getTransferCheckedInstruction({
@@ -107,7 +112,7 @@ export const transferTokensFactory = (
       authority: sender.address,
       amount,
       decimals,
-    });
+    }, { programAddress: tokenProgram });
 
     const signature = await sendTransactionFromInstructions({
       feePayer: sender,
@@ -385,24 +390,28 @@ export const mintTokensFactory = (
     mintAuthority: KeyPairSigner,
     amount: bigint,
     destination: Address,
+    useTokenExtensions = true,
   ) => {
+    const tokenProgram = useTokenExtensions ? TOKEN_EXTENSIONS_PROGRAM : TOKEN_PROGRAM;
+
     // Create Associated Token Account
     const createAtaInstruction = await getCreateAssociatedTokenInstructionAsync({
       payer: mintAuthority,
       mint: mintAddress,
       owner: destination,
+      tokenProgram,
     });
 
     // Derive destination associated token address
     // Instruction to mint tokens to associated token account
-    const associatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, true);
+    const associatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, useTokenExtensions);
 
     const mintToInstruction = getMintToInstruction({
       mint: mintAddress,
       token: associatedTokenAddress,
       mintAuthority: mintAuthority.address,
       amount: amount,
-    });
+    }, { programAddress: tokenProgram });
 
     const transactionSignature = await sendTransactionFromInstructions({
       feePayer: mintAuthority,
@@ -431,7 +440,7 @@ export const getTokenAccountBalanceFactory = (rpc: ReturnType<typeof createSolan
     useTokenExtensions?: boolean;
   }) => {
     const { wallet, mint, tokenAccount, useTokenExtensions } = options;
-    if (!options.tokenAccount) {
+    if (!tokenAccount) {
       if (!wallet || !mint) {
         throw new Error("wallet and mint are required when tokenAccount is not provided");
       }

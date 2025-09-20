@@ -92,18 +92,6 @@ describe("tokens", () => {
     }), { message: "name, symbol, and uri are required when useTokenExtensions is true" });
   });
 
-  test("We can make tokens using the classic token program", async () => {
-    mintAddress = await connection.createTokenMint({
-      mintAuthority: sender,
-      decimals,
-      useTokenExtensions: false,
-    });
-    assert.ok(mintAddress);
-    const mint = await connection.rpc.getAccountInfo(mintAddress, {encoding: 'base64'}).send();
-    assert.ok(mint);
-    assert.equal(mint.value?.owner, TOKEN_PROGRAM);
-  });
-
   test("The mint authority can mintTokens", async () => {
     // update the token to use token 2022 for compatibility with remaining tests
     mintAddress = await connection.createTokenMint({
@@ -283,4 +271,106 @@ describe("getTokenMetadata", () => {
     assert.equal(metadata.name, "Unit test token");
     assert.equal(metadata.uri, "https://example.com");
   });
+});
+
+describe("classic token program", () => {
+  let connection: Connection;
+  let sender: KeyPairSigner;
+  let mintAddress: Address;
+  let recipient: KeyPairSigner;
+  const decimals = 9;
+  before(async () => {
+    connection = connect();
+    [sender, recipient] = await connection.createWallets(2, {
+      airdropAmount: lamports(1n * SOL),
+      commitment: "processed",
+    });
+  });
+  test("We can make tokens using the classic token program", async () => {
+    mintAddress = await connection.createTokenMint({
+      mintAuthority: sender,
+      decimals,
+      useTokenExtensions: false,
+    });
+    assert.ok(mintAddress);
+    const mint = await connection.rpc.getAccountInfo(mintAddress, {encoding: 'base64'}).send();
+    assert.ok(mint);
+    assert.equal(mint.value?.owner, TOKEN_PROGRAM);
+  });
+  test("The mint authority can mintTokens using the classic token program", async () => {
+    const mintTokensTransactionSignature = await connection.mintTokens(mintAddress, sender, 1n, sender.address, false);
+    assert.ok(mintTokensTransactionSignature);
+  });
+  test("We can get the mint using (for a mint using the classic token program)", async () => {
+    const mint = await connection.getMint(mintAddress);
+    assert.ok(mint);
+  });
+
+  test("transferTokens transfers tokens from one account to another using the classic token program", async () => {
+    const transferTokensTransactionSignature = await connection.transferTokens({
+      sender,
+      destination: recipient.address,
+      mintAddress,
+      amount: 1n,
+      useTokenExtensions: false,
+    });
+
+    assert.ok(transferTokensTransactionSignature);
+  });
+
+  test("getTokenAccountBalance returns the correct balance using wallet and mint", async () => {
+    const balance = await connection.getTokenAccountBalance({
+      wallet: recipient.address,
+      mint: mintAddress,
+      useTokenExtensions: false,
+    });
+    assert(balance.amount);
+    assert(balance.decimals);
+    assert(balance.uiAmount);
+    assert(balance.uiAmountString);
+  });
+
+  test("getTokenAccountBalance returns the correct balance using direct token account", async () => {
+    const tokenAccount = await connection.getTokenAccountAddress(recipient.address, mintAddress, false);
+    const balance = await connection.getTokenAccountBalance({
+      tokenAccount,
+      useTokenExtensions: false,
+    });
+    assert(balance.amount);
+    assert(balance.decimals);
+    assert(balance.uiAmount);
+    assert(balance.uiAmountString);
+  });
+
+  test("checkTokenAccountIsClosed returns false for an open token account", async () => {
+    const tokenAccount = await connection.getTokenAccountAddress(recipient.address, mintAddress, false);
+    const isClosed = await connection.checkTokenAccountIsClosed({
+      tokenAccount,
+    });
+    assert.equal(isClosed, false);
+  });  
+
+  test("checkTokenAccountIsClosed returns false when using wallet and mint for an open account", async () => {
+    const isClosed = await connection.checkTokenAccountIsClosed({
+      wallet: recipient.address,
+      mint: mintAddress,
+      useTokenExtensions: false,
+    });
+    assert.equal(isClosed, false);
+  });
+
+  test("checkTokenAccountIsClosed returns true for a non-existent token account", async () => {
+    const nonExistentWallet = await connection.createWallet();
+    const isClosed = await connection.checkTokenAccountIsClosed({
+      wallet: nonExistentWallet.address,
+      mint: mintAddress,
+      useTokenExtensions: false,
+    });
+    assert.equal(isClosed, true);
+  });
+
+  test("cannot get metadata for a mint using the classic token program", async () => {
+    await assert.rejects(() => connection.getTokenMetadata(mintAddress));
+  });
+
 });
