@@ -1,4 +1,4 @@
-import { Commitment, generateKeyPairSigner, Lamports, some } from "@solana/kit";
+import { Account, Commitment, generateKeyPairSigner, Lamports, some } from "@solana/kit";
 import { Address } from "@solana/kit";
 import {
   // This is badly named. It's a function that returns an object.
@@ -16,6 +16,7 @@ import {
   fetchMint,
   getCreateAssociatedTokenInstruction,
   Extension,
+  Mint,
 } from "@solana-program/token-2022";
 const { getInitializeMintInstruction: getClassicInitializeMintInstruction, getMintSize: getClassicMintSize } = await import("@solana-program/token");
 import { createSolanaRpcFromTransport, KeyPairSigner } from "@solana/kit";
@@ -486,20 +487,13 @@ export const checkTokenAccountIsClosedFactory = (
 export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFromTransport>) => {
   const getTokenMetadata = async (mintAddress: Address, commitment: Commitment = "confirmed") => {
     // First, try to get the mint account using Token-2022
-    let mint;
+    let mint: Account<Mint, string>;
     try {
       mint = await fetchMint(rpc, mintAddress, { commitment });
     } catch (error: unknown) {
-      // If Token Extensions fails, try classic Token program
-      const { fetchMint: fetchClassicMint } = await import("@solana-program/token");
-      try {
-        mint = await fetchClassicMint(rpc, mintAddress, { commitment });
-        // Classic Token program doesn't have metadata extensions
-        throw new Error(`Mint ${mintAddress} uses classic Token program which doesn't support metadata extensions`);
-      } catch (classicError) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        throw new Error(`Mint not found: ${mintAddress}. Neither Token Extensions nor classic Token program could decode this mint. Original error: ${errorMessage}`);
-      }
+      // We don't need to check again using the classic program fetchMint fucntion b/c fetchMint is backwards compatible with the classic program
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Mint not found: ${mintAddress}. Original error: ${errorMessage}`);
     }
 
     if (!mint) {
@@ -513,9 +507,9 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
     }
     
     // Find the metadata pointer extension
-    const metadataPointerExtension = extensions.find((extension: any) => extension.__kind === "MetadataPointer");
+    const metadataPointerExtension = extensions.find((extension: Extension) => extension.__kind === "MetadataPointer");
 
-    if (!metadataPointerExtension) {
+    if (!metadataPointerExtension || metadataPointerExtension.metadataAddress.__option === "None") {
       throw new Error(`No metadata pointer extension found for mint: ${mintAddress}`);
     }
 
@@ -530,7 +524,7 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
     if (metadataAddress.toString() === mintAddress.toString()) {
       // Metadata is stored directly in the mint account
       // Find the TokenMetadata extension
-      const tokenMetadataExtension = extensions.find((extension: any) => extension.__kind === "TokenMetadata");
+      const tokenMetadataExtension = extensions.find((extension: Extension) => extension.__kind === "TokenMetadata");
 
       if (!tokenMetadataExtension) {
         throw new Error(`TokenMetadata extension not found in mint account: ${mintAddress}`);
@@ -544,8 +538,10 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
         }
       }
 
+      const updateAuthority = tokenMetadataExtension.updateAuthority.__option === "Some" ? tokenMetadataExtension.updateAuthority?.value : undefined;
+
       return {
-        updateAuthority: tokenMetadataExtension.updateAuthority?.value,
+        updateAuthority,
         mint: tokenMetadataExtension.mint,
         name: tokenMetadataExtension.name,
         symbol: tokenMetadataExtension.symbol,
