@@ -214,16 +214,28 @@ export const connect = (
 
   switch (true) {
     case clusterNameOrURL.includes("mainnet"):
-      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptionsMainnet<SolanaRpcSubscriptionsApi> });
+      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
+        rpc,
+        rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptionsMainnet<SolanaRpcSubscriptionsApi>,
+      });
       break;
     case clusterNameOrURL.includes("devnet"):
-      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptionsDevnet<SolanaRpcSubscriptionsApi> });
+      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
+        rpc,
+        rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptionsDevnet<SolanaRpcSubscriptionsApi>,
+      });
       break;
     case clusterNameOrURL.includes("testnet"):
-      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptionsTestnet<SolanaRpcSubscriptionsApi> });
+      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
+        rpc,
+        rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptionsTestnet<SolanaRpcSubscriptionsApi>,
+      });
       break;
     default:
-      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptions<SolanaRpcSubscriptionsApi> });
+      sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
+        rpc,
+        rpcSubscriptions: typedRpcSubscriptions as RpcSubscriptions<SolanaRpcSubscriptionsApi>,
+      });
       break;
   }
 

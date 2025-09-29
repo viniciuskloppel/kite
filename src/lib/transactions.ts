@@ -20,7 +20,7 @@ import {
   Blockhash,
 } from "@solana/kit";
 import { getComputeUnitEstimate, getPriorityFeeEstimate, sendTransactionWithRetries } from "./smart-transactions";
-import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction} from "@solana-program/compute-budget";
+import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
 import { DEFAULT_TRANSACTION_RETRIES } from "./constants";
 import { getErrorMessageFromLogs } from "./logs";
 
@@ -84,7 +84,7 @@ export const sendTransactionFromInstructionsFactory = (
     skipPreflight = true,
     maximumClientSideRetries = enableClientSideRetries ? DEFAULT_TRANSACTION_RETRIES : 0,
     abortSignal = null,
-    timeout
+    timeout,
   }: {
     feePayer: KeyPairSigner;
     instructions: Array<Instruction>;
@@ -94,12 +94,11 @@ export const sendTransactionFromInstructionsFactory = (
     abortSignal?: AbortSignal | null;
     timeout?: number;
   }) => {
-
     // use a placeholder for simulation so we can wait to do the getLatestBlockhash call as the last step
     let placeholderBlockhash = {
-      blockhash: '11111111111111111111111111111111' as Blockhash,
+      blockhash: "11111111111111111111111111111111" as Blockhash,
       lastValidBlockHeight: 0n,
-    } as const;    
+    } as const;
 
     let transactionMessage = pipe(
       createTransactionMessage({ version: 0 }),
