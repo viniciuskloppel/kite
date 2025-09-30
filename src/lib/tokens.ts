@@ -550,34 +550,34 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
     if (metadataAddress.toString() === mintAddress.toString()) {
       // Metadata is stored directly in the mint account
       // Find the TokenMetadata extension
-      const tokenMetadataExtension = extensions.find((extension: Extension) => extension.__kind === "TokenMetadata");
+      const tokenMetadata = extensions.find((extension: Extension) => extension.__kind === "TokenMetadata");
 
-      if (!tokenMetadataExtension) {
+      if (!tokenMetadata) {
         throw new Error(`TokenMetadata extension not found in mint account: ${mintAddress}`);
       }
 
       // Extract metadata from the TokenMetadata extension
       const additionalMetadata: Record<string, string> = {};
-      if (tokenMetadataExtension.additionalMetadata instanceof Map) {
-        for (const [key, value] of tokenMetadataExtension.additionalMetadata) {
+      if (tokenMetadata.additionalMetadata instanceof Map) {
+        for (const [key, value] of tokenMetadata.additionalMetadata) {
           additionalMetadata[key] = value;
         }
       }
 
       const updateAuthority =
-        tokenMetadataExtension.updateAuthority.__option === "Some"
-          ? tokenMetadataExtension.updateAuthority?.value
+        tokenMetadata.updateAuthority.__option === "Some"
+          ? tokenMetadata.updateAuthority?.value
           : undefined;
 
       return {
         updateAuthority:
-          tokenMetadataExtension.updateAuthority?.__option === "Some"
-            ? tokenMetadataExtension.updateAuthority.value
+          tokenMetadata.updateAuthority?.__option === "Some"
+            ? tokenMetadata.updateAuthority.value
             : null,
-        mint: tokenMetadataExtension.mint,
-        name: tokenMetadataExtension.name,
-        symbol: tokenMetadataExtension.symbol,
-        uri: tokenMetadataExtension.uri,
+        mint: tokenMetadata.mint,
+        name: tokenMetadata.name,
+        symbol: tokenMetadata.symbol,
+        uri: tokenMetadata.uri,
         additionalMetadata,
       };
     } else {
