@@ -9,7 +9,7 @@ describe("getLogs", () => {
     const connection = connect();
     const keyPairSigner = await generateKeyPairSigner();
 
-    const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL));
+    const signature = await connection.airdropIfRequired(keyPairSigner.address, lamports(2n * SOL), lamports(1n * SOL), null);
 
     // Signature should never be null as we always need an airdrop
     assert.ok(signature);
