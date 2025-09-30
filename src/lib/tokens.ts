@@ -401,21 +401,21 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
       throw new Error(`Mint not found: ${mintAddress}`);
     }
 
-    // The fetchMint function IS working! The extensions are in mint.data.extensions
-    let extensions: Array<Extension> = [];
-    if (mint.data?.extensions.__option === "Some") {
-      extensions = mint.data?.extensions?.value || [];
-    }
-    
+    // Extract extensions from the mint account data
+    const extensions = mint.data?.extensions?.__option === "Some" ? mint.data.extensions.value : [];
+
     // Find the metadata pointer extension
-    const metadataPointerExtension = extensions.find((extension: any) => extension.__kind === "MetadataPointer");
+    const metadataPointerExtension = extensions.find((extension: Extension) => extension.__kind === "MetadataPointer");
 
     if (!metadataPointerExtension) {
       throw new Error(`No metadata pointer extension found for mint: ${mintAddress}`);
     }
 
     // Get the metadata address from the extension
-    const metadataAddress = metadataPointerExtension.metadataAddress?.value;
+    const metadataAddress =
+      metadataPointerExtension.metadataAddress?.__option === "Some"
+        ? metadataPointerExtension.metadataAddress.value
+        : null;
 
     if (!metadataAddress) {
       throw new Error(`No metadata address found in metadata pointer extension for mint: ${mintAddress}`);
@@ -425,7 +425,7 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
     if (metadataAddress.toString() === mintAddress.toString()) {
       // Metadata is stored directly in the mint account
       // Find the TokenMetadata extension
-      const tokenMetadataExtension = extensions.find((extension: any) => extension.__kind === "TokenMetadata");
+      const tokenMetadataExtension = extensions.find((extension: Extension) => extension.__kind === "TokenMetadata");
 
       if (!tokenMetadataExtension) {
         throw new Error(`TokenMetadata extension not found in mint account: ${mintAddress}`);
@@ -440,7 +440,7 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
       }
 
       return {
-        updateAuthority: tokenMetadataExtension.updateAuthority?.value,
+        updateAuthority: tokenMetadataExtension.updateAuthority?.__option === "Some" ? tokenMetadataExtension.updateAuthority.value : null,
         mint: tokenMetadataExtension.mint,
         name: tokenMetadataExtension.name,
         symbol: tokenMetadataExtension.symbol,
