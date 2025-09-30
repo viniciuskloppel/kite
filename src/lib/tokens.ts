@@ -1,5 +1,5 @@
 import { Commitment, generateKeyPairSigner, Lamports, some } from "@solana/kit";
-import { Address } from "@solana/kit";
+import { Address, address as toAddress } from "@solana/kit";
 import {
   // This is badly named. It's a function that returns an object.
   extension as getExtensionData,
@@ -15,6 +15,7 @@ import {
   getTransferCheckedInstruction,
   fetchMint,
   getCreateAssociatedTokenInstruction,
+  Extension,
 } from "@solana-program/token-2022";
 import { createSolanaRpcFromTransport, KeyPairSigner } from "@solana/kit";
 import { sendTransactionFromInstructionsFactory } from "./transactions";
@@ -256,13 +257,14 @@ export const createTokenMintFactory = (
       uri: tokenMetadataExtensionData.uri,
     });
 
-    // Instruction to update token metadata extension
-    // This either updates existing fields or adds the custom additionalMetadata fields
-    const updateTokenMetadataInstruction = getUpdateTokenMetadataFieldInstruction({
-      metadata: mint.address,
-      updateAuthority: mintAuthority,
-      field: tokenMetadataField("Key", ["description"]),
-      value: "Only Possible On Solana",
+    // Create update instructions for all additional metadata fields
+    const updateInstructions = Array.from(additionalMetadataMap.entries()).map(([key, value]) => {
+      return getUpdateTokenMetadataFieldInstruction({
+        metadata: mint.address,
+        updateAuthority: mintAuthority,
+        field: tokenMetadataField("Key", [key]),
+        value: value,
+      });
     });
 
     // Order of instructions to add to transaction
@@ -271,7 +273,7 @@ export const createTokenMintFactory = (
       initializeMetadataPointerInstruction,
       initializeMintInstruction,
       initializeTokenMetadataInstruction,
-      updateTokenMetadataInstruction,
+      ...updateInstructions,
     ];
 
     await sendTransactionFromInstructions({
@@ -411,14 +413,17 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
     const extensions = mint.data?.extensions?.__option === "Some" ? mint.data.extensions.value : [];
 
     // Find the metadata pointer extension
-    const metadataPointerExtension = extensions.find((extension: any) => extension.__kind === "MetadataPointer");
+    const metadataPointerExtension = extensions.find((extension: Extension) => extension.__kind === "MetadataPointer");
 
     if (!metadataPointerExtension) {
       throw new Error(`No metadata pointer extension found for mint: ${mintAddress}`);
     }
 
     // Get the metadata address from the extension
-    const metadataAddress = (metadataPointerExtension as any).metadataAddress?.value;
+    const metadataAddress =
+      metadataPointerExtension.metadataAddress?.__option === "Some"
+        ? metadataPointerExtension.metadataAddress.value
+        : null;
 
     if (!metadataAddress) {
       throw new Error(`No metadata address found in metadata pointer extension for mint: ${mintAddress}`);
@@ -428,27 +433,29 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
     if (metadataAddress.toString() === mintAddress.toString()) {
       // Metadata is stored directly in the mint account
       // Find the TokenMetadata extension
-      const tokenMetadataExtension = extensions.find((extension: any) => extension.__kind === "TokenMetadata");
+      const tokenMetadataExtension = extensions.find((extension: Extension) => extension.__kind === "TokenMetadata");
 
       if (!tokenMetadataExtension) {
         throw new Error(`TokenMetadata extension not found in mint account: ${mintAddress}`);
       }
 
       // Extract metadata from the TokenMetadata extension
-      const tokenMetadata = tokenMetadataExtension as any;
       const additionalMetadata: Record<string, string> = {};
-      if (tokenMetadata.additionalMetadata instanceof Map) {
-        for (const [key, value] of tokenMetadata.additionalMetadata) {
+      if (tokenMetadataExtension.additionalMetadata instanceof Map) {
+        for (const [key, value] of tokenMetadataExtension.additionalMetadata) {
           additionalMetadata[key] = value;
         }
       }
 
       return {
-        updateAuthority: tokenMetadata.updateAuthority?.value,
-        mint: tokenMetadata.mint,
-        name: tokenMetadata.name,
-        symbol: tokenMetadata.symbol,
-        uri: tokenMetadata.uri,
+        updateAuthority:
+          tokenMetadataExtension.updateAuthority?.__option === "Some"
+            ? tokenMetadataExtension.updateAuthority.value
+            : null,
+        mint: tokenMetadataExtension.mint,
+        name: tokenMetadataExtension.name,
+        symbol: tokenMetadataExtension.symbol,
+        uri: tokenMetadataExtension.uri,
         additionalMetadata,
       };
     } else {
