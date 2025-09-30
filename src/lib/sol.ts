@@ -48,7 +48,7 @@ export const airdropIfRequiredFactory = (
         lamports: airdropAmount,
       });
       return signature;
-    }
+    };
     if (airdropAmount < 0n) {
       throw new Error(`Airdrop amount must be a positive number, not ${airdropAmount}`);
     }
