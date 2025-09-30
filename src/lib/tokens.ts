@@ -18,7 +18,8 @@ import {
   Extension,
   Mint,
 } from "@solana-program/token-2022";
-const { getInitializeMintInstruction: getClassicInitializeMintInstruction, getMintSize: getClassicMintSize } = await import("@solana-program/token");
+const { getInitializeMintInstruction: getClassicInitializeMintInstruction, getMintSize: getClassicMintSize } =
+  await import("@solana-program/token");
 import { createSolanaRpcFromTransport, KeyPairSigner } from "@solana/kit";
 import { sendTransactionFromInstructionsFactory } from "./transactions";
 import { getCreateAccountInstruction, getTransferSolInstruction } from "@solana-program/system";
@@ -101,7 +102,11 @@ export const transferTokensFactory = (
 
     const sourceAssociatedTokenAddress = await getTokenAccountAddress(sender.address, mintAddress, useTokenExtensions);
 
-    const destinationAssociatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, useTokenExtensions);
+    const destinationAssociatedTokenAddress = await getTokenAccountAddress(
+      destination,
+      mintAddress,
+      useTokenExtensions,
+    );
 
     // Create an associated token account for the receiver
     const createAssociatedTokenInstruction = getCreateAssociatedTokenInstruction({
@@ -112,14 +117,17 @@ export const transferTokensFactory = (
       tokenProgram,
     });
 
-    const transferInstruction = getTransferCheckedInstruction({
-      source: sourceAssociatedTokenAddress,
-      mint: mintAddress,
-      destination: destinationAssociatedTokenAddress,
-      authority: sender.address,
-      amount,
-      decimals,
-    }, { programAddress: tokenProgram });
+    const transferInstruction = getTransferCheckedInstruction(
+      {
+        source: sourceAssociatedTokenAddress,
+        mint: mintAddress,
+        destination: destinationAssociatedTokenAddress,
+        authority: sender.address,
+        amount,
+        decimals,
+      },
+      { programAddress: tokenProgram },
+    );
 
     const signature = await sendTransactionFromInstructions({
       feePayer: sender,
@@ -170,7 +178,7 @@ const createClassicTokenMint = async ({
   mintAuthority: KeyPairSigner;
   decimals: number;
 }): Promise<Address> => {
-  const mint = await generateKeyPairSigner();  
+  const mint = await generateKeyPairSigner();
   const mintSpace = BigInt(getClassicMintSize());
   const rent = await rpc.getMinimumBalanceForRentExemption(mintSpace).send();
 
@@ -182,16 +190,16 @@ const createClassicTokenMint = async ({
     programAddress: TOKEN_PROGRAM,
   });
 
-  const initializeMintInstruction = getClassicInitializeMintInstruction({
-    mint: mint.address,
-    decimals,
-    mintAuthority: mintAuthority.address,
-  }, { programAddress: TOKEN_PROGRAM });
+  const initializeMintInstruction = getClassicInitializeMintInstruction(
+    {
+      mint: mint.address,
+      decimals,
+      mintAuthority: mintAuthority.address,
+    },
+    { programAddress: TOKEN_PROGRAM },
+  );
 
-  const instructions = [
-    createAccountInstruction,
-    initializeMintInstruction,
-  ];
+  const instructions = [createAccountInstruction, initializeMintInstruction];
 
   await sendTransactionFromInstructions({
     feePayer: mintAuthority,
@@ -351,7 +359,7 @@ export const createTokenMintFactory = (
     symbol,
     uri,
     additionalMetadata = {},
-    useTokenExtensions = true
+    useTokenExtensions = true,
   }: {
     mintAuthority: KeyPairSigner;
     decimals: number;
@@ -413,12 +421,15 @@ export const mintTokensFactory = (
     // Instruction to mint tokens to associated token account
     const associatedTokenAddress = await getTokenAccountAddress(destination, mintAddress, useTokenExtensions);
 
-    const mintToInstruction = getMintToInstruction({
-      mint: mintAddress,
-      token: associatedTokenAddress,
-      mintAuthority: mintAuthority.address,
-      amount: amount,
-    }, { programAddress: tokenProgram });
+    const mintToInstruction = getMintToInstruction(
+      {
+        mint: mintAddress,
+        token: associatedTokenAddress,
+        mintAuthority: mintAuthority.address,
+        amount: amount,
+      },
+      { programAddress: tokenProgram },
+    );
 
     const transactionSignature = await sendTransactionFromInstructions({
       feePayer: mintAuthority,
@@ -553,7 +564,10 @@ export const getTokenMetadataFactory = (rpc: ReturnType<typeof createSolanaRpcFr
         }
       }
 
-      const updateAuthority = tokenMetadataExtension.updateAuthority.__option === "Some" ? tokenMetadataExtension.updateAuthority?.value : undefined;
+      const updateAuthority =
+        tokenMetadataExtension.updateAuthority.__option === "Some"
+          ? tokenMetadataExtension.updateAuthority?.value
+          : undefined;
 
       return {
         updateAuthority:

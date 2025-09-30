@@ -61,35 +61,45 @@ describe("tokens", () => {
   });
 
   test("We cannot use Token Extensions without providing a name", async () => {
-    await assert.rejects(() => connection.createTokenMint({
-      mintAuthority: sender,
-      decimals,
-      symbol: "TEST",
-      uri: "https://example.com",
-      useTokenExtensions: true,
-    }), { message: "name, symbol, and uri are required when useTokenExtensions is true" });
+    await assert.rejects(
+      () =>
+        connection.createTokenMint({
+          mintAuthority: sender,
+          decimals,
+          symbol: "TEST",
+          uri: "https://example.com",
+          useTokenExtensions: true,
+        }),
+      { message: "name, symbol, and uri are required when useTokenExtensions is true" },
+    );
   });
 
   test("We cannot use Token Extensions without providing a symbol", async () => {
-
-    await assert.rejects(() => connection.createTokenMint({
-      mintAuthority: sender,
-      decimals,
-      name: "Unit test token",
-      uri: "https://example.com",
-      useTokenExtensions: true,
-    }), { message: "name, symbol, and uri are required when useTokenExtensions is true" });
+    await assert.rejects(
+      () =>
+        connection.createTokenMint({
+          mintAuthority: sender,
+          decimals,
+          name: "Unit test token",
+          uri: "https://example.com",
+          useTokenExtensions: true,
+        }),
+      { message: "name, symbol, and uri are required when useTokenExtensions is true" },
+    );
   });
 
   test("We cannot use Token Extensions without providing a uri", async () => {
-
-    await assert.rejects(() => connection.createTokenMint({
-      mintAuthority: sender,
-      decimals,
-      name: "Unit test token",
-      symbol: "TEST",
-      useTokenExtensions: true,
-    }), { message: "name, symbol, and uri are required when useTokenExtensions is true" });
+    await assert.rejects(
+      () =>
+        connection.createTokenMint({
+          mintAuthority: sender,
+          decimals,
+          name: "Unit test token",
+          symbol: "TEST",
+          useTokenExtensions: true,
+        }),
+      { message: "name, symbol, and uri are required when useTokenExtensions is true" },
+    );
   });
 
   test("The mint authority can mintTokens", async () => {
@@ -293,7 +303,7 @@ describe("classic token program", () => {
       useTokenExtensions: false,
     });
     assert.ok(mintAddress);
-    const mint = await connection.rpc.getAccountInfo(mintAddress, {encoding: 'base64'}).send();
+    const mint = await connection.rpc.getAccountInfo(mintAddress, { encoding: "base64" }).send();
     assert.ok(mint);
     assert.equal(mint.value?.owner, TOKEN_PROGRAM);
   });
@@ -348,7 +358,7 @@ describe("classic token program", () => {
       tokenAccount,
     });
     assert.equal(isClosed, false);
-  });  
+  });
 
   test("checkTokenAccountIsClosed returns false when using wallet and mint for an open account", async () => {
     const isClosed = await connection.checkTokenAccountIsClosed({
@@ -372,5 +382,4 @@ describe("classic token program", () => {
   test("cannot get metadata for a mint using the classic token program", async () => {
     await assert.rejects(() => connection.getTokenMetadata(mintAddress));
   });
-
 });
