@@ -1,4 +1,4 @@
-import { createSignerFromKeyPair, KeyPairSigner, Lamports } from "@solana/kit";
+import { Commitment, createSignerFromKeyPair, KeyPairSigner, Lamports } from "@solana/kit";
 import { DEFAULT_AIRDROP_AMOUNT, DEFAULT_ENV_KEYPAIR_VARIABLE_NAME } from "./constants";
 import { addKeyPairSignerToEnvFile, grindKeyPair, loadWalletFromEnvironment } from "./keypair";
 import dotenv from "dotenv";
@@ -13,6 +13,7 @@ export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdrop
       envFileName?: string | null;
       envVariableName?: string;
       airdropAmount?: Lamports | null;
+      commitment?: Commitment | null;
     } = {},
   ): Promise<KeyPairSigner> => {
     if (isBrowser) {
@@ -31,6 +32,7 @@ export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdrop
       envFileName = null,
       envVariableName = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
       airdropAmount = DEFAULT_AIRDROP_AMOUNT,
+      commitment = null,
     } = options;
 
     let keyPairSigner: KeyPairSigner;
@@ -61,7 +63,7 @@ export const createWalletFactory = (airdropIfRequired: ReturnType<typeof airdrop
 
     if (airdropAmount) {
       // Since this is a brand new wallet (and has no existing balance), we can just use the airdrop amount for the minimum balance
-      await airdropIfRequired(keyPairSigner.address, airdropAmount, airdropAmount);
+      await airdropIfRequired(keyPairSigner.address, airdropAmount, airdropAmount, commitment);
     }
 
     return keyPairSigner;

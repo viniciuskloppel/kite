@@ -6,6 +6,8 @@ import {
   KeyPairSigner,
   Address,
   RpcTransport,
+  SolanaRpcSubscriptionsApi,
+  RpcSubscriptions,
 } from "@solana/kit";
 import { createRecentSignatureConfirmationPromiseFactory } from "@solana/transaction-confirmation";
 
@@ -69,11 +71,14 @@ export interface ClusterDetails {
     enableClientSideRetries: boolean;
     isNameKnownToSolanaExplorer: boolean;
     isExplorerDefault: boolean;
-  },
+  };
 }
 
 // Our cluster config doesn't have everything we need, so we need to get the rest of the details from the environment
-export const getClusterDetailsFromClusterConfig = (clusterName: string, clusterConfig: ClusterConfig): ClusterDetails => {
+export const getClusterDetailsFromClusterConfig = (
+  clusterName: string,
+  clusterConfig: ClusterConfig,
+): ClusterDetails => {
   let features = clusterConfig.features;
 
   if (clusterConfig.httpURL && clusterConfig.webSocketURL) {
@@ -118,13 +123,13 @@ export const getClusterDetailsFromClusterConfig = (clusterName: string, clusterC
   }
 
   throw new Error(`Cluster ${clusterName} has null URLs but no requiredRpcEnvironmentVariable specified.`);
-}
+};
 
 /**
  * Creates a connection to a Solana cluster with all helper functions pre-configured.
  * @param {string | ReturnType<typeof createSolanaRpcFromTransport>} [clusterNameOrURLOrRpc="localnet"] - Either:
  *                 - A cluster name, from this list:
- *                   Public clusters (note these are rate limited, you should use a commercial RPCp provider for production apps)
+ *                   Public clusters (note these are rate limited, you should use a commercial RPC provider for production apps)
  *                     "mainnet", "testnet", "devnet", "localnet"
  *                   QuickNode:
  *                     "quicknode-mainnet", "quicknode-devnet", "quicknode-testnet"
@@ -136,6 +141,7 @@ export const getClusterDetailsFromClusterConfig = (clusterName: string, clusterC
  *                 - WebSocket URL for subscriptions (required if using custom HTTP URL)
  *                 - A pre-configured RPC subscriptions client
  * @returns {Connection} Connection object with all helper functions configured
+ * @throws {Error} If using QuickNode cluster without QUICKNODE_SOLANA_MAINNET_ENDPOINT or QUICKNODE_SOLANA_DEVNET_ENDPOINT or QUICKNODE_SOLANA_TESTNET_ENDPOINT environment variable set
  * @throws {Error} If using Helius cluster without HELIUS_API_KEY environment variable set
  * @throws {Error} If using custom HTTP URL without WebSocket URL
  * @throws {Error} If cluster name is invalid
@@ -145,7 +151,7 @@ export const connect = (
   clusterWebSocketURLOrRpcSubscriptions: string | ReturnType<typeof createSolanaRpcSubscriptions> | null = null,
 ): Connection => {
   let rpc: ReturnType<typeof createSolanaRpcFromTransport<RpcTransport>>;
-  let rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
+  let rpcSubscriptions: RpcSubscriptions<SolanaRpcSubscriptionsApi>;
   let supportsGetPriorityFeeEstimate: boolean = false;
   let needsPriorityFees: boolean = false;
   let enableClientSideRetries: boolean = false;
@@ -198,25 +204,14 @@ export const connect = (
     }
   }
 
-  // Use rpcSubscriptions as-is, do not add ~cluster property
-  const typedRpcSubscriptions = rpcSubscriptions as ReturnType<typeof createSolanaRpcSubscriptions>;
-
   // Create the transaction confirmation functions based on the cluster name
-  const sendAndConfirmTransaction = clusterNameOrURL.includes("mainnet")
-    ? sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
-    : clusterNameOrURL.includes("testnet")
-      ? sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
-      : sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any });
+  let sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions });
 
   // Let's avoid data types like 'Promise' into the function name
   // we're not using Hungarian notation, this isn't common TS behavior, and it's not necessary to do so
-  const getRecentSignatureConfirmation = clusterNameOrURL.includes("mainnet")
-    ? createRecentSignatureConfirmationPromiseFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
-    : clusterNameOrURL.includes("testnet")
-      ? createRecentSignatureConfirmationPromiseFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any })
-      : createRecentSignatureConfirmationPromiseFactory({ rpc, rpcSubscriptions: typedRpcSubscriptions as any });
+  const getRecentSignatureConfirmation = createRecentSignatureConfirmationPromiseFactory({ rpc, rpcSubscriptions });
 
-  const airdropIfRequired = airdropIfRequiredFactory(rpc, typedRpcSubscriptions);
+  const airdropIfRequired = airdropIfRequiredFactory(rpc, rpcSubscriptions);
 
   const createWallet = createWalletFactory(airdropIfRequired);
 
@@ -313,7 +308,7 @@ export interface Connection {
    * Builds, signs and sends a transaction containing multiple instructions.
    * @param {Object} params - Transaction parameters
    * @param {KeyPairSigner} params.feePayer - Account that will pay the transaction fees
-   * @param {Array<IInstruction>} params.instructions - List of instructions to execute in sequence
+   * @param {Array<Instruction>} params.instructions - List of instructions to execute in sequence
    * @param {Commitment} [params.commitment="confirmed"] - Confirmation level to wait for:
    *                                                      'processed' = processed by current node,
    *                                                      'confirmed' = confirmed by supermajority of the cluster,
@@ -321,6 +316,7 @@ export interface Connection {
    * @param {boolean} [params.skipPreflight=true] - Skip pre-flight transaction checks to reduce latency
    * @param {number} [params.maximumClientSideRetries=0] - Number of times to retry if the transaction fails
    * @param {AbortSignal | null} [params.abortSignal=null] - Signal to cancel the transaction
+   * @param {number} [params.timeout=undefined] - Timeout for the transaction in milliseconds
    * @returns {Promise<string>} The transaction signature
    */
   sendTransactionFromInstructions: ReturnType<typeof sendTransactionFromInstructionsFactory>;
@@ -444,10 +440,11 @@ export interface Connection {
   createTokenMint: (params: {
     mintAuthority: KeyPairSigner;
     decimals: number;
-    name: string;
-    symbol: string;
-    uri: string;
+    name?: string;
+    symbol?: string;
+    uri?: string;
     additionalMetadata?: Record<string, string> | Map<string, string>;
+    useTokenExtensions?: boolean;
   }) => Promise<Address>;
 
   /**
@@ -456,6 +453,7 @@ export interface Connection {
    * @param {KeyPairSigner} mintAuthority - Account authorized to mint new tokens (must sign)
    * @param {bigint} amount - Number of base units to mint (adjusted for decimals)
    * @param {Address} destination - Account to receive the new tokens
+   * @param {boolean} [useTokenExtensions=true] - Use Token Extensions program instead of classic Token program
    * @returns {Promise<string>} Transaction signature
    */
   mintTokens: (
@@ -463,6 +461,7 @@ export interface Connection {
     mintAuthority: KeyPairSigner,
     amount: bigint,
     destination: Address,
+    useTokenExtensions?: boolean,
   ) => Promise<string>;
 
   /**
@@ -474,6 +473,7 @@ export interface Connection {
    * @param {bigint} params.amount - Number of base units to transfer (adjusted for decimals)
    * @param {number} [params.maximumClientSideRetries=0] - Number of retry attempts if transfer fails
    * @param {AbortSignal | null} [params.abortSignal=null] - Signal to cancel the transfer
+   * @param {boolean} [params.useTokenExtensions=true] - Use Token Extensions program instead of classic Token program
    * @returns {Promise<string>} Transaction signature
    */
   transferTokens: ReturnType<typeof transferTokensFactory>;
@@ -569,7 +569,7 @@ export interface Connection {
    * Builds, signs and sends a transaction containing multiple instructions using a wallet app.
    * @param {Object} params - Transaction parameters
    * @param {TransactionSendingSigner} params.feePayer - Account that will pay the transaction fees
-   * @param {Array<IInstruction>} params.instructions - List of instructions to execute in sequence
+   * @param {Array<Instruction>} params.instructions - List of instructions to execute in sequence
    * @param {AbortSignal | null} [params.abortSignal=null] - Signal to cancel the transaction
    * @returns {Promise<string>} The transaction signature
    */
