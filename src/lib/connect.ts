@@ -129,7 +129,7 @@ export const getClusterDetailsFromClusterConfig = (
  * Creates a connection to a Solana cluster with all helper functions pre-configured.
  * @param {string | ReturnType<typeof createSolanaRpcFromTransport>} [clusterNameOrURLOrRpc="localnet"] - Either:
  *                 - A cluster name, from this list:
- *                   Public clusters (note these are rate limited, you should use a commercial RPCp provider for production apps)
+ *                   Public clusters (note these are rate limited, you should use a commercial RPC provider for production apps)
  *                     "mainnet", "testnet", "devnet", "localnet"
  *                   QuickNode:
  *                     "quicknode-mainnet", "quicknode-devnet", "quicknode-testnet"
@@ -141,6 +141,7 @@ export const getClusterDetailsFromClusterConfig = (
  *                 - WebSocket URL for subscriptions (required if using custom HTTP URL)
  *                 - A pre-configured RPC subscriptions client
  * @returns {Connection} Connection object with all helper functions configured
+ * @throws {Error} If using QuickNode cluster without QUICKNODE_SOLANA_MAINNET_ENDPOINT or QUICKNODE_SOLANA_DEVNET_ENDPOINT or QUICKNODE_SOLANA_TESTNET_ENDPOINT environment variable set
  * @throws {Error} If using Helius cluster without HELIUS_API_KEY environment variable set
  * @throws {Error} If using custom HTTP URL without WebSocket URL
  * @throws {Error} If cluster name is invalid
