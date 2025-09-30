@@ -1,6 +1,7 @@
 import {
   appendTransactionMessageInstructions,
   assertIsTransactionMessageWithSingleSendingSigner,
+  assertIsTransactionWithinSizeLimit,
   Commitment,
   createSolanaRpcFromTransport,
   createTransactionMessage,
@@ -132,6 +133,7 @@ export const sendTransactionFromInstructionsFactory = (
     assertIsTransactionMessageWithBlockhashLifetime(transactionMessage);
 
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+    assertIsTransactionWithinSizeLimit(signedTransaction);
 
     const signature = getSignatureFromTransaction(signedTransaction);
 
