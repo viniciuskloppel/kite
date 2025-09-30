@@ -15,7 +15,7 @@ describe("getLamportBalance", () => {
   test("getLamportBalance returns 1 SOL after 1 SOL is airdropped", async () => {
     const keypairSigner = await generateKeyPairSigner();
     const connection = connect();
-    await connection.airdropIfRequired(keypairSigner.address, lamports(1n * SOL), lamports(1n * SOL), null);
+    await connection.airdropIfRequired(keypairSigner.address, lamports(1n * SOL), lamports(1n * SOL));
     const balance = await connection.getLamportBalance(keypairSigner.address, "finalized");
     assert.equal(balance, lamports(1n * SOL));
   });
