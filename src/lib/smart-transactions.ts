@@ -112,11 +112,11 @@ export const sendTransactionWithRetries = async (
     commitment: Commitment;
     timeout?: number | null;
   } = {
-      maximumClientSideRetries: DEFAULT_TRANSACTION_RETRIES,
-      abortSignal: null,
-      commitment: "confirmed",
-      timeout: null,
-    },
+    maximumClientSideRetries: DEFAULT_TRANSACTION_RETRIES,
+    abortSignal: null,
+    commitment: "confirmed",
+    timeout: null,
+  },
 ) => {
   if (options.commitment === "finalized") {
     console.warn(
