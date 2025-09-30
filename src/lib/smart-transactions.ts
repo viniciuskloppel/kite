@@ -6,7 +6,7 @@ import {
   TransactionMessage,
   isWritableRole,
   isInstructionWithData,
-  CompilableTransactionMessage,
+  TransactionMessageWithFeePayer,
   createSolanaRpcFromTransport,
   sendAndConfirmTransactionFactory,
   TransactionWithBlockhashLifetime,
@@ -15,6 +15,8 @@ import {
   SOLANA_ERROR__TRANSACTION_ERROR__ALREADY_PROCESSED,
   isSolanaError,
   SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE,
+  assertIsTransactionWithinSizeLimit,
+  Transaction,
 } from "@solana/kit";
 import {
   getSetComputeUnitPriceInstruction,
@@ -78,7 +80,7 @@ export const getPriorityFeeEstimate = async (
 
 export const getComputeUnitEstimate = async (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
-  transactionMessage: CompilableTransactionMessage,
+  transactionMessage: TransactionMessage & TransactionMessageWithFeePayer,
   abortSignal: AbortSignal | null = null,
 ) => {
   // add placeholder instruction for CU price if not already present
@@ -105,7 +107,7 @@ export const getComputeUnitEstimate = async (
 
 export const sendTransactionWithRetries = async (
   sendAndConfirmTransaction: ReturnType<typeof sendAndConfirmTransactionFactory>,
-  transaction: FullySignedTransaction & TransactionWithBlockhashLifetime,
+  transaction: Transaction & FullySignedTransaction & TransactionWithBlockhashLifetime,
   options: {
     maximumClientSideRetries: number;
     abortSignal: AbortSignal | null;
@@ -158,6 +160,7 @@ export const sendTransactionWithRetries = async (
 
   while (retriesLeft) {
     try {
+      assertIsTransactionWithinSizeLimit(transaction);
       const txPromise = sendAndConfirmTransaction(transaction, transactionOptions);
       await getAbortablePromise(txPromise, AbortSignal.timeout(timeout));
       break;
