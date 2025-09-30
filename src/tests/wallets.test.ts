@@ -48,7 +48,6 @@ describe("createWallet", () => {
   });
 
   test("createWallet generates a new keyPair with a SOL balance with a commitment", async () => {
-
     const walletBefore = await connection.createWallet({
       airdropAmount: DEFAULT_AIRDROP_AMOUNT,
       commitment: "processed",
