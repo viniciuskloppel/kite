@@ -58,11 +58,7 @@ export const sendTransactionFromInstructionsWithWalletAppFactory = (
       createTransactionMessage({ version: 0 }),
       (message) => setTransactionMessageFeePayerSigner(feePayer, message),
       (message) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, message),
-      (message) =>
-        appendTransactionMessageInstructions(
-          instructions,
-          message,
-        ),
+      (message) => appendTransactionMessageInstructions(instructions, message),
     );
     assertIsTransactionMessageWithSingleSendingSigner(transactionMessage);
     const signatureBytes = await signAndSendTransactionMessageWithSigners(transactionMessage);
@@ -71,7 +67,6 @@ export const sendTransactionFromInstructionsWithWalletAppFactory = (
   };
   return sendTransactionFromInstructionsWithWalletApp;
 };
-
 
 export const sendTransactionFromInstructionsFactory = (
   rpc: ReturnType<typeof createSolanaRpcFromTransport>,
